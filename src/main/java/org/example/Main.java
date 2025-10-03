@@ -1,17 +1,40 @@
 package org.example;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import org.example.Tasks2.*;
+
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+        //Вариант к выполнению №3
+        // Вызов метода для задания номер 1.
+        System.out.println("\nTask1:");
+        Task1 task1 = new Task1();
+        task1.AverageNumberTask1();
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+        // Вызов метода для задания номер 2.
+        System.out.println("\nTask2:");
+        Task2 task2 = new Task2();
+        task2.SortArrayTask2();
+
+        // Вызов метода для задания номер 3.
+        System.out.println("\nTask3:");
+        Task3 task3 = new Task3();
+        task3.SortEmployeesBySalaryTask3();
+
+
+        // Вызов метода для задания номер 4.
+        System.out.println("\nTask4:");
+        Task4 task4 = new Task4();
+        task4.UrlHeadersTask4();
+
+        // Вызов метода для задания номер 5.
+        System.out.println("\nTask5:");
+        Task5 task5 = new Task5();
+        task5.Start();
+        try {
+            Thread.sleep(2500);
+        } catch (InterruptedException e) {
+            System.err.println("Main-поток прерван: " + e.getMessage());
         }
+        task5.Stop();
     }
 }
