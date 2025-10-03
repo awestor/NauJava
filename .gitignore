@@ -42,3 +42,4 @@ build/
 folderStart/
 folderEnd/
 .mvn
+dependency-reduced-pom.xml
