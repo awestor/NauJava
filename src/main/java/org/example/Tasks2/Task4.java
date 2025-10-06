@@ -9,20 +9,17 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class Task4 {
-    private String urlToOpen = "https://httpbin.org/headers";
-
-    public Task4(){
-    }
+    private static final String URL_TO_OPEN = "https://httpbin.org/headers";
 
     /**
      * Метод, что отправляет запрос на указанный URL,
      * а после возвращающий заголовки запроса
      */
-    public void UrlHeadersTask4(){
+    public void urlHeadersTask4(){
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(urlToOpen))
+                    .uri(URI.create(URL_TO_OPEN))
                     .GET()
                     .build();
 

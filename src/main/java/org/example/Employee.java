@@ -13,38 +13,11 @@ public class Employee {
         this.salary = salary;
     }
 
-    // Список сгенеренных гетеров
-    public String getFullName() {
-        return fullName;
-    }
-
-    public Integer getAge() {
-        return age;
-    }
-
-    public String getDepartment() {
-        return department;
-    }
-
+    /**
+     * Гетер для получения данных по зарплате
+      */
     public Double getSalary() {
         return salary;
-    }
-
-    // Список сгенеренных сеттеров
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
-    public void setSalary(Double salary) {
-        this.salary = salary;
     }
 
     // Переопределение для вывода, чтобы не делать это

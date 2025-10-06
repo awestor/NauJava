@@ -20,7 +20,7 @@ public class Task3 {
     /**
      * Метод сортировки сотрудников по зарплате
      */
-    public void SortEmployeesBySalaryTask3() {
+    public void sortEmployeesBySalaryTask3() {
         System.out.println("Исходный порядок сотрудников: ");
         for (Employee emp : employees) {
             System.out.println(emp);
