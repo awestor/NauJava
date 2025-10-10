@@ -8,8 +8,9 @@ public class Product {
 
     /**
      * Конструктор для неполного заполнения полей,
-     * а только первичного создания.
-     * @param id
+     * а только первичного создания для создания используется
+     * только параметр id.
+     * @param id идентификатор продукта
      */
     public Product(Long id){
         this.id = id;
@@ -18,10 +19,10 @@ public class Product {
     /**
      * Конструктор для полного заполнения полей класса
      * не используя сетеры.
-     * @param id
-     * @param name
-     * @param description
-     * @param calories
+     * @param id идентификатор продукта
+     * @param name название продукта
+     * @param description описание продукта
+     * @param calories количество калорий продукта
      */
     public Product(Long id, String name, String description, double calories){
         this.id = id;

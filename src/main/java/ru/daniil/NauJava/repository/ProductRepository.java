@@ -32,16 +32,11 @@ public class ProductRepository implements CrudRepository<Product, Long> {
 
     @Override
     public void update(Product updatedProduct) {
-        Product existing = read(updatedProduct.getId());
-        if (existing != null) {
-            if (updatedProduct.getName() != null) {
-                existing.setName(updatedProduct.getName());
-            }
-            if (updatedProduct.getDescription() != null) {
-                existing.setDescription(updatedProduct.getDescription());
-            }
-            if (updatedProduct.getCalories() != null) {
-                existing.setCalories(updatedProduct.getCalories());
+        Long tempId = updatedProduct.getId();
+        for (int i = 0; i < productContainer.size(); i++) {
+            if (productContainer.get(i).getId().equals(tempId)) {
+                productContainer.set(i, updatedProduct);
+                return;
             }
         }
     }

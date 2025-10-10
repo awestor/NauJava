@@ -19,10 +19,10 @@ public class CommandProcessor
 
     /**
      * Метод, что принимает на входе строку состоящую из:
-     * действия и параметров к нему разделённых запятой.
+     * действия и параметров к нему разделённых пробелом.
      * Используется для работы с productService через консоль.
      * Ничего не возвращает, но выводит результаты в консоль.
-     * @param input
+     * @param input строка состоящая из действия и параметров к нему разделённых пробелом
      */
     public void processCommand(String input)
     {
@@ -32,7 +32,7 @@ public class CommandProcessor
             case "create" ->
             {
                 Product item = productService.findById(Long.valueOf(cmd[1]));
-                if (item != null) {
+                if (item == null) {
                     productService.createProduct(
                             Long.valueOf(cmd[1]),
                             cmd[2],
@@ -48,11 +48,9 @@ public class CommandProcessor
             {
                 Product item = productService.findById(Long.valueOf(cmd[1]));
                 if (item != null) {
-                    System.out.println("Данные по продукту:");
-                    System.out.println("ID: " + item.getId());
-                    System.out.println("Название: " + item.getName());
-                    System.out.println("Описание: " + item.getDescription());
-                    System.out.println("Калории: " + item.getCalories());
+                    System.out.printf("Данные по продукту:\n" +
+                                    "ID: %s \nНазвание: %s \nОписание: %s \nКалории: %s \n",
+                            item.getId(), item.getName(), item.getDescription(),  item.getCalories());
                 } else {
                     System.out.println("Продукт с ID " + cmd[1] + " не найден.");
                 }
