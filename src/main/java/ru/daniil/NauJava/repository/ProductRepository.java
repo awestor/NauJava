@@ -1,0 +1,53 @@
+package ru.daniil.NauJava.repository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import ru.daniil.NauJava.entity.Product;
+
+import java.util.List;
+
+@Repository
+public class ProductRepository implements CrudRepository<Product, Long> {
+
+    private final List<Product> productContainer;
+
+    @Autowired
+    private ProductRepository(List<Product> productContainer)
+    {
+        this.productContainer = productContainer;
+    }
+
+    @Override
+    public void create(Product product) {
+        productContainer.add(product);
+    }
+
+    @Override
+    public Product read(Long id) {
+        return productContainer.stream()
+                .filter(p -> p.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
+    public void update(Product updatedProduct) {
+        Product existing = read(updatedProduct.getId());
+        if (existing != null) {
+            if (updatedProduct.getName() != null) {
+                existing.setName(updatedProduct.getName());
+            }
+            if (updatedProduct.getDescription() != null) {
+                existing.setDescription(updatedProduct.getDescription());
+            }
+            if (updatedProduct.getCalories() != null) {
+                existing.setCalories(updatedProduct.getCalories());
+            }
+        }
+    }
+
+    @Override
+    public void delete(Long id) {
+        productContainer.removeIf(p -> p.getId().equals(id));
+    }
+}
