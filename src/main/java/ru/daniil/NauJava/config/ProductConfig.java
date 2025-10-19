@@ -8,9 +8,9 @@ import ru.daniil.NauJava.entity.Product;
 import java.util.ArrayList;
 import java.util.List;
 
-@Configuration
+//@Configuration
 public class ProductConfig {
-    @Bean
+    //@Bean
     public List<Product> productContainer() {
         return new ArrayList<>();
     }

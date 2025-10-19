@@ -1,48 +1,32 @@
 package ru.daniil.NauJava.repository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.daniil.NauJava.entity.Product;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public class ProductRepository implements CrudRepository<Product, Long> {
+public interface ProductRepository extends CrudRepository<Product, Long> {
+    List<Product> findByNameContainingIgnoreCase(String name);
 
-    private final List<Product> productContainer;
+    List<Product> findByCreatedByUserIsNull();
 
-    @Autowired
-    private ProductRepository(List<Product> productContainer)
-    {
-        this.productContainer = productContainer;
-    }
+    List<Product> findByCreatedByUserId(Long userId);
 
-    @Override
-    public void create(Product product) {
-        productContainer.add(product);
-    }
+    @Query("SELECT p FROM Product p WHERE p.caloriesPer100g >= :minCalories")
+    List<Product> findProductsWithMinCalories(@Param("minCalories") Double minCalories);
 
-    @Override
-    public Product read(Long id) {
-        return productContainer.stream()
-                .filter(p -> p.getId().equals(id))
-                .findFirst()
-                .orElse(null);
-    }
+    List<Product> findByCreatedByUserIsNullOrCreatedByUserId(Long userId);
 
-    @Override
-    public void update(Product updatedProduct) {
-        Long tempId = updatedProduct.getId();
-        for (int i = 0; i < productContainer.size(); i++) {
-            if (productContainer.get(i).getId().equals(tempId)) {
-                productContainer.set(i, updatedProduct);
-                return;
-            }
-        }
-    }
+    List<Product> findByNameAndCaloriesPer100gBetween(String name, Integer minCalories, Integer maxCalories);
 
-    @Override
-    public void delete(Long id) {
-        productContainer.removeIf(p -> p.getId().equals(id));
-    }
+    Optional<Product> findByNameIgnoreCaseAndCreatedByUserIsNull(String name);
+
+    Optional<Product> findByNameIgnoreCaseAndCreatedByUserId(String name, Long userId);
+
+    boolean existsByNameIgnoreCase(String name);
 }

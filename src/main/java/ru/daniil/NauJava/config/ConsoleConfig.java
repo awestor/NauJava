@@ -14,23 +14,25 @@ import java.util.Scanner;
 
 @Configuration
 public class ConsoleConfig {
+    /*
     @Value("${app.name}")
     private String projectName;
     @Value("${app.version}")
     private String version;
     @Autowired
     private CommandProcessor commandProcessor;
-
+    */
     /**
      * Компонент, что будет модернизировать вывод в консоль.
      * @return активный ввод/вывод данных в консоли
      */
+
     @Bean
     public CommandLineRunner commandScanner()
     {
         return args ->
         {
-            try (Scanner scanner = new Scanner(System.in))
+            /*try (Scanner scanner = new Scanner(System.in))
             {
                 ConsoleInputHelper input = new ConsoleInputHelper(scanner);
                 System.out.printf("\nНазвание приложения: %s \nТекущая версия: %s \nВведите команду: " +
@@ -80,7 +82,7 @@ public class ConsoleConfig {
                     }
                     commandProcessor.processCommand(fullCommand);
                 }
-            }
+            }*/
         };
     }
 }

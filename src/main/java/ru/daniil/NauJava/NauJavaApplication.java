@@ -7,7 +7,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 @SpringBootApplication
 public class NauJavaApplication {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
+
 		ConfigurableApplicationContext context =
 				SpringApplication.run(NauJavaApplication.class, args);
 		SpringApplication.exit(context, () -> 0);

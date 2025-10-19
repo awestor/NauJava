@@ -1,6 +1,6 @@
 package ru.daniil.NauJava.repository;
 
-public interface CrudRepository<T, ID>  {
+public interface CrudRepositoryTask3<T, ID>  {
     /**
      * Метод, что создаёт новую запись продукта
      * @param entity экземпляр сущности

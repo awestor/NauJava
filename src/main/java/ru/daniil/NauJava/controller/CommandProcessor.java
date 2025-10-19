@@ -6,15 +6,15 @@ import org.springframework.stereotype.Component;
 import ru.daniil.NauJava.entity.Product;
 import ru.daniil.NauJava.service.ProductService;
 
-@Component
+//@Component
 public class CommandProcessor
 {
-    private final ProductService productService;
+    //private final ProductService productService;
 
-    @Autowired
-    public CommandProcessor(ProductService productService)
+    //@Autowired
+    public CommandProcessor()//ProductService productService)
     {
-        this.productService = productService;
+        //this.productService = productService;
     }
 
     /**
@@ -26,7 +26,7 @@ public class CommandProcessor
      */
     public void processCommand(String input)
     {
-        String[] cmd = input.split(" ");
+        /*String[] cmd = input.split(" ");
         switch (cmd[0])
         {
             case "create" ->
@@ -50,7 +50,7 @@ public class CommandProcessor
                 if (item != null) {
                     System.out.printf("Данные по продукту:\n" +
                                     "ID: %s \nНазвание: %s \nОписание: %s \nКалории: %s \n",
-                            item.getId(), item.getName(), item.getDescription(),  item.getCalories());
+                            item.getId(), item.getName(), item.getDescription(),  item.getCaloriesPer100g());
                 } else {
                     System.out.println("Продукт с ID " + cmd[1] + " не найден.");
                 }
@@ -80,6 +80,6 @@ public class CommandProcessor
             }
 
             default -> System.out.println("Введена неизвестная команда...");
-        }
+        }*/
     }
 }
