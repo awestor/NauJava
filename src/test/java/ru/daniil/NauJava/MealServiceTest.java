@@ -2,6 +2,7 @@ package ru.daniil.NauJava;
 
 import jakarta.transaction.Transactional;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -43,7 +44,7 @@ public class MealServiceTest {
     private User testUser;
 
     /**
-     * Инициализация тестовых данных перед выполнением всех тестов.
+     * Инициализация тестовых данных перед выполнением каждого теста.
      * Создает тестового пользователя и продукты для использования в тестах.
      */
     @BeforeEach
@@ -76,6 +77,14 @@ public class MealServiceTest {
         testProduct2.setCarbsPer100g(12.0);
         testProduct2.setCreatedByUser(null);
         productRepository.save(testProduct2);
+    }
+
+    /**
+     * Удаляет записи после каждого теста
+     */
+    @AfterEach
+    void dellData(){
+        cleanupTestData();
     }
 
     /**
@@ -262,13 +271,10 @@ public class MealServiceTest {
      */
     @Test
     void getTodayMeals_WhenUserNotExists_ShouldReturnEmptyList() {
-        // Arrange
         String nonExistentEmail = "nonexistent@example.com";
 
-        // Act
         List<Meal> result = mealService.getTodayMeals(nonExistentEmail);
 
-        // Assert
         Assertions.assertThat(result).isEmpty();
     }
 

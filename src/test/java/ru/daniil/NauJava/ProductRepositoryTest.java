@@ -1,9 +1,8 @@
 package ru.daniil.NauJava;
 
 import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.assertj.core.api.AssertionsForClassTypes;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.daniil.NauJava.entity.Product;
@@ -29,14 +28,16 @@ public class ProductRepositoryTest {
     @Autowired
     private ProductRepositoryCustom productRepositoryCustom;
 
+
+
     /**
-     * Инициализация тестовых данных перед выполнением всех тестов.
+     * Инициализация тестовых данных перед выполнением каждого теста.
      * Создает тестового пользователя, системные продукты и пользовательские продукты
      * для использования в последующих тестах. Также выполняет очистку предыдущих тестовых данных.
      */
-    @BeforeAll
+    @BeforeEach
     void setUp() {
-        cleanupAllTestData();
+        cleanupTestData();
         // Создание тестового пользователя
         User testUser = new User();
         testUser.setEmail("test@example.com");
@@ -83,6 +84,41 @@ public class ProductRepositoryTest {
         userProduct2.setCarbsPer100g(12.0);
         userProduct2.setCreatedByUser(testUser);
         productRepository.save(userProduct2);
+    }
+
+    /**
+     * Удаляет записи после каждого теста
+     */
+    @AfterEach
+    void dellData(){
+        cleanupTestData();
+    }
+
+    /**
+     * Тестирует сохранение новой записи продукта в БД.
+     * Проверяет работу алгоритма сохранения в БД,
+     * а также работу метода findByNameIgnoreCaseAndCreatedByUserId()
+     */
+    @Test
+    void addProduct(){
+        Product product = new Product(
+                "test fruit", "delicious",
+                52.0, 0.26,
+                0.17,13.81);
+        Long userId = product.getCreatedByUser() == null ? null : product.getCreatedByUser().getId();
+
+        Optional<Product> savedProduct = productRepository.findByNameIgnoreCaseAndCreatedByUserId(product.getName(), userId);
+
+        if(savedProduct.isEmpty()) {
+            savedProduct = Optional.of(productRepository.save(product));
+        }
+        else{
+            System.out.println("Продукт уже существует в БД.");
+        }
+
+        // Проверка, что продукт сохранился
+        AssertionsForClassTypes.assertThat(savedProduct.get().getId()).isNotNull();
+        AssertionsForClassTypes.assertThat(savedProduct.get().getName()).isEqualTo("test fruit");
     }
 
     /**
@@ -499,19 +535,13 @@ public class ProductRepositoryTest {
      * Удаляет все продукты с именем, содержащим "test", и тестового пользователя
      * с email "test@example.com" вместе с его продуктами.
      */
-    public void cleanupAllTestData() {
-        List<Product> result1 = productRepository.findByNameContainingIgnoreCase("test");
-        for (Product product : result1) {
+    private void cleanupTestData() {
+        List<Product> testProducts = productRepository.findByNameContainingIgnoreCase("test");
+        for (Product product : testProducts) {
             productRepository.delete(product);
         }
 
         Optional<User> testUser = userRepository.findByEmail("test@example.com");
-        if (testUser.isPresent()){
-            List<Product> allProducts = productRepository.findByCreatedByUserId(testUser.get().getId());
-            for (Product product : allProducts) {
-                productRepository.delete(product);
-            }
-            userRepository.delete(testUser.get());
-        }
+        testUser.ifPresent(userRepository::delete);
     }
 }
