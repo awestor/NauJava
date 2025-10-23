@@ -54,3 +54,4 @@ folderEnd/
 .mvn
 dependency-reduced-pom.xml
 org/
+db.cache
