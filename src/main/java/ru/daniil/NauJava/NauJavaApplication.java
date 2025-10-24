@@ -11,7 +11,7 @@ public class NauJavaApplication {
 
 		ConfigurableApplicationContext context =
 				SpringApplication.run(NauJavaApplication.class, args);
-		SpringApplication.exit(context, () -> 0);
+		//SpringApplication.exit(context, () -> 0);
 	}
 
 }
