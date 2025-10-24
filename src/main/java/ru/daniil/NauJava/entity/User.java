@@ -104,4 +104,17 @@ public class User {
     public void setSurname(String surname) {
         this.surname = surname;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                ", patronymic='" + patronymic + '\'' +
+                ", currentStreak=" + currentStreak +
+                ", createdAt=" + createdAt +
+                '}';
+    }
 }
