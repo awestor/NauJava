@@ -24,12 +24,9 @@ public class ProductViewController {
     private final ProductRepository productRepository;
 
     @Autowired
-    ProductViewController(
-            ProductRepository productRepository
-        )
+    ProductViewController(ProductRepository productRepository)
     {
         this.productRepository = productRepository;
-
     }
 
     /**
