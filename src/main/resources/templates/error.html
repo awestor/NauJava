@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error - Calorie Tracker</title>
+  <link th:href="@{/css/error.css}" rel="stylesheet">
+</head>
+<body>
+<div class="error-container">
+  <div class="logo">
+    <span class="logo-text">Calorie<span class="logo-accent">Tracker</span></span>
+  </div>
+
+  <div class="error-icon">&#10060</div>
+
+  <h1 class="error-title" th:text="${error} ?: 'Something went wrong'"></h1>
+
+  <div class="error-code" th:if="${status}">
+    Error code: <span th:text="${status}"></span>
+  </div>
+
+  <div class="error-message" th:text="${message} ?: 'При обработке вашего запроса произошла непредвиденная ошибка.'"></div>
+
+  <div class="action-buttons">
+    <a href="/view/products/" class="btn btn-primary">
+      Go Home
+    </a>
+    <a href="javascript:history.back()" class="btn">
+      Go Back
+    </a>
+    <button onclick="location.reload()" class="btn">
+      Retry
+    </button>
+  </div>
+
+  <details class="error-details" th:if="${trace}">
+    <summary>Technical Details</summary>
+    <pre th:text="${trace}"></pre>
+  </details>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const details = document.querySelector('.error-details');
+      if (details && details.textContent.trim()) {
+          details.style.display = 'block';
+      }
+  });
+</script>
+</body>
+</html>

@@ -149,5 +149,17 @@ public class Product {
     public void setCreatedByUser(User createdByUser) {
         this.createdByUser = createdByUser;
     }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", caloriesPer100g=" + caloriesPer100g +
+                ", proteinsPer100g=" + proteinsPer100g +
+                ", fatsPer100g=" + fatsPer100g +
+                ", carbsPer100g=" + carbsPer100g +
+                '}';
+    }
 }
 

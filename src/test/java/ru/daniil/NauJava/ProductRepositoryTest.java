@@ -544,4 +544,206 @@ public class ProductRepositoryTest {
         Optional<User> testUser = userRepository.findByEmail("test@example.com");
         testUser.ifPresent(userRepository::delete);
     }
+
+    /**
+     * Тестирует поиск продуктов с калорийностью >= указанной для системных продуктов и продуктов пользователя.
+     * Проверяет, что метод возвращает как системные продукты, так и продукты указанного пользователя.
+     */
+    @Test
+    void findProductsWithMinCaloriesAndUser_WhenUserHasProducts_ShouldReturnSystemAndUserProducts() {
+        Double minCalories = 60.0;
+        Optional<User> testUser = userRepository.findByEmail("test@example.com");
+        List<Product> result = null;
+
+        if (testUser.isPresent()) {
+            result = productRepository.findProductsWithMinCaloriesAndUser(minCalories, testUser.get().getId());
+        }
+
+        assertThat(result).hasSize(3);
+        assertThat(result).extracting(Product::getName)
+                .containsExactlyInAnyOrder("test Banana", "test Chicken Breast", "test Oatmeal");
+        assertThat(result).extracting(Product::getCreatedByUser)
+                .contains(null, testUser.get());
+    }
+
+    /**
+     * Тестирует поиск продуктов с калорийностью >= указанной когда у пользователя нет продуктов.
+     * Проверяет, что метод возвращает только системные продукты.
+     */
+    @Test
+    void findProductsWithMinCaloriesAndUser_WhenUserHasNoProducts_ShouldReturnOnlySystemProducts() {
+        User newUser = new User();
+        newUser.setEmail("newuser@example.com");
+        newUser.setPassword("password");
+        newUser.setName("New");
+        newUser.setSurname("User");
+        newUser = userRepository.save(newUser);
+
+        Double minCalories = 50.0;
+
+        try {
+            List<Product> result = productRepository.findProductsWithMinCaloriesAndUser(minCalories, newUser.getId());
+
+            assertThat(result).hasSize(2);
+            assertThat(result).extracting(Product::getName)
+                    .containsExactlyInAnyOrder("test Apple", "test Banana");
+            assertThat(result).extracting(Product::getCreatedByUser)
+                    .containsOnlyNulls();
+        } finally {
+            userRepository.delete(newUser);
+        }
+    }
+
+    /**
+     * Тестирует поиск продуктов с высокой калорийностью.
+     * Проверяет, что метод возвращает только продукты с калорийностью >= указанного значения.
+     */
+    @Test
+    void findProductsWithMinCaloriesAndUser_WhenHighMinCalories_ShouldReturnHighCalorieProducts() {
+        Double minCalories = 80.0;
+        Optional<User> testUser = userRepository.findByEmail("test@example.com");
+        List<Product> result = null;
+
+        if (testUser.isPresent()) {
+            result = productRepository.findProductsWithMinCaloriesAndUser(minCalories, testUser.get().getId());
+        }
+
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(Product::getName)
+                .containsExactlyInAnyOrder("test Banana", "test Chicken Breast");
+        assertThat(result).extracting(Product::getCaloriesPer100g)
+                .allSatisfy(calories -> assertThat(calories).isGreaterThanOrEqualTo(minCalories));
+    }
+
+    /**
+     * Тестирует поиск продуктов когда минимальная калорийность равна 0.
+     * Проверяет, что метод возвращает все доступные продукты.
+     */
+    @Test
+    void findProductsWithMinCaloriesAndUser_WhenMinCaloriesIsZero_ShouldReturnAllAvailableProducts() {
+        Double minCalories = 0.0;
+        Optional<User> testUser = userRepository.findByEmail("test@example.com");
+        List<Product> result = null;
+
+        if (testUser.isPresent()) {
+            result = productRepository.findProductsWithMinCaloriesAndUser(minCalories, testUser.get().getId());
+        }
+
+        assertThat(result).hasSize(4);
+        assertThat(result).extracting(Product::getName)
+                .containsExactlyInAnyOrder("test Apple", "test Banana", "test Chicken Breast", "test Oatmeal");
+    }
+
+    /**
+     * Тестирует поиск продуктов когда минимальная калорийность очень высокая.
+     * Проверяет, что метод возвращает пустой список при отсутствии совпадений.
+     */
+    @Test
+    void findProductsWithMinCaloriesAndUser_WhenVeryHighMinCalories_ShouldReturnEmptyList() {
+        Double minCalories = 1000.0;
+        Optional<User> testUser = userRepository.findByEmail("test@example.com");
+        List<Product> result = null;
+
+        if (testUser.isPresent()) {
+            result = productRepository.findProductsWithMinCaloriesAndUser(minCalories, testUser.get().getId());
+        }
+
+        assertThat(result).isEmpty();
+    }
+
+    /**
+     * Тестирует поиск продуктов когда пользователь не существует.
+     * Проверяет, что метод возвращает только системные продукты для несуществующего пользователя.
+     */
+    @Test
+    void findProductsWithMinCaloriesAndUser_WhenUserNotExists_ShouldReturnOnlySystemProducts() {
+        Double minCalories = 50.0;
+        Long nonExistentUserId = 9999L;
+
+        List<Product> result = productRepository.findProductsWithMinCaloriesAndUser(minCalories, nonExistentUserId);
+
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(Product::getName)
+                .containsExactlyInAnyOrder("test Apple", "test Banana");
+        assertThat(result).extracting(Product::getCreatedByUser)
+                .containsOnlyNulls();
+    }
+
+    /**
+     * Тестирует поиск продуктов при указании значения калорийности равном калорийности продукта.
+     * Проверяет корректность работы оператора >= с точными значениями.
+     */
+    @Test
+    void findProductsWithMinCaloriesAndUser_WhenExactCaloriesMatch_ShouldReturnProductsWithExactAndHigherCalories() {
+        Double minCalories = 68.0;
+        Optional<User> testUser = userRepository.findByEmail("test@example.com");
+        List<Product> result = null;
+
+        if (testUser.isPresent()) {
+            result = productRepository.findProductsWithMinCaloriesAndUser(minCalories, testUser.get().getId());
+        }
+
+        assertThat(result).hasSize(3);
+        assertThat(result).extracting(Product::getName)
+                .containsExactlyInAnyOrder("test Banana", "test Chicken Breast", "test Oatmeal");
+        assertThat(result).extracting(Product::getCaloriesPer100g)
+                .allSatisfy(calories -> assertThat(calories).isGreaterThanOrEqualTo(minCalories));
+    }
+
+    /**
+     * Тестирует поиск продуктов с отрицательным значением калорийности.
+     * Проверяет, что метод корректно обрабатывает некорректные входные данные.
+     */
+    @Test
+    void findProductsWithMinCaloriesAndUser_WhenNegativeMinCalories_ShouldReturnAllProducts() {
+        Double minCalories = -50.0;
+        Optional<User> testUser = userRepository.findByEmail("test@example.com");
+        List<Product> result = null;
+
+        if (testUser.isPresent()) {
+            result = productRepository.findProductsWithMinCaloriesAndUser(minCalories, testUser.get().getId());
+        }
+
+        assertThat(result).hasSize(4);
+        assertThat(result).extracting(Product::getCaloriesPer100g)
+                .allSatisfy(calories -> assertThat(calories).isGreaterThanOrEqualTo(minCalories));
+    }
+
+    /**
+     * Тестирует поиск продуктов когда userId равен null.
+     * Проверяет, что метод возвращает только системные продукты.
+     */
+    @Test
+    void findProductsWithMinCaloriesAndUser_WhenUserIdIsNull_ShouldReturnOnlySystemProducts() {
+        Double minCalories = 50.0;
+
+        // Act
+        List<Product> result = productRepository.findProductsWithMinCaloriesAndUser(minCalories, null);
+
+        // Assert
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(Product::getName)
+                .containsExactlyInAnyOrder("test Apple", "test Banana");
+        assertThat(result).extracting(Product::getCreatedByUser)
+                .containsOnlyNulls();
+    }
+
+    /**
+     * Тестирует поиск продуктов когда minCalories равен null.
+     * Проверяет, что метод возвращает все доступные продукты.
+     */
+    @Test
+    void findProductsWithMinCaloriesAndUser_WhenMinCaloriesIsNull_ShouldReturnAllAvailableProducts() {
+        Double minCalories = null;
+        Optional<User> testUser = userRepository.findByEmail("test@example.com");
+        List<Product> result = null;
+
+        if (testUser.isPresent()) {
+            result = productRepository.findProductsWithMinCaloriesAndUser(null, testUser.get().getId());
+        }
+
+        assertThat(result).hasSize(4);
+        assertThat(result).extracting(Product::getName)
+                .containsExactlyInAnyOrder("test Apple", "test Banana", "test Chicken Breast", "test Oatmeal");
+    }
 }

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Product - Calorie Tracker</title>
+    <link th:href="@{/css/product-form.css}" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <a href="/view/products/" class="back-link">← Back to Home</a>
+        <h1>➕ Create New Product</h1>
+        <p>Fill in the product details below</p>
+    </div>
+
+    <form th:action="@{/view/products/create}" method="post" class="product-form" id="productForm">
+        <div class="form-group">
+            <label for="name">Product Name *</label>
+            <input type="text" id="name" name="name" th:value="${product?.name}"
+                   placeholder="Enter product name" required
+                   minlength="2" maxlength="100">
+            <div class="error-message" id="nameError"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="caloriesPer100g">Calories (per 100g) *</label>
+            <input type="number" id="caloriesPer100g" name="caloriesPer100g"
+                   th:value="${product?.caloriesPer100g}"
+                   placeholder="Enter calories" min="0" max="1000" step="0.1" required>
+            <div class="error-message" id="caloriesError"></div>
+        </div>
+
+        <div class="nutrition-grid">
+            <div class="form-group">
+                <label for="proteinsPer100g">Proteins (g) *</label>
+                <input type="number" id="proteinsPer100g" name="proteinsPer100g"
+                       th:value="${product?.proteinsPer100g}"
+                       placeholder="0.0" min="0" max="100" step="0.1" required>
+                <div class="error-message" id="proteinsError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="fatsPer100g">Fats (g) *</label>
+                <input type="number" id="fatsPer100g" name="fatsPer100g"
+                       th:value="${product?.fatsPer100g}"
+                       placeholder="0.0" min="0" max="100" step="0.1" required>
+                <div class="error-message" id="fatsError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="carbsPer100g">Carbs (g) *</label>
+                <input type="number" id="carbsPer100g" name="carbsPer100g"
+                       th:value="${product?.carbsPer100g}"
+                       placeholder="0.0" min="0" max="100" step="0.1" required>
+                <div class="error-message" id="carbsError"></div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" onclick="history.back()" class="btn btn-secondary">Cancel</button>
+            <button type="submit" class="btn btn-primary">Create Product</button>
+        </div>
+    </form>
+
+    <!-- Preview Section -->
+    <div class="preview-section">
+        <h3>Product Preview</h3>
+        <div class="preview-card">
+            <div class="preview-name" id="previewName">Product Name</div>
+            <div class="preview-nutrition">
+                <div class="nutrition-item">
+                    <span class="label">Calories:</span>
+                    <span class="value" id="previewCalories">0</span> kcal
+                </div>
+                <div class="nutrition-item">
+                    <span class="label">Proteins:</span>
+                    <span class="value" id="previewProteins">0.0</span> g
+                </div>
+                <div class="nutrition-item">
+                    <span class="label">Fats:</span>
+                    <span class="value" id="previewFats">0.0</span> g
+                </div>
+                <div class="nutrition-item">
+                    <span class="label">Carbs:</span>
+                    <span class="value" id="previewCarbs">0.0</span> g
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('input', updatePreview);
+        });
+        updatePreview();
+    });
+
+    function updatePreview() {
+        document.getElementById('previewName').textContent =
+            document.getElementById('name').value || 'Product Name';
+        document.getElementById('previewCalories').textContent =
+            document.getElementById('caloriesPer100g').value || '0';
+        document.getElementById('previewProteins').textContent =
+            document.getElementById('proteinsPer100g').value || '0.0';
+        document.getElementById('previewFats').textContent =
+            document.getElementById('fatsPer100g').value || '0.0';
+        document.getElementById('previewCarbs').textContent =
+            document.getElementById('carbsPer100g').value || '0.0';
+    }
+
+    // Form validation
+    document.getElementById('productForm').addEventListener('submit', function(e) {
+        let isValid = true;
+
+        // Clear previous errors
+        document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+
+        const name = document.getElementById('name').value.trim();
+        if (!name) {
+            document.getElementById('nameError').textContent = 'Product name is required';
+            isValid = false;
+        } else if (name.length < 2 || name.length > 100) {
+            document.getElementById('nameError').textContent = 'Name must be between 2 and 100 characters';
+            isValid = false;
+        }
+
+        const calories = document.getElementById('caloriesPer100g').value;
+        if (!calories || calories < 0 || calories > 1000) {
+            document.getElementById('caloriesError').textContent = 'Calories must be between 0 and 1000';
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+</script>
+</body>
+</html>
