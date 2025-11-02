@@ -1,10 +1,233 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calorie Tracker</title>
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        background-color: #f6f8fa;
+        color: #24292f;
+        line-height: 1.5;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #2ea043 0%, #238636 100%);
+        color: white;
+        padding: 20px 0;
+    }
+
+    .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo-text {
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .logo-accent {
+        color: #ffd700;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .user-welcome {
+        font-size: 14px;
+    }
+
+    .logout-form {
+        display: inline;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-logout {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-logout:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .menu {
+        list-style: none;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .menu li {
+        margin: 0;
+    }
+
+    .menu a {
+        display: block;
+        padding: 30px;
+        background: white;
+        color: #24292f;
+        text-decoration: none;
+        border-radius: 8px;
+        text-align: center;
+        transition: all 0.2s ease;
+        border: 1px solid #e1e4e8;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .menu a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-color: #2ea043;
+    }
+
+    .menu-icon {
+        font-size: 32px;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .menu-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .menu-description {
+        font-size: 14px;
+        color: #656d76;
+        display: block;
+    }
+
+    .auth-buttons {
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .btn-auth {
+        padding: 12px 24px;
+        margin: 0 10px;
+    }
+
+    .btn-login {
+        background-color: #2ea043;
+        color: white;
+    }
+
+    .btn-login:hover {
+        background-color: #238636;
+    }
+
+    .btn-register {
+        background-color: #f6f8fa;
+        color: #24292f;
+        border: 1px solid #e1e4e8;
+    }
+
+    .btn-register:hover {
+        background-color: #eaeef2;
+    }
+
+    .admin-badge {
+        background: #ffd700;
+        color: #000;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+  </style>
 </head>
 <body>
-  Hello Me and World!
+<div class="header">
+  <div class="nav-container">
+    <div class="logo">
+      <span class="logo-text">Calorie<span class="logo-accent">Tracker</span></span>
+    </div>
+
+    <div class="user-info" hidden=sec:authorize="isAuthenticated()">
+      <span class="user-welcome">
+          Welcome, <span sec:authentication="name"></span>
+          <span class="admin-badge" sec:authorize="hasRole('ADMIN')">ADMIN</span>
+      </span>
+    </div>
+
+    <div class="user-info" hidden=sec:authorize="!isAuthenticated()">
+      <form th:action="@{/logout}" method="post" class="logout-form">
+        <button type="submit" class="btn btn-logout">
+          Logout
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div sec:authorize="isAuthenticated()">
+    <ul class="menu">
+      <li>
+        <a th:href="@{/view/products/list}">
+          <span class="menu-icon">📊</span>
+          <span class="menu-title">View All Products</span>
+          <span class="menu-description">Browse all available products in the system</span>
+        </a>
+      </li>
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/swagger-ui.html}">
+          <span class="menu-icon">📚</span>
+          <span class="menu-title">API Documentation</span>
+          <span class="menu-description">Access Swagger UI for API documentation</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div sec:authorize="!isAuthenticated()">
+    <div style="text-align: center; padding: 60px 0;">
+      <h1 style="margin-bottom: 20px;">Welcome to Calorie Tracker</h1>
+      <p style="color: #656d76; margin-bottom: 30px; font-size: 18px;">
+        Контроль калорийности продуктов питания проще чем кажется.
+      </p>
+    </div>
+  </div>
+</div>
 </body>
 </html>

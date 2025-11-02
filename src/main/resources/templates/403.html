@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied - Calorie Tracker</title>
+    <link rel="stylesheet" href="/css/error.css">
+</head>
+<body>
+<div class="error-container">
+    <div class="logo">
+        <span class="logo-text">Calorie<span class="logo-accent">Tracker</span></span>
+    </div>
+
+    <div class="error-icon">&#10060</div>
+
+    <h1 class="error-title">Access Denied</h1>
+
+    <div class="error-code">403</div>
+
+    <div class="error-message">
+        You don't have permission to access this page.
+    </div>
+
+    <div class="action-buttons">
+        <a href="/view/products/" class="btn btn-primary">
+            🏠 Go Home
+        </a>
+        <a href="javascript:history.back()" class="btn">
+            ↩️ Go Back
+        </a>
+        <form th:action="@{/logout}" method="post" style="display: inline;">
+            <button type="submit" class="btn">🚪 Logout</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

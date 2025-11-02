@@ -9,9 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
-import ru.daniil.NauJava.exception.ApiError;
-import ru.daniil.NauJava.exception.ResourceNotFoundException;
-import ru.daniil.NauJava.exception.ValidationException;
+import ru.daniil.NauJava.exception.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,6 +83,30 @@ public class NewExceptionHandler {
         apiError.setValidationErrors(validationErrors);
 
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiError> handleUnauthorizedException(UnauthorizedException ex, WebRequest request) {
+        ApiError apiError = new ApiError(
+                ex.getMessage(),
+                HttpStatus.UNAUTHORIZED.value(),
+                "Unauthorized",
+                getRequestPath(request)
+        );
+
+        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
+        ApiError apiError = new ApiError(
+                "Доступ запрещен",
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                getRequestPath(request)
+        );
+
+        return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
     }
 
     private String getRequestPath(WebRequest request) {
