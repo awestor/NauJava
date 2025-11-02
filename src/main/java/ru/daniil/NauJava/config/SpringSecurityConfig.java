@@ -17,7 +17,6 @@ public class SpringSecurityConfig {
         return security
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/",
                                 "/register",
                                 "/login",
                                 "/css/**",
@@ -31,6 +30,7 @@ public class SpringSecurityConfig {
                                 "/swagger-ui.html"
                         ).hasRole("ADMIN")
                         .requestMatchers(
+                                "/",
                                 "/view/products/**",
                                 "/api/products/**"
                         ).hasAnyRole("USER", "ADMIN")
