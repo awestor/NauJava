@@ -24,13 +24,13 @@ public class ProductViewController {
     private final ProductRepository productRepository;
 
     @Autowired
-    ProductViewController(ProductRepository productRepository)
-    {
+    ProductViewController(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
 
     /**
      * Возвращает домашнюю страницу
+     *
      * @return index.html
      */
     @GetMapping(value = "/")
@@ -41,6 +41,7 @@ public class ProductViewController {
     /**
      * Возвращает все доступные продукты в базе данных
      * в виде страницы с таблицей
+     *
      * @return products.html
      */
     @GetMapping("/list")
@@ -59,6 +60,7 @@ public class ProductViewController {
 
     /**
      * Отображает форму для создания нового продукта
+     *
      * @return имя HTML шаблона формы
      */
     @GetMapping("/createForm")
@@ -71,8 +73,8 @@ public class ProductViewController {
      * а после создаёт запись о продукте в БД
      *
      * @param createProductRequest DTO с данными продукта
-     * @param bindingResult Результаты валидации
-     * @param redirectAttributes Атрибуты для redirect
+     * @param bindingResult        Результаты валидации
+     * @param redirectAttributes   Атрибуты для redirect
      * @return redirect URL после обработки формы
      */
     @PostMapping("/create")

@@ -17,6 +17,7 @@ import ru.daniil.NauJava.repository.RoleRepository;
 import ru.daniil.NauJava.repository.UserRepository;
 import ru.daniil.NauJava.request.RegistrationRequest;
 import ru.daniil.NauJava.service.UserDetailsServiceImpl;
+import ru.daniil.NauJava.service.UserServiceImpl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -27,7 +28,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 class UserServiceTest {
 
     @Autowired
-    private UserDetailsServiceImpl userService;
+    private UserDetailsServiceImpl userAuthService;
+    @Autowired
+    private UserServiceImpl userService;
 
     @Autowired
     private UserRepository userRepository;
@@ -104,7 +107,7 @@ class UserServiceTest {
 
     @Test
     void createRole_WhenNewRole_ShouldCreateRole() {
-        Role newRole = userService.createRole("MANAGER", "Менеджер системы");
+        Role newRole = userAuthService.createRole("MANAGER", "Менеджер системы");
 
         assertThat(newRole.getId()).isNotNull();
         assertThat(newRole.getName()).isEqualTo("MANAGER");
@@ -113,19 +116,19 @@ class UserServiceTest {
 
     @Test
     void createRole_WhenDuplicateRole_ShouldThrowException() {
-        userService.createRole("MANAGER", "Менеджер системы");
+        userAuthService.createRole("MANAGER", "Менеджер системы");
 
         assertThatThrownBy(() ->
-                userService.createRole("MANAGER", "Другой менеджер")
+                userAuthService.createRole("MANAGER", "Другой менеджер")
         ).isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Роль MANAGER уже существует");
+                .hasMessageContaining("Роль с именем MANAGER уже существует");
     }
 
     @Test
     void assignRoleToUser_WhenValidData_ShouldAssignRole() {
         User user = userService.createUserWithRole("test@example.com", "testuser", "Password123!", "Test", "User", "USER");
 
-        userService.assignRoleToUser("testuser", "ADMIN");
+        userAuthService.assignRoleToUser("testuser", "ADMIN");
 
         User updatedUser = userRepository.findByLogin("testuser").orElseThrow();
         assertThat(updatedUser.getRoles().toArray()).contains(userRole, adminRole);
@@ -134,7 +137,7 @@ class UserServiceTest {
     @Test
     void assignRoleToUser_WhenUserNotFound_ShouldThrowException() {
         assertThatThrownBy(() ->
-                userService.assignRoleToUser("nonexistent", "ADMIN")
+                userAuthService.assignRoleToUser("nonexistent", "ADMIN")
         ).isInstanceOf(ValidationException.class)
                 .hasMessageContaining("Пользователь не найден: nonexistent");
     }
@@ -144,7 +147,7 @@ class UserServiceTest {
         userService.createUserWithRole("test@example.com", "testuser", "Password123!", "Test", "User", "USER");
 
         assertThatThrownBy(() ->
-                userService.assignRoleToUser("testuser", "INVALID_ROLE")
+                userAuthService.assignRoleToUser("testuser", "INVALID_ROLE")
         ).isInstanceOf(ValidationException.class)
                 .hasMessageContaining("Роль не найдена: INVALID_ROLE");
     }
@@ -167,7 +170,7 @@ class UserServiceTest {
     void loadUserByUsername_WhenUserExists_ShouldReturnUser() {
         userService.createUserWithRole("test@example.com", "testuser", "Password123!", "Test", "User", "USER");
 
-        UserDetails userDetails = userService.loadUserByUsername("testuser");
+        UserDetails userDetails = userAuthService.loadUserByUsername("testuser");
 
         assertThat(userDetails).isNotNull();
         assertThat(userDetails.getUsername()).isEqualTo("testuser");
@@ -177,7 +180,7 @@ class UserServiceTest {
     @Test
     void loadUserByUsername_WhenUserNotExists_ShouldThrowException() {
         assertThatThrownBy(() ->
-                userService.loadUserByUsername("nonexistent")
+                userAuthService.loadUserByUsername("nonexistent")
         ).isInstanceOf(UsernameNotFoundException.class)
                 .hasMessageContaining("Пользователь не найден: nonexistent");
     }
