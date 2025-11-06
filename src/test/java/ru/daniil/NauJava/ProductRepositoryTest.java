@@ -41,6 +41,7 @@ public class ProductRepositoryTest {
         // Создание тестового пользователя
         User testUser = new User();
         testUser.setEmail("test@example.com");
+        testUser.setLogin("Test");
         testUser.setPassword("password");
         testUser.setName("John");
         testUser.setSurname("Doe");
@@ -194,6 +195,7 @@ public class ProductRepositoryTest {
         // Создание временного пользователя (хеширование пароля не проверяется)
         User newUser = new User();
         newUser.setEmail("new@example.com");
+        newUser.setLogin("Test4");
         newUser.setPassword("pass");
         newUser.setName("New");
         newUser.setSurname("User");
@@ -324,6 +326,7 @@ public class ProductRepositoryTest {
         // Создание временного пользователя (хеширование пароля не проверяется)
         User otherUser = new User();
         otherUser.setEmail("other@example.com");
+        otherUser.setLogin("Test2");
         otherUser.setPassword("pass");
         otherUser.setName("Other");
         otherUser.setSurname("User");
@@ -574,6 +577,7 @@ public class ProductRepositoryTest {
     void findProductsWithMinCaloriesAndUser_WhenUserHasNoProducts_ShouldReturnOnlySystemProducts() {
         User newUser = new User();
         newUser.setEmail("newuser@example.com");
+        newUser.setLogin("Test3");
         newUser.setPassword("password");
         newUser.setName("New");
         newUser.setSurname("User");

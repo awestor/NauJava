@@ -17,7 +17,7 @@ public class CreateProductRequest {
     @NotNull(message = "Калорийность обязательна")
     @Min(value = 0, message = "Калорийность не может быть отрицательной")
     @Max(value = 1000, message = "Калорийность не может превышать 1000 ккал")
-    @Schema(description = "Калорийность на 100 грамм", example = "52", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Калорийность на 100 грамм", example = "52.0", requiredMode = Schema.RequiredMode.REQUIRED)
     private Double caloriesPer100g;
 
     @NotNull(message = "Содержание белков обязательно")

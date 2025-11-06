@@ -54,6 +54,7 @@ public class MealServiceTest {
         // Создание тестового пользователя
         testUser = new User();
         testUser.setEmail("test.user@example.com");
+        testUser.setLogin("Test");
         testUser.setPassword("password");
         testUser.setName("Test");
         testUser.setSurname("User");
@@ -94,6 +95,7 @@ public class MealServiceTest {
     @Test
     void createMealWithProducts_WhenSingleProduct_ShouldCreateMealAndMealEntry() {
         String userEmail = "test.user@example.com";
+        String userLogin = "Test2";
         String mealType = "lunch";
         List<String> productNames = List.of("Test Chicken Breast");
         List<Integer> quantities = List.of(150);

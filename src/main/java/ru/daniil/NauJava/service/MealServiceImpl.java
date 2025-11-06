@@ -56,7 +56,7 @@ public class MealServiceImpl implements MealService {
         TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
         try {
-            User user = userService.findUserByEmail(userEmail);
+            User user = userService.findUserByEmail(userEmail).orElse(null);
             if (user == null) {
                 logger.error("Пользователь с email '{}' не найден. Транзакция откатывается.", userEmail);
                 transactionManager.rollback(status);
@@ -158,7 +158,7 @@ public class MealServiceImpl implements MealService {
     @Transactional
     @Override
     public List<Meal> getTodayMeals(String userEmail) {
-        User user = userService.findUserByEmail(userEmail);
+        User user = userService.findUserByEmail(userEmail).orElse(null);
         if (user == null) {
             return List.of();
         }

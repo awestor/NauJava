@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - Calorie Tracker</title>
+    <link th:href="@{/css/auth.css}" rel="stylesheet">
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="logo">
+            <span class="logo-text">Calorie<span class="logo-accent">Tracker</span></span>
+        </div>
+
+        <h1>Добро пожаловать</h1>
+        <p class="auth-subtitle">Войдите в свой аккаунт</p>
+
+        <div th:if="${param.error}" class="alert alert-error">
+            Неверный логин/email или пароль
+        </div>
+        <div th:if="${param.logout}" class="alert alert-success">
+            Вы успешно вышли из системы
+        </div>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+        <form th:action="@{/login}" method="post" class="auth-form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="form-group">
+                <label for="username">Login</label>
+                <input type="text" id="username" name="username" required
+                       placeholder="Введите ваш логин">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required
+                       placeholder="Введите ваш пароль">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+        </form>
+
+        <div class="auth-links">
+            <p>Нет аккаунта? <a th:href="@{/register}">Зарегистрироваться</a></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
