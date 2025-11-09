@@ -27,7 +27,8 @@ public class SpringSecurityConfig {
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                "/reports/**"
                         ).hasRole("ADMIN")
                         .requestMatchers(
                                 "/",
