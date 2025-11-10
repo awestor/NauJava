@@ -75,7 +75,6 @@ public class ReportService {
      * Асинхронно формирует отчет с использованием нескольких потоков
      * @param reportId ID отчета для формирования
      */
-    @Async
     public void generateReportAsync(Long reportId) {
         CompletableFuture.runAsync(() -> {
             try {

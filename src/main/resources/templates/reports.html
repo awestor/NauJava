@@ -76,7 +76,7 @@
 
         const csrfToken = getCsrfToken();
 
-        fetch('/reports/generate', {
+        fetch('/api/reports/generate', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -104,7 +104,7 @@
     });
 
     function checkReportStatus(reportId) {
-        fetch(`/reports/${reportId}/status`, {
+        fetch(`/api/reports/${reportId}/status`, {
             credentials: 'include'
         })
             .then(response => {
@@ -136,7 +136,7 @@
 
         reportMessage.textContent = 'Report generated successfully!';
         reportMessage.style.color = '#1a7f37';
-        viewReportLink.href = `/reports/${reportId}/view`;
+        viewReportLink.href = `/view/reports/${reportId}`;
         viewReportLink.style.display = 'inline-block';
         reportResult.style.display = 'block';
 

@@ -2,33 +2,19 @@ package ru.daniil.NauJava.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.daniil.NauJava.entity.Report;
 import ru.daniil.NauJava.entity.ReportStatus;
 import ru.daniil.NauJava.request.ReportCreationResponse;
 import ru.daniil.NauJava.service.ReportService;
 
-import java.util.List;
-
 @Controller
-@RequestMapping("/reports")
+@RequestMapping("/api/reports")
 public class ReportController {
 
     private final ReportService reportService;
 
     public ReportController(ReportService reportService) {
         this.reportService = reportService;
-    }
-
-    /**
-     * Отображает страницу с отчетами
-     */
-    @GetMapping
-    public String showReportsPage(Model model) {
-        List<Report> reports = reportService.getAllReports();
-        model.addAttribute("reports", reports);
-        return "reports";
     }
 
     /**
@@ -88,23 +74,5 @@ public class ReportController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(content);
-    }
-
-    /**
-     * Отображает страницу просмотра отчета
-     * @param reportId ID отчёта
-     * @param model название шаблона для отображения
-     * @return страница с данными
-     */
-    @GetMapping("/{reportId}/view")
-    public String viewReport(@PathVariable Long reportId, Model model) {
-        ReportStatus status = reportService.getReportStatus(reportId);
-        String content = reportService.getReportContent(reportId);
-
-        model.addAttribute("reportId", reportId);
-        model.addAttribute("status", status);
-        model.addAttribute("content", content);
-
-        return "report-view";
     }
 }
