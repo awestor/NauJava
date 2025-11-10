@@ -48,21 +48,39 @@ public class Report {
         this.status = status;
     }
 
-    public Long getId() { return id; }
+    public Long getId() {
+        return id;
+    }
 
-    public void setId(Long id) { this.id = id; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public ReportStatus getStatus() { return status; }
+    public ReportStatus getStatus() {
+        return status;
+    }
 
-    public void setStatus(ReportStatus status) { this.status = status; }
+    public void setStatus(ReportStatus status) {
+        this.status = status;
+    }
 
-    public String getContent() { return content; }
+    public String getContent() {
+        return content;
+    }
 
-    public void setContent(String content) { this.content = content; }
+    public void setContent(String content) {
+        this.content = content;
+    }
 
-    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+    public void setCompletedAt(LocalDateTime completedAt) {
+        this.completedAt = completedAt;
+    }
 
-    public void setExecutionTimeUsers(Long executionTimeUsers) { this.executionTimeUsers = executionTimeUsers; }
+    public void setExecutionTimeUsers(Long executionTimeUsers) {
+        this.executionTimeUsers = executionTimeUsers;
+    }
 
-    public void setExecutionTimeProducts(Long executionTimeProducts) { this.executionTimeProducts = executionTimeProducts; }
+    public void setExecutionTimeProducts(Long executionTimeProducts) {
+        this.executionTimeProducts = executionTimeProducts;
+    }
 }
