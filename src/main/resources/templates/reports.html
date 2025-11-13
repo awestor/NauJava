@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Calorie Tracker</title>
+    <link th:href="@{/css/reports.css}" rel="stylesheet">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+<div class="header">
+    <div class="nav-container">
+        <div class="logo">
+            <a href="/view/products/" style="color: white; text-decoration: none;">
+                <span class="logo-text">Calorie<span class="logo-accent">Tracker</span></span>
+            </a>
+        </div>
+
+        <div class="user-info">
+                <span class="user-welcome">
+                    Welcome, <span sec:authentication="name"></span>
+                </span>
+            <form th:action="@{/logout}" method="post" class="logout-form">
+                <button type="submit" class="btn btn-logout">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h1>System Reports</h1>
+        <p>Generate and view system statistics reports</p>
+        <button id="generateReportBtn" class="btn btn-primary">
+            Generate New Report
+        </button>
+    </div>
+
+    <div id="newReportArea" class="report-area" style="display: none;">
+        <h3>Generating Report...</h3>
+        <div class="loading-spinner"></div>
+        <p>Report ID: <span id="currentReportId"></span></p>
+        <p>Please wait while we generate your report...</p>
+        <div id="reportResult" style="display: none;">
+            <p id="reportMessage"></p>
+            <a id="viewReportLink" href="#" class="btn btn-success" style="display: none;">
+                📋 View Report
+            </a>
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+    function getCsrfToken() {
+        return document.querySelector('meta[name="_csrf"]')?.getAttribute('content') ||
+               document.querySelector('input[name="_csrf"]')?.value;
+    }
+
+    document.getElementById('generateReportBtn').addEventListener('click', function() {
+        const btn = this;
+        const reportArea = document.getElementById('newReportArea');
+        const currentReportId = document.getElementById('currentReportId');
+        const reportResult = document.getElementById('reportResult');
+        const reportMessage = document.getElementById('reportMessage');
+        const viewReportLink = document.getElementById('viewReportLink');
+
+        btn.disabled = true;
+        btn.textContent = 'Generating...';
+        reportArea.style.display = 'block';
+        reportResult.style.display = 'none';
+
+        const csrfToken = getCsrfToken();
+
+        fetch('/api/reports/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            credentials: 'include'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                currentReportId.textContent = data.reportId;
+                checkReportStatus(data.reportId);
+            } else {
+                showError(data.message);
+            }
+        })
+        .catch(error => {
+            showError('Failed to generate report: ' + error.message);
+        });
+    });
+
+    function checkReportStatus(reportId) {
+        fetch(`/api/reports/${reportId}/status`, {
+            credentials: 'include'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(status => {
+                if (status === 'COMPLETED') {
+                    showSuccess(reportId);
+                } else if (status === 'ERROR') {
+                    showError('Report generation failed');
+                } else {
+                    setTimeout(() => checkReportStatus(reportId), 2000);
+                }
+            })
+            .catch(error => {
+                showError('Failed to check report status: ' + error.message);
+            });
+    }
+
+    function showSuccess(reportId) {
+        const reportArea = document.getElementById('newReportArea');
+        const reportResult = document.getElementById('reportResult');
+        const reportMessage = document.getElementById('reportMessage');
+        const viewReportLink = document.getElementById('viewReportLink');
+        const generateBtn = document.getElementById('generateReportBtn');
+
+        reportMessage.textContent = 'Report generated successfully!';
+        reportMessage.style.color = '#1a7f37';
+        viewReportLink.href = `/view/reports/${reportId}`;
+        viewReportLink.style.display = 'inline-block';
+        reportResult.style.display = 'block';
+
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate New Report';
+    }
+
+    function showError(message) {
+        const reportResult = document.getElementById('reportResult');
+        const reportMessage = document.getElementById('reportMessage');
+        const generateBtn = document.getElementById('generateReportBtn');
+
+        reportMessage.textContent = 'Error: ' + message;
+        reportMessage.style.color = '#cf222e';
+        reportResult.style.display = 'block';
+
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate New Report';
+    }
+</script>
+</body>
+</html>
