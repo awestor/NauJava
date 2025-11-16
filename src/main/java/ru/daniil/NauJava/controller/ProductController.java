@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.NauJava.entity.Product;
 import ru.daniil.NauJava.repository.ProductRepository;
+import ru.daniil.NauJava.service.ProductService;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,10 +13,12 @@ import java.util.Optional;
 @RequestMapping("/api/products")
 public class ProductController {
     private final ProductRepository productRepository;
+    private final ProductService productService;
 
     @Autowired
-    ProductController(ProductRepository productRepository) {
+    ProductController(ProductRepository productRepository, ProductService productService) {
         this.productRepository = productRepository;
+        this.productService = productService;
     }
 
     /**
@@ -25,7 +28,7 @@ public class ProductController {
      */
     @GetMapping("/all")
     public Iterable<Product> getAllProducts() {
-        return productRepository.findAll();
+        return productService.getAll();
     }
 
     /**
@@ -49,7 +52,7 @@ public class ProductController {
     @GetMapping("/getByCreatorId")
     public List<Product> getByCreatorId(@RequestParam Long userId) {
         return userId != 0 ?
-                productRepository.findByCreatedByUserId(userId) :
+                productService.findProductByUserId(userId) :
                 productRepository.findByCreatedByUserIsNull();
     }
 

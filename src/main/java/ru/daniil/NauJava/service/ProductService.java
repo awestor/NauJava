@@ -6,6 +6,12 @@ import java.util.List;
 
 public interface ProductService {
     /**
+     * Находит все продукты пользователя и системы
+     * @return список продуктов с этим названием
+     */
+    List<Product> getAll();
+
+    /**
      * Находит несколько продуктов по именам
      * @param productNames название продукта
      * @return список продуктов с этим названием
@@ -25,7 +31,13 @@ public interface ProductService {
      * @return true если продукт найден, иначе - false
      */
     boolean productExists(String productName);
-    
+    /**
+     * Метод, что проверяет существование продукта по его имени
+     * @param userId id пользователя
+     * @return список продуктов, созданных пользователем
+     */
+    List<Product> findProductByUserId(Long userId);
+
     /**
      * Метод вызова действий по созданию новой
      * записи продукта в списке.

@@ -2,6 +2,8 @@ package ru.daniil.NauJava.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.Role;
@@ -14,6 +16,7 @@ import ru.daniil.NauJava.request.RegistrationRequest;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+@Transactional
 @Service
 public class UserServiceImpl implements UserService {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile(
@@ -113,6 +116,17 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(userId);
     }
 
+    public Optional<User> getAuthUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getPrincipal())) {
+            return Optional.empty();
+        }
+
+        User userDetails = (User) authentication.getPrincipal();
+        return Optional.ofNullable(userDetails);
+    }
     public boolean userExists(String email) {
         return userRepository.findByEmail(email).isPresent();
     }

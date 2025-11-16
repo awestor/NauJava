@@ -13,6 +13,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.daniil.NauJava.entity.Product;
 import ru.daniil.NauJava.repository.ProductRepository;
 import ru.daniil.NauJava.request.CreateProductRequest;
+import ru.daniil.NauJava.service.ProductService;
+import ru.daniil.NauJava.service.UserService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,9 +24,13 @@ import java.util.Map;
 @RequestMapping("/view/products")
 public class ProductViewController {
     private final ProductRepository productRepository;
+    private final UserService userService;
+    private final ProductService productService;
 
     @Autowired
-    ProductViewController(ProductRepository productRepository) {
+    ProductViewController(ProductRepository productRepository, UserService userService, ProductService productService) {
+        this.userService = userService;
+        this.productService = productService;
         this.productRepository = productRepository;
     }
 
@@ -47,7 +53,7 @@ public class ProductViewController {
     @GetMapping("/list")
     public ModelAndView productListView() {
         Map<String, Object> model = new HashMap<>();
-        List<Product> products = (List<Product>) productRepository.findAll();
+        List<Product> products = productService.getAll();
         model.put("products", products);
 
         long systemCount = products.stream().filter(p -> p.getCreatedByUser() == null).count();
@@ -81,26 +87,11 @@ public class ProductViewController {
     public String createProductFromForm(@Valid @ModelAttribute("product") CreateProductRequest createProductRequest,
                                         BindingResult bindingResult,
                                         RedirectAttributes redirectAttributes) {
-
         if (bindingResult.hasErrors()) {
             return "product-form";
         }
 
         try {
-            /*
-                // Потом здесь будет проверка на то, авторизован ли пользователь, но пока - нет
-                // и всё что создаётся - будет системным
-                User currentUser = userService.findUserByEmail(principal.getName());
-
-                if (currentUser == null) {
-                    throw new ValidationException("User not found");
-
-                }
-                System.out.println(currentUser);
-            */
-
-
-            // Создание продукта
             Product product = new Product(
                     createProductRequest.getName(),
                     "description",
@@ -109,9 +100,7 @@ public class ProductViewController {
                     createProductRequest.getFatsPer100g(),
                     createProductRequest.getCarbsPer100g()
             );
-            product.setCreatedByUser(null);
-
-            System.out.println(product);
+            product.setCreatedByUser(userService.getAuthUser().orElse(null));
 
             Product savedProduct = productRepository.save(product);
 
