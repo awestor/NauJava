@@ -11,6 +11,7 @@ import ru.daniil.NauJava.repository.ProductRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -48,6 +49,31 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> findProductByUserId(Long userId) {
         return productRepository.findByCreatedByUserId(userId);
+    }
+
+    @Override
+    public List<Product> findByCreatedByUserIsNull() {
+        return productRepository.findByCreatedByUserIsNull();
+    }
+
+    @Override
+    public List<Product> findByNameContainingIgnoreCase(String name) {
+        return productRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    @Override
+    public Optional<Product> findById(Long identifier) {
+        return productRepository.findById(identifier);
+    }
+
+    @Override
+    public List<Product> findProductsWithMinCaloriesAndUser(Double calories, Long userId) {
+        return productRepository.findProductsWithMinCaloriesAndUser(calories, userId);
+    }
+
+    @Override
+    public boolean existsByNameIgnoreCase(String productName) {
+        return productRepository.existsByNameIgnoreCase(productName);
     }
 
     @Transactional

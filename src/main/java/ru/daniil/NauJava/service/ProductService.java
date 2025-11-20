@@ -3,6 +3,7 @@ package ru.daniil.NauJava.service;
 import ru.daniil.NauJava.entity.Product;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductService {
     /**
@@ -37,6 +38,16 @@ public interface ProductService {
      * @return список продуктов, созданных пользователем
      */
     List<Product> findProductByUserId(Long userId);
+
+    List<Product> findByCreatedByUserIsNull();
+
+    List<Product> findByNameContainingIgnoreCase(String name);
+
+    Optional<Product> findById(Long identifier);
+
+    List<Product> findProductsWithMinCaloriesAndUser(Double calories, Long userId);
+
+    boolean existsByNameIgnoreCase(String productName);
 
     /**
      * Метод вызова действий по созданию новой

@@ -12,12 +12,10 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
-    private final ProductRepository productRepository;
     private final ProductService productService;
 
     @Autowired
-    ProductController(ProductRepository productRepository, ProductService productService) {
-        this.productRepository = productRepository;
+    ProductController(ProductService productService) {
         this.productService = productService;
     }
 
@@ -39,7 +37,7 @@ public class ProductController {
      */
     @GetMapping("/system")
     public List<Product> getAllSystemProducts() {
-        return productRepository.findByCreatedByUserIsNull();
+        return productService.findByCreatedByUserIsNull();
     }
 
     /**
@@ -53,7 +51,7 @@ public class ProductController {
     public List<Product> getByCreatorId(@RequestParam Long userId) {
         return userId != 0 ?
                 productService.findProductByUserId(userId) :
-                productRepository.findByCreatedByUserIsNull();
+                productService.findByCreatedByUserIsNull();
     }
 
     /**
@@ -64,7 +62,7 @@ public class ProductController {
      */
     @GetMapping("/getProductsByName")
     public List<Product> getProductsByName(@RequestParam String name) {
-        return productRepository.findByNameContainingIgnoreCase(name);
+        return productService.findByNameContainingIgnoreCase(name);
     }
 
 
@@ -76,7 +74,7 @@ public class ProductController {
      */
     @GetMapping("/{identifier}")
     public Optional<Product> getProductById(@PathVariable Long identifier) {
-        return productRepository.findById(identifier);
+        return productService.findById(identifier);
     }
 
     /**
@@ -87,7 +85,7 @@ public class ProductController {
      */
     @GetMapping("/getProductsWithMinCalories/system")
     public List<Product> getSystemProductsWithMinCalories(@RequestParam Double calories) {
-        return productRepository.findProductsWithMinCaloriesAndUser(calories, null);
+        return productService.findProductsWithMinCaloriesAndUser(calories, null);
     }
 
     /**
@@ -99,7 +97,7 @@ public class ProductController {
      */
     @GetMapping("/getProductsWithMinCalories/{userId}")
     public List<Product> getUserProductsWithMinCalories(@PathVariable Double calories, @RequestParam Long userId) {
-        return productRepository.findProductsWithMinCaloriesAndUser(calories, userId);
+        return productService.findProductsWithMinCaloriesAndUser(calories, userId);
     }
 
     /**
@@ -111,6 +109,6 @@ public class ProductController {
      */
     @GetMapping("/existsProductsByName")
     public boolean existsProductsByName(@RequestParam String productName) {
-        return productRepository.existsByNameIgnoreCase(productName);
+        return productService.existsByNameIgnoreCase(productName);
     }
 }
