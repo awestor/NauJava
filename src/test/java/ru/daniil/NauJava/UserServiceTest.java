@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @SpringBootTest
-@Transactional
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserServiceTest {
 

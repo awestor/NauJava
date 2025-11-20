@@ -1,5 +1,6 @@
 package ru.daniil.NauJava.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id")
+    @JsonIgnore
     private User createdByUser;
 
     @Column(name = "created_at")

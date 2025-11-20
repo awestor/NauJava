@@ -3,69 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title>Product List</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #4CAF50;
-            color: white;
-            font-weight: bold;
-        }
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-        .stats {
-            background: white;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            padding: 10px 15px;
-            background: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/products.css">
 </head>
 <body>
 <a href="/view/products/" class="back-link">← Back to Home</a>
-<h1> Product List </h1>
 
-<table>
+<div class="header-container">
+    <h1>Product List</h1>
+    <a href="/view/products/createForm" class="create-btn">Create New Product</a>
+</div>
+
+<table id="productsTable">
     <thead>
     <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Calories (per 100g)</th>
-        <th>Proteins</th>
-        <th>Fats</th>
-        <th>Carbs</th>
-        <th>Type</th>
-        <th>Created By</th>
+        <th data-sort="id">
+            <span class="th-content">ID</span>
+        </th>
+        <th data-sort="name">
+            <span class="th-content">Name</span>
+        </th>
+        <th data-sort="calories">
+            <span class="th-content">Calories (per 100g)</span>
+        </th>
+        <th data-sort="proteins">
+            <span class="th-content">Proteins</span>
+        </th>
+        <th data-sort="fats">
+            <span class="th-content">Fats</span>
+        </th>
+        <th data-sort="carbs">
+            <span class="th-content">Carbs</span>
+        </th>
+        <th data-sort="createdBy">
+            <span class="th-content">Created By</span>
+        </th>
+        <th class="actions-header">
+            <span class="th-content">Actions</span>
+        </th>
     </tr>
     </thead>
     <tbody>
@@ -78,25 +52,36 @@
         <td th:text="${product.carbsPer100g} + ' g'"></td>
         <td>
             <span th:if="${product.createdByUser == null}">System</span>
-            <span th:if="${product.createdByUser != null}">User</span>
-        </td>
-        <td>
-            <span th:if="${product.createdByUser == null}">-</span>
             <span th:if="${product.createdByUser != null}"
                   th:text="${product.createdByUser.name} + ' ' + ${product.createdByUser.surname}"></span>
+        </td>
+        <td class="actions">
+            <div class="btnDiv" th:if="${product.createdByUser != null}">
+                <a th:href="@{/view/products/edit{id}(id=${product.id})}" class="btn btn-edit" title="Edit">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xMSA0SDRhMiAyIDAgMCAwLTIgMnYxNGEyIDIgMCAwIDAgMiAyaDE0YTIgMiAwIDAgMCAyLTJ2LTciPjwvcGF0aD48cGF0aCBkPSJNMTguNSAyLjVhMi4xMjEgMi4xMjEgMCAwIDEgMyAzTDEyIDE1bC00IDEgMS00IDkuNS05LjV6Ij48L3BhdGg+PC9zdmc+" alt="Edit">
+                </a>
+                <button th:data-id="${product.id}" class="btn btn-delete" title="Delete">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjMgNiA1IDYgMjEgNiI+PC9wb2x5bGluZT48cGF0aCBkPSJNMTkgNnYxNGEyIDIgMCAwIDEtMiAySDdhMiAyIDAgMCAxLTItMlY2bTMgMFY0YTIgMiAwIDAgMSAyLTJoNGEyIDIgMCAwIDEgMiAydjIiPjwvcGF0aD48L3N2Zz4=" alt="Delete">
+                </button>
+            </div>
+            <div class="no-actions" th:if="${product.createdByUser == null}">
+                <span>-</span>
+            </div>
         </td>
     </tr>
     </tbody>
 </table>
 
 <div class="stats">
-    <p><strong>Total Products:</strong> <span th:text="${#lists.size(products)}"></span></p>
+    <p><strong>Total Products:</strong> <span id="totalCount" th:text="${#lists.size(products)}"></span></p>
     <p>
-        <strong>All Products:</strong>
-        <span th:text="${systemCount}"></span> |
+        <strong>System Products:</strong>
+        <span id="systemCount" th:text="${systemCount}"></span> |
         <strong>User Products:</strong>
-        <span th:text="${userCount}"></span>
+        <span id="userCount" th:text="${userCount}"></span>
     </p>
 </div>
+
+<script src="/js/products.js"></script>
 </body>
 </html>

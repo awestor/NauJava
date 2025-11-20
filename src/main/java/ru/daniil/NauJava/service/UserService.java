@@ -23,6 +23,12 @@ public interface UserService {
     Optional<User> findUserByEmail(String email);
 
     /**
+     * Получает пользователя из если он авторизован
+     * @return объект сущности пользователя или null
+     */
+    Optional<User> getAuthUser();
+
+    /**
      * Проверяет существование пользователя по email
      * @param email электронная почта пользователя
      * @return true - пользователя найден, иначе false

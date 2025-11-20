@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.NauJava.entity.Product;
 import ru.daniil.NauJava.repository.ProductRepository;
+import ru.daniil.NauJava.service.ProductService;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,11 +12,11 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
-    private final ProductRepository productRepository;
+    private final ProductService productService;
 
     @Autowired
-    ProductController(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    ProductController(ProductService productService) {
+        this.productService = productService;
     }
 
     /**
@@ -25,7 +26,7 @@ public class ProductController {
      */
     @GetMapping("/all")
     public Iterable<Product> getAllProducts() {
-        return productRepository.findAll();
+        return productService.getAll();
     }
 
     /**
@@ -36,7 +37,7 @@ public class ProductController {
      */
     @GetMapping("/system")
     public List<Product> getAllSystemProducts() {
-        return productRepository.findByCreatedByUserIsNull();
+        return productService.findByCreatedByUserIsNull();
     }
 
     /**
@@ -49,8 +50,8 @@ public class ProductController {
     @GetMapping("/getByCreatorId")
     public List<Product> getByCreatorId(@RequestParam Long userId) {
         return userId != 0 ?
-                productRepository.findByCreatedByUserId(userId) :
-                productRepository.findByCreatedByUserIsNull();
+                productService.findProductByUserId(userId) :
+                productService.findByCreatedByUserIsNull();
     }
 
     /**
@@ -61,7 +62,7 @@ public class ProductController {
      */
     @GetMapping("/getProductsByName")
     public List<Product> getProductsByName(@RequestParam String name) {
-        return productRepository.findByNameContainingIgnoreCase(name);
+        return productService.findByNameContainingIgnoreCase(name);
     }
 
 
@@ -73,7 +74,7 @@ public class ProductController {
      */
     @GetMapping("/{identifier}")
     public Optional<Product> getProductById(@PathVariable Long identifier) {
-        return productRepository.findById(identifier);
+        return productService.findById(identifier);
     }
 
     /**
@@ -84,7 +85,7 @@ public class ProductController {
      */
     @GetMapping("/getProductsWithMinCalories/system")
     public List<Product> getSystemProductsWithMinCalories(@RequestParam Double calories) {
-        return productRepository.findProductsWithMinCaloriesAndUser(calories, null);
+        return productService.findProductsWithMinCaloriesAndUser(calories, null);
     }
 
     /**
@@ -96,7 +97,7 @@ public class ProductController {
      */
     @GetMapping("/getProductsWithMinCalories/{userId}")
     public List<Product> getUserProductsWithMinCalories(@PathVariable Double calories, @RequestParam Long userId) {
-        return productRepository.findProductsWithMinCaloriesAndUser(calories, userId);
+        return productService.findProductsWithMinCaloriesAndUser(calories, userId);
     }
 
     /**
@@ -108,6 +109,6 @@ public class ProductController {
      */
     @GetMapping("/existsProductsByName")
     public boolean existsProductsByName(@RequestParam String productName) {
-        return productRepository.existsByNameIgnoreCase(productName);
+        return productService.existsByNameIgnoreCase(productName);
     }
 }
