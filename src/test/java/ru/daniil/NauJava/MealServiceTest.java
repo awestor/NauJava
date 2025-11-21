@@ -56,8 +56,8 @@ public class MealServiceTest {
         testUser.setEmail("test.user@example.com");
         testUser.setLogin("Test");
         testUser.setPassword("password");
-        testUser.setName("Test");
-        testUser.setSurname("User");
+        //testUser.setName("Test");
+        //testUser.setSurname("User");
         testUser = userRepository.save(testUser);
 
         // Создание тестовых продуктов

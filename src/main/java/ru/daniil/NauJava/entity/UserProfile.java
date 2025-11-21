@@ -16,6 +16,14 @@ public class UserProfile {
     @JoinColumn(name = "user_id", unique = true, nullable = false)
     private User user;
 
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private String surname;
+
+    private String patronymic;
+
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
@@ -28,6 +36,9 @@ public class UserProfile {
 
     @Column(name = "target_weight")
     private Double targetWeight;
+
+    @Column(name = "current_streak")
+    private Integer currentStreak = 0;
 
     @Column(name = "activity_level")
     private String activityLevel;
@@ -44,13 +55,31 @@ public class UserProfile {
      */
     public UserProfile(){
         this.updatedAt = LocalDateTime.now();
+        this.gender = "M";
+        this.height = null;
+        this.weight = null;
+        this.targetWeight = null;
+        this.currentStreak = 0;
+        this.activityLevel = null;
+        this.dailyCalorieGoal = null;
+    }
+
+    public UserProfile(String name, String surname, String patronymic){
+        this();
+        this.name = name;
+        this.surname = surname;
+        this.patronymic = patronymic;
     }
 
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

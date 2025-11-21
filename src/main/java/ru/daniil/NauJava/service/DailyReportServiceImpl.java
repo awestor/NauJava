@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.DailyReport;
 import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.repository.DailyReportRepository;
+import ru.daniil.NauJava.request.NutritionSumResponse;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -13,10 +14,13 @@ import java.util.Optional;
 @Service
 public class DailyReportServiceImpl implements DailyReportService {
     private final DailyReportRepository dailyReportRepository;
+    private final MealEntityService mealEntityService;
 
     @Autowired
-    public DailyReportServiceImpl(DailyReportRepository dailyReportRepository) {
+    public DailyReportServiceImpl(DailyReportRepository dailyReportRepository,
+                                  MealEntityService mealEntityService) {
         this.dailyReportRepository = dailyReportRepository;
+        this.mealEntityService = mealEntityService;
     }
 
     @Transactional
@@ -44,8 +48,14 @@ public class DailyReportServiceImpl implements DailyReportService {
         Optional<DailyReport> dailyReportOpt = dailyReportRepository.findById(dailyReportId);
         if (dailyReportOpt.isPresent()) {
             DailyReport dailyReport = dailyReportOpt.get();
-            // Здесь будет логика пересчета на основе связанных Meal
-            // Но пока я её не реализовывал
+
+            NutritionSumResponse sumNutrition = mealEntityService.getNutritionSumByDailyReportId(dailyReportId);
+
+            dailyReport.setTotalCaloriesConsumed(sumNutrition.getTotalCalories());
+            dailyReport.setTotalProteinsConsumed(sumNutrition.getTotalProteins());
+            dailyReport.setTotalFatsConsumed(sumNutrition.getTotalFats());
+            dailyReport.setTotalCarbsConsumed(sumNutrition.getTotalCarbs());
+
             dailyReportRepository.save(dailyReport);
         }
     }

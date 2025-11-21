@@ -50,8 +50,6 @@ class ProductServiceImplTest {
         testUser.setEmail("test@example.com");
         testUser.setLogin("testuser");
         testUser.setPassword("password");
-        testUser.setName("John");
-        testUser.setSurname("Doe");
 
         systemProduct = new Product();
         systemProduct.setId(1L);

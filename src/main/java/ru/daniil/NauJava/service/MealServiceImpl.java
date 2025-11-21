@@ -1,6 +1,7 @@
 package ru.daniil.NauJava.service;
 
 import jakarta.transaction.Transactional;
+import org.openqa.selenium.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,8 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import ru.daniil.NauJava.entity.*;
 import ru.daniil.NauJava.repository.MealEntryRepository;
 import ru.daniil.NauJava.repository.MealRepository;
+import ru.daniil.NauJava.repository.MealTypeRepository;
+import ru.daniil.NauJava.request.NutritionSumResponse;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -20,30 +23,27 @@ public class MealServiceImpl implements MealService {
     private static final Logger logger = LoggerFactory.getLogger(MealServiceImpl.class);
 
     private final MealRepository mealRepository;
-    private final MealEntryRepository mealEntryRepository;
+    private final MealEntityService mealEntryService;
+    private final MealTypeRepository mealTypeRepository;
     private final UserService userService;
     private final DailyReportService dailyReportService;
-    private final ProductService productService;
     private final PlatformTransactionManager transactionManager;
 
     public MealServiceImpl(MealRepository mealRepository,
-                           MealEntryRepository mealEntryRepository,
+                           MealEntityService mealEntryService,
+                           MealTypeRepository mealTypeRepository,
                            UserService userService,
                            DailyReportService dailyReportService,
-                           ProductService productService,
                            PlatformTransactionManager transactionManager) {
         this.mealRepository = mealRepository;
-        this.mealEntryRepository = mealEntryRepository;
+        this.mealEntryService = mealEntryService;
+        this.mealTypeRepository = mealTypeRepository;
         this.userService = userService;
         this.dailyReportService = dailyReportService;
-        this.productService = productService;
         this.transactionManager = transactionManager;
     }
 
-    @Override
-    public Meal createMealWithProducts(String userEmail, String mealType,
-                                       List<String> productNames, List<Integer> quantities) {
-        /*
+    /*
         Данный метод обёрнут в транзакционную обёртку
         Список действий в классе:
         1. Проверка на существование пользователя
@@ -53,7 +53,11 @@ public class MealServiceImpl implements MealService {
         5. Пересчёт "totals" для DailyReport
         6. Коммит транзакции если все успешно
          */
+    @Override
+    public Meal createMealWithProducts(String userEmail, String mealTypeName,
+                                       List<String> productNames, List<Integer> quantities) {
         TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        LocalDate today = LocalDate.now();
 
         try {
             User user = userService.findUserByEmail(userEmail).orElse(null);
@@ -63,15 +67,16 @@ public class MealServiceImpl implements MealService {
                 throw new IllegalArgumentException("Пользователь не найден: " + userEmail);
             }
 
-            logger.info("Начало создания приема пищи для пользователя: {}, тип: {}", user.getName(), mealType);
+            logger.info("Начало создания приема пищи для пользователя: {}, тип: {}", user.getLogin(), mealTypeName);
 
-            LocalDate today = LocalDate.now();
             DailyReport dailyReport = dailyReportService.getOrCreateDailyReport(user, today);
 
+            MealType mealType = mealTypeRepository.findByName(mealTypeName)
+                    .orElseThrow(() -> new NotFoundException("Указанный тип приёма пищи не найден в системе"));
             Meal meal = createMeal(dailyReport, mealType);
             logger.debug("Создан прием пищи ID: {}", meal.getId());
 
-            List<MealEntry> mealEntries = createMealEntries(meal, productNames, quantities);
+            List<MealEntry> mealEntries = mealEntryService.createMealEntries(meal, productNames, quantities);
             for (MealEntry mealEntry : mealEntries) {
                 meal.addMealEntry(mealEntry);
             }
@@ -81,7 +86,7 @@ public class MealServiceImpl implements MealService {
             transactionManager.commit(status);
 
             logger.info("Успешно создан прием пищи ID: {} с {} продуктами для пользователя: {}",
-                    meal.getId(), mealEntries.size(), user.getName());
+                    meal.getId(), mealEntries.size(), user.getLogin());
 
             return meal;
 
@@ -104,55 +109,9 @@ public class MealServiceImpl implements MealService {
      * @param mealType тип приёма пищи
      * @return сохранённую сущность приёма пищи
      */
-    private Meal createMeal(DailyReport dailyReport, String mealType) {
+    private Meal createMeal(DailyReport dailyReport, MealType mealType) {
         Meal meal = new Meal(dailyReport, mealType);
         return mealRepository.save(meal);
-    }
-
-    /**
-     * Создает "MealEntry" для каждого продукта
-     * @param meal приём пищи
-     * @param productNames название продукта
-     * @param quantities вес съеденных продуктов
-     * @return список записей о съеденных продуктах
-     */
-    private List<MealEntry> createMealEntries(Meal meal, List<String> productNames, List<Integer> quantities) {
-        if (productNames.size() != quantities.size()) {
-            throw new IllegalArgumentException("Количество продуктов и количеств не совпадает");
-        }
-
-        List<MealEntry> mealEntries = new ArrayList<>();
-
-        for (int i = 0; i < productNames.size(); i++) {
-            String productName = productNames.get(i);
-            Integer quantity = quantities.get(i);
-
-            // Ищем продукт через ProductService
-            Product product = productService.findProductByName(productName);
-            if (product == null) {
-                throw new IllegalArgumentException("Продукт не найден: " + productName);
-            }
-
-            MealEntry mealEntry = createMealEntry(meal, product, quantity);
-            mealEntries.add(mealEntry);
-
-            logger.debug("Создан MealEntry для продукта: {}, количество: {}г", productName, quantity);
-        }
-
-        return mealEntries;
-    }
-
-    /**
-     * Создает один "MealEntry"
-     * @param meal приём пищи
-     * @param product продукт питания
-     * @param quantity количество
-     * @return сохранённую сущность
-     */
-    private MealEntry createMealEntry(Meal meal, Product product, Integer quantity) {
-        MealEntry mealEntry = new MealEntry(meal, product, quantity);
-
-        return mealEntryRepository.save(mealEntry);
     }
 
     @Transactional
@@ -165,5 +124,10 @@ public class MealServiceImpl implements MealService {
 
         LocalDate today = LocalDate.now();
         return mealRepository.findByDailyReportUserIdAndDailyReportReportDate(user.getId(), today);
+    }
+
+    @Transactional
+    public NutritionSumResponse getNutritionSum(Long mealId) {
+        return mealEntryService.getNutritionSumByMealId(mealId);
     }
 }

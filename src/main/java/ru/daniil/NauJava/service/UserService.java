@@ -29,6 +29,18 @@ public interface UserService {
     Optional<User> getAuthUser();
 
     /**
+     * Обновляет логин авторизованного пользователя на новый
+     * @param newLogin идентификатор пользователя
+     */
+    boolean updateLogin(String newLogin);
+
+    /**
+     * Обновляет пароль авторизованного пользователя на новый
+     * @param newPassword идентификатор пользователя
+     */
+    boolean updatePassword(String newPassword);
+
+    /**
      * Проверяет существование пользователя по email
      * @param email электронная почта пользователя
      * @return true - пользователя найден, иначе false

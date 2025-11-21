@@ -1,6 +1,7 @@
 package ru.daniil.NauJava.service;
 
 import jakarta.transaction.Transactional;
+import org.openqa.selenium.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -8,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.Role;
 import ru.daniil.NauJava.entity.User;
+import ru.daniil.NauJava.enums.RoleType;
 import ru.daniil.NauJava.exception.ValidationException;
 import ru.daniil.NauJava.repository.RoleRepository;
 import ru.daniil.NauJava.repository.UserRepository;
@@ -23,88 +25,69 @@ public class UserServiceImpl implements UserService {
             "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!$%^()_+\\-=\\[\\]{};:'\",.<>])[A-Za-z\\d!$%^()_+\\-=\\[\\]{};:'\",.<>]{8,}$"
     );
 
-    private static final Pattern USERNAME_PATTERN = Pattern.compile("^.{6,}$");
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^.{3,}$");
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserProfileService userProfileService;
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
+                           PasswordEncoder passwordEncoder, UserProfileService userProfileService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.userProfileService = userProfileService;
         this.passwordEncoder = passwordEncoder;
     }
 
     public User registerUser(RegistrationRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new ValidationException("Пользователь с email " + request.getEmail() + " уже существует");
-        }
+        validateUserData(request.getName(), request.getSurname(), request.getEmail(),
+                request.getPassword(), request.getLogin());
 
-        if (userRepository.findByLogin(request.getLogin()).isPresent()) {
-            throw new ValidationException("Пользователь с логином " + request.getLogin() + " уже существует");
-        }
+        User user = new User(
+                request.getEmail(),
+                request.getLogin(),
+                passwordEncoder.encode(request.getPassword())
+        );
 
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setLogin(request.getLogin());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setName(request.getName());
-        user.setSurname(request.getSurname());
-        user.setPatronymic(request.getPatronymic());
-
-        Role userRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new ValidationException("Роль USER не найдена в системе"));
+        Role userRole = roleRepository.findByName(RoleType.USER.toString())
+                .orElseThrow(() -> new NotFoundException("Роль USER не найдена в системе"));
         user.addRole(userRole);
 
-        return userRepository.save(user);
+        User newUser = userRepository.save(user);
+
+        userProfileService.registerUserProfile(newUser, request);
+
+        return newUser;
     }
 
-    public User createUserWithRole(String email, String login, String password, String name,
-                                   String surname, String roleName) {
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new ValidationException("Пользователь с email " + email + " уже существует");
+    public boolean updateLogin(String newLogin) {
+        getAuthUser().ifPresent(user -> user.setLogin(newLogin));
+        return true;
+    }
+
+    public boolean updatePassword(String newPassword) {
+        getAuthUser().ifPresent(user -> user.setPassword(passwordEncoder.encode(newPassword)));
+        return true;
+    }
+
+    private void validateUserData(String name, String surname, String email, String password, String login) {
+        if (name == null || !USERNAME_PATTERN.matcher(name).matches()) {
+            throw new ValidationException("Имя пользователя должно содержать минимум 3 символа");
         }
-
-        if (userRepository.findByLogin(login).isPresent()) {
-            throw new ValidationException("Пользователь с логином " + login + " уже существует");
-        }
-
-        User user = new User();
-        user.setEmail(email);
-        user.setLogin(login);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setName(name);
-        user.setSurname(surname);
-
-        Role role = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new ValidationException("Роль " + roleName + " не найдена в системе"));
-        user.addRole(role);
-
-        return userRepository.save(user);
-    }
-
-    public User createAdminUser(String email, String login, String password, String name, String surname) {
-        return createUserWithRole(email, login, password, name, surname, "ADMIN");
-    }
-
-    private void validateRegistrationRequest(RegistrationRequest request) {
-        validateUserData(request.getEmail(), request.getPassword(), request.getName());
-
-        if (request.getSurname() == null || request.getSurname().trim().isEmpty()) {
+        if (surname == null || surname.trim().isEmpty()) {
             throw new ValidationException("Фамилия обязательна для заполнения");
         }
-    }
-
-    private void validateUserData(String email, String password, String name) {
         if (email == null || !email.contains("@")) {
             throw new ValidationException("Некорректный формат email");
         }
-
         if (password == null || !PASSWORD_PATTERN.matcher(password).matches()) {
             throw new ValidationException("Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы латинского алфавита, цифры и специальные символы (кроме @/|\\*#&?)");
         }
-
-        if (name == null || !USERNAME_PATTERN.matcher(name).matches()) {
-            throw new ValidationException("Имя пользователя должно содержать минимум 6 символов");
+        if (userRepository.existsByEmail(email)) {
+            throw new ValidationException("Пользователь с email " + email + " уже существует");
+        }
+        if (userRepository.existsByLogin(login)) {
+            throw new ValidationException("Пользователь с логином " + login + " уже существует");
         }
     }
 
@@ -127,7 +110,16 @@ public class UserServiceImpl implements UserService {
         User userDetails = (User) authentication.getPrincipal();
         return Optional.ofNullable(userDetails);
     }
+
     public boolean userExists(String email) {
         return userRepository.findByEmail(email).isPresent();
+    }
+
+    public void deleteUserByEmail(String email) {
+        userRepository.findByEmail(email).ifPresent(userRepository::delete);
+    }
+
+    public void deleteUserById(Long id) {
+        userRepository.deleteById(id);
     }
 }

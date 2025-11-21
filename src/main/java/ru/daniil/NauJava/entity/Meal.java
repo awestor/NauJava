@@ -8,7 +8,6 @@ import java.util.List;
 @Entity
 @Table(name = "tbl_meals")
 public class Meal {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -17,8 +16,9 @@ public class Meal {
     @JoinColumn(name = "daily_report_id")
     private DailyReport dailyReport;
 
-    @Column(name = "meal_type")
-    private String mealType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "meal_type_id")
+    private MealType mealType;
 
     @Column(name = "eaten_at")
     private LocalDateTime eatenAt;
@@ -40,7 +40,7 @@ public class Meal {
      * @param dailyReport отчёт к которому принадлежит
      * @param mealType тип приёма пищи
      */
-    public Meal(DailyReport dailyReport, String mealType) {
+    public Meal(DailyReport dailyReport, MealType mealType) {
         this();
         this.dailyReport = dailyReport;
         this.mealType = mealType;
@@ -71,8 +71,11 @@ public class Meal {
         return mealEntries;
     }
 
+    public void setMealType(MealType mealType) {
+        this.mealType = mealType;
+    }
     public String getMealType() {
-        return mealType;
+        return mealType.getName();
     }
 
     public Integer getTotalCalories() {

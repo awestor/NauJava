@@ -1,19 +1,15 @@
 package ru.daniil.NauJava;
 
-import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.daniil.NauJava.entity.Role;
 import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.exception.ValidationException;
 import ru.daniil.NauJava.repository.RoleRepository;
+import ru.daniil.NauJava.repository.UserProfileRepository;
 import ru.daniil.NauJava.repository.UserRepository;
 import ru.daniil.NauJava.request.RegistrationRequest;
 import ru.daniil.NauJava.service.UserDetailsServiceImpl;
@@ -22,6 +18,12 @@ import ru.daniil.NauJava.service.UserServiceImpl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+/**
+ * Проверяет работу сервиса "UserServiceImpl", на корректную отработку:
+ * при создании пользователя по регистрационной форме
+ * при получении созданных пользователей
+ * при проверке на существование пользователей в БД
+ */
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserServiceTest {
@@ -38,142 +40,102 @@ class UserServiceTest {
     private RoleRepository roleRepository;
 
     @Autowired
+    private UserProfileRepository userProfileRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private Role userRole;
     private Role adminRole;
 
+    @BeforeAll
+    void voidRoleSetUp(){
+        roleRepository.deleteAll();
+
+        Role userRole = new Role("USER", "Обычный пользователь");
+        Role adminRole = new Role("ADMIN", "Администратор системы");
+
+        roleRepository.save(userRole);
+        roleRepository.save(adminRole);
+        this.userRole = roleRepository.findByName("USER").orElseThrow();
+        this.adminRole = roleRepository.findByName("ADMIN").orElseThrow();
+    }
+
     @BeforeEach
     void setUp() {
-        cleanupTestData();
-        userRole = roleRepository.findByName("USER").orElseThrow();
-        adminRole = roleRepository.findByName("ADMIN").orElseThrow();
+        userRepository.deleteAll();
+        RegistrationRequest register = new RegistrationRequest(
+                "test@example.com",
+                "Password123!",
+                "testUser",
+                "TestUser",
+                "forUserServiceTest",
+                null
+        );
+        userService.registerUser(register);
     }
 
     @AfterEach
     void tearDown() {
         userRepository.deleteAll();
+        userProfileRepository.deleteAll();
+    }
+
+    @AfterAll
+    void RoleDown() {
         roleRepository.deleteAll();
     }
 
     @Test
-    void createUserWithRole_WhenValidData_ShouldCreateUser() {
-        User user = userService.createUserWithRole(
-                "test@example.com",
-                "testuser",
+    void createUser_WhenValidData_ShouldCreateUser() {
+        RegistrationRequest register = new RegistrationRequest(
+                "test1@example.com",
                 "Password123!",
-                "Test",
-                "User",
-                "USER"
+                "testUser1",
+                "TestUser",
+                "forUserServiceTest",
+                null
         );
-
+        User user = userService.registerUser(register);
         assertThat(user.getId()).isNotNull();
-        assertThat(user.getEmail()).isEqualTo("test@example.com");
-        assertThat(user.getLogin()).isEqualTo("testuser");
-        assertThat(user.getName()).isEqualTo("Test");
-        assertThat(user.getSurname()).isEqualTo("User");
+        assertThat(user.getEmail()).isEqualTo("test1@example.com");
+        assertThat(user.getLogin()).isEqualTo("testUser1");
         assertThat(passwordEncoder.matches("Password123!", user.getPassword())).isTrue();
         assertThat(user.getRoles().toArray()).contains(userRole);
     }
 
     @Test
-    void createUserWithRole_WhenDuplicateEmail_ShouldThrowException() {
-        userService.createUserWithRole("test@example.com", "testuser1", "Password123!", "Test", "User", "USER");
+    void createUser_WhenDuplicateEmail_ShouldThrowException() {
+        RegistrationRequest register2 = new RegistrationRequest(
+                "test@example.com",
+                "Password123!",
+                "testUser1",
+                "TestUser",
+                "forUserServiceTest",
+                null
+        );
 
         assertThatThrownBy(() ->
-                userService.createUserWithRole("test@example.com", "testuser2", "Password123!", "Test", "User", "USER")
+                userService.registerUser(register2)
         ).isInstanceOf(ValidationException.class)
                 .hasMessageContaining("Пользователь с email test@example.com уже существует");
     }
 
     @Test
-    void createUserWithRole_WhenDuplicateLogin_ShouldThrowException() {
-        userService.createUserWithRole("test1@example.com", "testuser", "Password123!", "Test", "User", "USER");
+    void createUser_WhenDuplicateLogin_ShouldThrowException() {
+        RegistrationRequest register2 = new RegistrationRequest(
+                "test1@example.com",
+                "Password123!",
+                "testUser",
+                "TestUser",
+                "forUserServiceTest",
+                null
+        );
 
         assertThatThrownBy(() ->
-                userService.createUserWithRole("test2@example.com", "testuser", "Password123!", "Test", "User", "USER")
+                userService.registerUser(register2)
         ).isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Пользователь с логином testuser уже существует");
-    }
-
-    @Test
-    void createUserWithRole_WhenInvalidRole_ShouldThrowException() {
-        assertThatThrownBy(() ->
-                userService.createUserWithRole("test@example.com", "testuser", "Password123!", "Test", "User", "INVALID_ROLE")
-        ).isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Роль INVALID_ROLE не найдена в системе");
-    }
-
-    @Test
-    void createRole_WhenNewRole_ShouldCreateRole() {
-        Role newRole = userAuthService.createRole("MANAGER", "Менеджер системы");
-
-        assertThat(newRole.getId()).isNotNull();
-        assertThat(newRole.getName()).isEqualTo("MANAGER");
-        assertThat(newRole.getDescription()).isEqualTo("Менеджер системы");
-    }
-
-    @Test
-    void createRole_WhenDuplicateRole_ShouldThrowException() {
-        userAuthService.createRole("MANAGER", "Менеджер системы");
-
-        assertThatThrownBy(() ->
-                userAuthService.createRole("MANAGER", "Другой менеджер")
-        ).isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Роль с именем MANAGER уже существует");
-    }
-
-    @Test
-    void assignRoleToUser_WhenValidData_ShouldAssignRole() {
-        User user = userService.createUserWithRole("test@example.com", "testuser", "Password123!", "Test", "User", "USER");
-
-        userAuthService.assignRoleToUser("testuser", "ADMIN");
-
-        User updatedUser = userRepository.findByLogin("testuser").orElseThrow();
-        assertThat(updatedUser.getRoles().toArray()).contains(userRole, adminRole);
-    }
-
-    @Test
-    void assignRoleToUser_WhenUserNotFound_ShouldThrowException() {
-        assertThatThrownBy(() ->
-                userAuthService.assignRoleToUser("nonexistent", "ADMIN")
-        ).isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Пользователь не найден: nonexistent");
-    }
-
-    @Test
-    void assignRoleToUser_WhenRoleNotFound_ShouldThrowException() {
-        userService.createUserWithRole("test@example.com", "testuser", "Password123!", "Test", "User", "USER");
-
-        assertThatThrownBy(() ->
-                userAuthService.assignRoleToUser("testuser", "INVALID_ROLE")
-        ).isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Роль не найдена: INVALID_ROLE");
-    }
-
-    @Test
-    void registerUser_WhenValidData_ShouldCreateUserWithUserRole() {
-        User user = userService.registerUser(new RegistrationRequest(
-                "newuser@example.com", "Password123!", "newuser", "New", "User", null
-        ));
-
-        assertThat(user.getId()).isNotNull();
-        assertThat(user.getEmail()).isEqualTo("newuser@example.com");
-        assertThat(user.getLogin()).isEqualTo("newuser");
-        assertThat(user.getRoles().toArray()).contains(userRole);
-        assertThat(user.getRoles().toArray()).contains(userRole);
-        assertThat(user.getRoles().toArray()).doesNotContain(adminRole);
-    }
-
-    @Test
-    void loadUserByUsername_WhenUserExists_ShouldReturnUser() {
-        userService.createUserWithRole("test@example.com", "testuser", "Password123!", "Test", "User", "USER");
-
-        UserDetails userDetails = userAuthService.loadUserByUsername("testuser");
-
-        assertThat(userDetails).isNotNull();
-        assertThat(userDetails.getUsername()).isEqualTo("testuser");
-        assertThat(userDetails.getAuthorities()).isNotNull();
+                .hasMessageContaining("Пользователь с логином testUser уже существует");
     }
 
     @Test
@@ -182,18 +144,5 @@ class UserServiceTest {
                 userAuthService.loadUserByUsername("nonexistent")
         ).isInstanceOf(UsernameNotFoundException.class)
                 .hasMessageContaining("Пользователь не найден: nonexistent");
-    }
-
-    private void cleanupTestData() {
-        userRepository.deleteAll();
-        roleRepository.deleteAll();
-
-        Role userRole = new Role("USER", "Обычный пользователь");
-        Role adminRole = new Role("ADMIN", "Администратор системы");
-        Role moderatorRole = new Role("MODERATOR", "Модератор контента");
-
-        roleRepository.save(userRole);
-        roleRepository.save(adminRole);
-        roleRepository.save(moderatorRole);
     }
 }

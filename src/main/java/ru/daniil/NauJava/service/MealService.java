@@ -10,7 +10,7 @@ public interface MealService {
      * Выполняется в рамках единой транзакции.
      */
     Meal createMealWithProducts(String userEmail,
-                                String mealType,
+                                String mealTypeName,
                                 List<String> productNames,
                                 List<Integer> quantities);
 

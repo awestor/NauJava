@@ -114,4 +114,9 @@ public class ProductViewController {
 
         return "redirect:/view/products/list";
     }
+
+    @GetMapping("/calendarActivity")
+    public String showCalendarActivity() {
+        return "calendarActivity";
+    }
 }
