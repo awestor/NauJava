@@ -9,11 +9,11 @@ import ru.daniil.NauJava.service.ReportService;
 
 @Controller
 @RequestMapping("/api/reports")
-public class ReportController {
+public class ReportApiController {
 
     private final ReportService reportService;
 
-    public ReportController(ReportService reportService) {
+    public ReportApiController(ReportService reportService) {
         this.reportService = reportService;
     }
 

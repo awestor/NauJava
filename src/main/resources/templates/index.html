@@ -206,8 +206,15 @@
       <li>
         <a th:href="@{/view/products/list}">
           <span class="menu-icon">📊</span>
-          <span class="menu-title">View All Products</span>
-          <span class="menu-description">Browse all available products in the system</span>
+          <span class="menu-title">Показать список ваших продуктов</span>
+          <span class="menu-description">Показ продуктов, что были зарегистрированы в системе</span>
+        </a>
+      </li>
+      <li>
+        <a th:href="@{/view/meals/list}">
+          <span class="menu-icon">📊</span>
+          <span class="menu-title">Показать приёмы пищи за сегодня</span>
+          <span class="menu-description">Показ приёмов пищи, что были занесены в систему сегодня</span>
         </a>
       </li>
       <li sec:authorize="hasRole('ADMIN')">

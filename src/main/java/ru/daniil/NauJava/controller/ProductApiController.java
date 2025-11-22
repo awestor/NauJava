@@ -3,25 +3,25 @@ package ru.daniil.NauJava.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.NauJava.entity.Product;
-import ru.daniil.NauJava.repository.ProductRepository;
+import ru.daniil.NauJava.request.ProductInfoResponse;
 import ru.daniil.NauJava.service.ProductService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
-public class ProductController {
+public class ProductApiController {
     private final ProductService productService;
 
     @Autowired
-    ProductController(ProductService productService) {
+    ProductApiController(ProductService productService) {
         this.productService = productService;
     }
 
     /**
      * Возвращает все продукты, что сохранены в базе данных
-     *
      * @return все продукты в БД
      */
     @GetMapping("/all")
@@ -30,9 +30,20 @@ public class ProductController {
     }
 
     /**
+     * Возвращает все продукты, что сохранены в базе данных
+     *
+     * @return все продукты в БД
+     */
+    @GetMapping("/all/baseInfo")
+    public List<ProductInfoResponse> getAllBaseInfoProducts() {
+        return productService.getAll().stream()
+                .map(product -> new ProductInfoResponse(product.getId(), product.getName()))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Возвращает все продукты, у которых поле CreatedByUser == null,
      * что сохранены в базе данных
-     *
      * @return системные продукты в БД
      */
     @GetMapping("/system")

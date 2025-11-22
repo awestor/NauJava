@@ -7,6 +7,12 @@ import java.time.LocalDate;
 
 public interface DailyReportService {
     /**
+     * Получает или создает DailyReport для авторизованного пользователя на указанную дату
+     * @param reportDate дата(год, месяц, день) за который формируется отчёт
+     * @return полученный объект сущности DailyReport
+     */
+    DailyReport getOrCreateDailyReportAuth(LocalDate reportDate);
+    /**
      * Получает или создает DailyReport для пользователя на указанную дату
      * @param user объект с данными по пользователю
      * @param reportDate дата(год, месяц, день) за который формируется отчёт
@@ -18,5 +24,7 @@ public interface DailyReportService {
      * Пересчитывает общие показатели для DailyReport
      * @param dailyReportId идентификатор отчёта для перерасчёта
      */
-    void recalculateDailyReportTotals(Long dailyReportId);
+    void recalculateDailyReportTotals(DailyReport dailyReport);
+
+    DailyReport getOrCreateDailyReportById(Long dailyReportId);
 }

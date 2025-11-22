@@ -7,7 +7,7 @@ import ru.daniil.NauJava.request.NutritionSumResponse;
 
 import java.util.List;
 
-public interface MealEntityService {
+public interface MealEntryService {
     /**
      * Создает "MealEntry" для каждого продукта
      * @param meal приём пищи
@@ -29,4 +29,8 @@ public interface MealEntityService {
     NutritionSumResponse getNutritionSumByMealId(Long mealId);
 
     NutritionSumResponse getNutritionSumByDailyReportId(Long dailyReportId);
+
+    List<MealEntry> getAllByMealId(Long mealId);
+
+    void deleteByMealId(Long mealId);
 }

@@ -1,5 +1,6 @@
 package ru.daniil.NauJava.repository;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -28,13 +29,14 @@ public interface MealEntryRepository extends CrudRepository<MealEntry, Long> {
      * [3] - totalCarbs (Double)
      */
     @Query("SELECT " +
-            "COALESCE(SUM(me.calculatedCalories), 0), " +
-            "COALESCE(SUM(me.calculatedProteins), 0), " +
-            "COALESCE(SUM(me.calculatedFats), 0), " +
-            "COALESCE(SUM(me.calculatedCarbs), 0) " +
+            "COALESCE(SUM(me.calculatedCalories), 0.0) as totalCalories, " +
+            "COALESCE(SUM(me.calculatedProteins), 0.0) as totalProteins, " +
+            "COALESCE(SUM(me.calculatedFats), 0.0) as totalFats, " +
+            "COALESCE(SUM(me.calculatedCarbs), 0.0) as totalCarbs " +
             "FROM MealEntry me " +
-            "WHERE me.meal.id = :mealId")
-    List<Double> findNutritionSumByMealId(@Param("mealId") Long mealId);
+            "WHERE me.meal.id = :mealId " +
+            "GROUP BY me.meal.id")
+    List<Object[]> findNutritionSumByMealId(@Param("mealId") Long mealId);
 
     /**
      * Метод получения суммы полей калорийности, белков, жиров, углеводов по dailyReportId
@@ -45,11 +47,15 @@ public interface MealEntryRepository extends CrudRepository<MealEntry, Long> {
      * [3] - totalCarbs (Double)
      */
     @Query("SELECT " +
-            "COALESCE(SUM(me.calculatedCalories), 0), " +
-            "COALESCE(SUM(me.calculatedProteins), 0), " +
-            "COALESCE(SUM(me.calculatedFats), 0), " +
-            "COALESCE(SUM(me.calculatedCarbs), 0) " +
+            "COALESCE(SUM(me.calculatedCalories), 0.0) as totalCalories, " +
+            "COALESCE(SUM(me.calculatedProteins), 0.0) as totalProteins, " +
+            "COALESCE(SUM(me.calculatedFats), 0.0) as totalFats, " +
+            "COALESCE(SUM(me.calculatedCarbs), 0.0) as totalCarbs " +
             "FROM MealEntry me " +
             "WHERE me.meal.dailyReport.id = :dailyReportId")
-    List<Double> findNutritionSumByDailyReportId(@Param("dailyReportId") Long dailyReportId);
+    List<Object[]> findNutritionSumByDailyReportId(@Param("dailyReportId") Long dailyReportId);
+
+    @Modifying
+    @Query("DELETE FROM MealEntry me WHERE me.meal.id = :mealId")
+    void deleteByMealId(@Param("mealId") Long mealId);
 }

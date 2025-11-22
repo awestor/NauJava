@@ -53,7 +53,7 @@
         <td>
             <span th:if="${product.createdByUser == null}">System</span>
             <span th:if="${product.createdByUser != null}"
-                  th:text="${product.createdByUser.name} + ' ' + ${product.createdByUser.surname}"></span>
+                  th:text="${product.createdByUser.login}"></span>
         </td>
         <td class="actions">
             <div class="btnDiv" th:if="${product.createdByUser != null}">

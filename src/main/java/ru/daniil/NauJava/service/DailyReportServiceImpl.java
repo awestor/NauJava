@@ -14,13 +14,24 @@ import java.util.Optional;
 @Service
 public class DailyReportServiceImpl implements DailyReportService {
     private final DailyReportRepository dailyReportRepository;
-    private final MealEntityService mealEntityService;
+    private final MealEntryService mealEntityService;
+    private final UserService userService;
 
     @Autowired
     public DailyReportServiceImpl(DailyReportRepository dailyReportRepository,
-                                  MealEntityService mealEntityService) {
+                                  MealEntryService mealEntityService,
+                                  UserService userService) {
         this.dailyReportRepository = dailyReportRepository;
         this.mealEntityService = mealEntityService;
+        this.userService = userService;
+    }
+
+    @Transactional
+    @Override
+    public DailyReport getOrCreateDailyReportAuth(LocalDate reportDate) {
+        User user = userService.getAuthUser().orElseThrow();
+        return dailyReportRepository.findByUserIdAndReportDate(user.getId(), reportDate)
+                .orElseGet(() -> createDailyReport(user, reportDate));
     }
 
     @Transactional
@@ -44,19 +55,22 @@ public class DailyReportServiceImpl implements DailyReportService {
 
     @Transactional
     @Override
-    public void recalculateDailyReportTotals(Long dailyReportId) {
-        Optional<DailyReport> dailyReportOpt = dailyReportRepository.findById(dailyReportId);
-        if (dailyReportOpt.isPresent()) {
-            DailyReport dailyReport = dailyReportOpt.get();
+    public void recalculateDailyReportTotals(DailyReport dailyReport) {
+        NutritionSumResponse sumNutrition = mealEntityService.getNutritionSumByDailyReportId(dailyReport.getId());
 
-            NutritionSumResponse sumNutrition = mealEntityService.getNutritionSumByDailyReportId(dailyReportId);
+        dailyReport.setTotalCaloriesConsumed(sumNutrition.getTotalCalories());
+        dailyReport.setTotalProteinsConsumed(sumNutrition.getTotalProteins());
+        dailyReport.setTotalFatsConsumed(sumNutrition.getTotalFats());
+        dailyReport.setTotalCarbsConsumed(sumNutrition.getTotalCarbs());
 
-            dailyReport.setTotalCaloriesConsumed(sumNutrition.getTotalCalories());
-            dailyReport.setTotalProteinsConsumed(sumNutrition.getTotalProteins());
-            dailyReport.setTotalFatsConsumed(sumNutrition.getTotalFats());
-            dailyReport.setTotalCarbsConsumed(sumNutrition.getTotalCarbs());
+        dailyReportRepository.save(dailyReport);
+    }
 
-            dailyReportRepository.save(dailyReport);
-        }
+    @Transactional
+    @Override
+    public DailyReport getOrCreateDailyReportById(Long dailyReportId) {
+        User user = userService.getAuthUser().orElseThrow();
+        return dailyReportRepository.findById(dailyReportId)
+                .orElseGet(() -> createDailyReport(user, LocalDate.now()));
     }
 }

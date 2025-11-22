@@ -34,7 +34,9 @@ public class SpringSecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/view/products/**",
-                                "/api/products/**"
+                                "/api/products/**",
+                                "/view/meals/**",
+                                "/api/meals/**"
                         ).hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )

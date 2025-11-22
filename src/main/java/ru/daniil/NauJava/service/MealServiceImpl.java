@@ -9,28 +9,27 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import ru.daniil.NauJava.entity.*;
-import ru.daniil.NauJava.repository.MealEntryRepository;
 import ru.daniil.NauJava.repository.MealRepository;
 import ru.daniil.NauJava.repository.MealTypeRepository;
 import ru.daniil.NauJava.request.NutritionSumResponse;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MealServiceImpl implements MealService {
     private static final Logger logger = LoggerFactory.getLogger(MealServiceImpl.class);
 
     private final MealRepository mealRepository;
-    private final MealEntityService mealEntryService;
+    private final MealEntryService mealEntryService;
     private final MealTypeRepository mealTypeRepository;
     private final UserService userService;
     private final DailyReportService dailyReportService;
     private final PlatformTransactionManager transactionManager;
 
     public MealServiceImpl(MealRepository mealRepository,
-                           MealEntityService mealEntryService,
+                           MealEntryService mealEntryService,
                            MealTypeRepository mealTypeRepository,
                            UserService userService,
                            DailyReportService dailyReportService,
@@ -54,22 +53,15 @@ public class MealServiceImpl implements MealService {
         6. Коммит транзакции если все успешно
          */
     @Override
-    public Meal createMealWithProducts(String userEmail, String mealTypeName,
+    public Meal createMealWithProducts(String mealTypeName,
                                        List<String> productNames, List<Integer> quantities) {
         TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
         LocalDate today = LocalDate.now();
 
         try {
-            User user = userService.findUserByEmail(userEmail).orElse(null);
-            if (user == null) {
-                logger.error("Пользователь с email '{}' не найден. Транзакция откатывается.", userEmail);
-                transactionManager.rollback(status);
-                throw new IllegalArgumentException("Пользователь не найден: " + userEmail);
-            }
+            logger.info("Начало создания приема пищи для пользователя, тип: {}",  mealTypeName);
 
-            logger.info("Начало создания приема пищи для пользователя: {}, тип: {}", user.getLogin(), mealTypeName);
-
-            DailyReport dailyReport = dailyReportService.getOrCreateDailyReport(user, today);
+            DailyReport dailyReport = dailyReportService.getOrCreateDailyReportAuth(today);
 
             MealType mealType = mealTypeRepository.findByName(mealTypeName)
                     .orElseThrow(() -> new NotFoundException("Указанный тип приёма пищи не найден в системе"));
@@ -81,23 +73,19 @@ public class MealServiceImpl implements MealService {
                 meal.addMealEntry(mealEntry);
             }
 
-            dailyReportService.recalculateDailyReportTotals(dailyReport.getId());
-
             transactionManager.commit(status);
 
-            logger.info("Успешно создан прием пищи ID: {} с {} продуктами для пользователя: {}",
-                    meal.getId(), mealEntries.size(), user.getLogin());
+            logger.info("Успешно создан прием пищи ID: {} с {} продуктами для пользователя",
+                    meal.getId(), mealEntries.size());
 
             return meal;
 
         } catch (Exception ex) {
             if (!status.isCompleted()) {
-                logger.error("Откат транзакции для пользователя с email: {}. Причина: {}",
-                        userEmail, ex.getMessage());
+                logger.error("Откат транзакции для пользователя. Причина: {}", ex.getMessage());
                 transactionManager.rollback(status);
             } else {
-                logger.error("Транзакция уже завершена для пользователя с email: {}. Причина: {}",
-                        userEmail, ex.getMessage());
+                logger.error("Транзакция уже завершена для пользователя. Причина: {}", ex.getMessage());
             }
             throw ex;
         }
@@ -117,7 +105,7 @@ public class MealServiceImpl implements MealService {
     @Transactional
     @Override
     public List<Meal> getTodayMeals(String userEmail) {
-        User user = userService.findUserByEmail(userEmail).orElse(null);
+        User user = userService.getAuthUser().orElse(null);
         if (user == null) {
             return List.of();
         }
@@ -127,7 +115,54 @@ public class MealServiceImpl implements MealService {
     }
 
     @Transactional
+    public List<Meal> getByDailyReportId(Long dailyReportId){
+        return mealRepository.findByDailyReportId(dailyReportId);
+    }
+
+    @Override
+    public void deleteCurrentMeal(Long mealId) {
+        Meal meal = mealRepository.findById(mealId).orElseThrow();
+        mealRepository.deleteById(mealId);
+        updateNutritionSum(meal.getDailyReport().getId());
+    }
+
+    @Transactional
     public NutritionSumResponse getNutritionSum(Long mealId) {
         return mealEntryService.getNutritionSumByMealId(mealId);
+    }
+
+    @Transactional
+    @Override
+    public void updateNutritionSum(Long dailyReportId) {
+        DailyReport dailyReport = dailyReportService.getOrCreateDailyReportById(dailyReportId);
+        dailyReportService.recalculateDailyReportTotals(dailyReport);
+    }
+
+    @Transactional
+    @Override
+    public Meal updateMealWithProducts(Long mealId, String mealTypeName,
+                                       List<String> productNames, List<Integer> quantities) {
+        Meal meal = mealRepository.findById(mealId)
+                .orElseThrow(() -> new RuntimeException("Meal not found"));
+
+        logger.info("Сущность для редактирования найдена");
+        MealType mealType = mealTypeRepository.findByName(mealTypeName)
+                .orElseThrow(() -> new RuntimeException("Meal type not found"));
+        meal.setMealType(mealType);
+        logger.info("Тип приёма пищи найдена, тип: {}",  mealType.getName());
+
+        mealEntryService.deleteByMealId(mealId);
+        logger.info("Все старые сущности MealEntry были удалены");
+        meal.getMealEntries().clear();
+
+        mealEntryService.createMealEntries(meal, productNames, quantities);
+        logger.info("Запись обновлена");
+        return mealRepository.save(meal);
+    }
+
+    @Transactional
+    @Override
+    public Optional<Meal> getMealById(Long mealId){
+        return mealRepository.findById(mealId);
     }
 }

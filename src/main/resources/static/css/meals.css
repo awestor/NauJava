@@ -1,0 +1,469 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background-color: #f6f8fa;
+    color: #24292f;
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+.main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #24292f;
+    margin: 0;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: inherit;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2ea043 0%, #238636 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(46, 160, 67, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(46, 160, 67, 0.3);
+}
+
+.date-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    border: 1px solid #e1e4e8;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.date-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #24292f;
+    display: block;
+}
+
+.date-input {
+    padding: 10px 12px;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    max-width: 200px;
+    transition: border-color 0.2s ease;
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: #2ea043;
+    box-shadow: 0 0 0 3px rgba(46, 160, 67, 0.1);
+}
+
+.meal-section {
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    border: 1px solid #e1e4e8;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.meal-section:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.meal-header {
+    background: linear-gradient(135deg, #f6f8fa 0%, #f3f4f6 100%);
+    padding: 20px 24px;
+    border-bottom: 1px solid #e1e4e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.meal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #24292f;
+    margin: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
+    padding: 8px;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover {
+    background: #f6f8fa;
+    border-color: #d0d7de;
+    transform: translateY(-1px);
+}
+
+.meal-content {
+    padding: 0;
+}
+
+.nutrition-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.nutrition-table th {
+    background: #f6f8fa;
+    padding: 16px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    color: #24292f;
+    border-bottom: 1px solid #e1e4e8;
+}
+
+.nutrition-table td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #f6f8fa;
+    font-size: 14px;
+}
+
+.nutrition-table tbody tr:hover {
+    background: #f6f8fa;
+}
+
+.nutrition-table tfoot {
+    background: #f6f8fa;
+    font-weight: 600;
+}
+
+.nutrition-table tfoot td {
+    border-top: 2px solid #e1e4e8;
+    border-bottom: none;
+    color: #24292f;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e1e4e8;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #24292f;
+    margin-bottom: 8px;
+}
+
+.empty-state-description {
+    color: #656d76;
+    font-size: 14px;
+}
+
+/* Утилитарные классы */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.font-mono { font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; }
+.text-success { color: #2ea043; }
+.text-muted { color: #656d76; }
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e1e4e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #f6f8fa 0%, #f3f4f6 100%);
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #24292f;
+    margin: 0;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #656d76;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.btn-close:hover {
+    background: #eaeef2;
+    color: #24292f;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #24292f;
+}
+
+.form-select, .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: white;
+}
+
+.form-select:focus, .form-input:focus {
+    outline: none;
+    border-color: #2ea043;
+    box-shadow: 0 0 0 3px rgba(46, 160, 67, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e1e4e8;
+}
+
+.btn-secondary {
+    background: #f6f8fa;
+    color: #24292f;
+    border: 1px solid #e1e4e8;
+}
+
+.btn-secondary:hover {
+    background: #eaeef2;
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Добавить в конец meals.css */
+.product-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+
+.product-fields {
+    flex: 1;
+    display: flex;
+    gap: 12px;
+}
+
+.weight-input {
+    width: 120px;
+}
+
+.product-select {
+    flex: 1;
+}
+
+.remove-product {
+    background: none;
+    border: none;
+    color: #656d76;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-product:hover {
+    background: #eaeef2;
+    color: #cf222e;
+}
+
+.add-product-btn {
+    background: none;
+    border: 1px dashed #e1e4e8;
+    color: #656d76;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    width: 100%;
+    justify-content: center;
+}
+
+.add-product-btn:hover {
+    background: #f6f8fa;
+    border-color: #2ea043;
+    color: #2ea043;
+}
+
+.add-product-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #e1e4e8;
+    color: #656d76;
+}
+
+.add-product-btn:disabled:hover {
+    background: none;
+    border-color: #e1e4e8;
+    color: #656d76;
+}
+
+.product-row:first-child .remove-product {
+    visibility: hidden;
+}
+
+.empty-products-message {
+    text-align: center;
+    padding: 20px;
+    color: #656d76;
+    font-style: italic;
+}
+
+.form-input:invalid, .form-select:invalid {
+    border-color: #cf222e;
+}
+
+.form-input:invalid:focus, .form-select:invalid:focus {
+    border-color: #cf222e;
+    box-shadow: 0 0 0 3px rgba(207, 34, 46, 0.1);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .main-container {
+        padding: 24px 16px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .page-title {
+        font-size: 24px;
+    }
+
+    .meal-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .action-buttons {
+        align-self: flex-end;
+    }
+
+    .nutrition-table {
+        font-size: 13px;
+    }
+
+    .nutrition-table th,
+    .nutrition-table td {
+        padding: 12px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nutrition-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
