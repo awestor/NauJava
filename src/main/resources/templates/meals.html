@@ -158,11 +158,9 @@
       const title = document.getElementById('modalTitle');
       const submitBtn = document.getElementById('submitBtn');
 
-      // Сброс формы
       resetForm();
       document.getElementById('mealId').value = '';
 
-      // Установка заголовка и текста кнопки
       if (mode === 'create') {
           title.textContent = 'Создать приём пищи';
           submitBtn.textContent = 'Создать';
@@ -174,10 +172,22 @@
           loadMealData(mealId);
       }
 
-      // Загрузка данных для селектов
-      loadFormData();
-      modal.classList.add('active');
+      let mouseDownOnOverlay = false;
 
+        modal.addEventListener('mousedown', function(e) {
+            if (e.target === this) {
+                mouseDownOnOverlay = true;
+            }
+        });
+
+        modal.addEventListener('mouseup', function(e) {
+            if (e.target === this && mouseDownOnOverlay) {
+                closeModal();
+            }
+            mouseDownOnOverlay = false;
+        });
+
+      loadFormData();
       modal.classList.add('active');
   }
 
@@ -217,20 +227,17 @@
   }
 
   function populateMealForm(meal) {
-      // Устанавливаем тип приёма пищи
     document.getElementById('mealTypeSelect').value = meal.mealType;
 
-    // Очищаем контейнер продуктов
     const container = document.getElementById('productsContainer');
     container.innerHTML = '';
 
-    // Добавляем строки для каждого продукта в приёме пищи
     if (meal.mealEntries && meal.mealEntries.length > 0) {
         meal.mealEntries.forEach(entry => {
             addProductRow(entry.productName, entry.quantityGrams);
         });
     } else {
-        addProductRow(); // Добавляем пустую строку если нет продуктов
+        addProductRow();
     }
 
     updateAddButtonState();
@@ -298,7 +305,6 @@
           select.appendChild(option);
       });
 
-      // Восстанавливаем значение если нужно
       if (currentValue) {
           select.value = currentValue;
       }
@@ -312,9 +318,9 @@
 
           products.forEach(product => {
               const option = document.createElement('option');
-              option.value = product.name; // Используем название вместо ID
+              option.value = product.name;
               option.textContent = product.name;
-              option.dataset.productId = product.id; // Сохраняем ID в data-атрибуте
+              option.dataset.productId = product.id;
               select.appendChild(option);
           });
 
@@ -594,13 +600,6 @@
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     });
-  });
-
-  // Закрытие модального окна при клике на оверлей
-  document.getElementById('mealModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-          closeModal();
-      }
   });
 
   // Сброс стилей полей при фокусе

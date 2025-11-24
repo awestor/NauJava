@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.daniil.NauJava.entity.Product;
-import ru.daniil.NauJava.repository.ProductRepository;
 import ru.daniil.NauJava.request.CreateProductRequest;
 import ru.daniil.NauJava.service.ProductService;
 import ru.daniil.NauJava.service.UserService;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,15 +23,13 @@ import java.util.Map;
 @Controller
 @RequestMapping("/view/products")
 public class ProductViewController {
-    private final ProductRepository productRepository;
     private final UserService userService;
     private final ProductService productService;
 
     @Autowired
-    ProductViewController(ProductRepository productRepository, UserService userService, ProductService productService) {
+    ProductViewController(UserService userService, ProductService productService) {
         this.userService = userService;
         this.productService = productService;
-        this.productRepository = productRepository;
     }
 
     /**
@@ -54,12 +52,13 @@ public class ProductViewController {
     public ModelAndView productListView() {
         Map<String, Object> model = new HashMap<>();
         List<Product> products = productService.getAll();
+
+        products.sort(Comparator.comparing(Product::getId));
+
         model.put("products", products);
 
-        long systemCount = products.stream().filter(p -> p.getCreatedByUser() == null).count();
-        long userCount = products.size() - systemCount;
-        model.put("systemCount", systemCount);
-        model.put("userCount", userCount);
+        long totalCount = products.size();
+        model.put("totalCount", totalCount);
 
         return new ModelAndView("products", model);
     }
@@ -102,7 +101,7 @@ public class ProductViewController {
             );
             product.setCreatedByUser(userService.getAuthUser().orElse(null));
 
-            Product savedProduct = productRepository.save(product);
+            Product savedProduct = productService.saveProduct(product);
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Product '" + savedProduct.getName() + "' successfully created!");

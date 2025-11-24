@@ -1,9 +1,12 @@
 package ru.daniil.NauJava.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.NauJava.entity.Product;
 import ru.daniil.NauJava.request.ProductInfoResponse;
+import ru.daniil.NauJava.request.UpdateProductRequest;
 import ru.daniil.NauJava.service.ProductService;
 
 import java.util.List;
@@ -121,5 +124,30 @@ public class ProductApiController {
     @GetMapping("/existsProductsByName")
     public boolean existsProductsByName(@RequestParam String productName) {
         return productService.existsByNameIgnoreCase(productName);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateProduct(@PathVariable Long id,
+                                              @Valid @RequestBody UpdateProductRequest request) {
+        try {
+            if (!id.equals(request.getId())) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            productService.updateProduct(request);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        try {
+            productService.deleteProduct(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

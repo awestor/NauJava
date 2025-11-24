@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.Product;
 import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.repository.ProductRepository;
+import ru.daniil.NauJava.request.UpdateProductRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,13 +28,9 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @Override
     public List<Product> getAll() {
-        User user = userService.getAuthUser().orElse(null);
-        if (user == null){
-            throw new AuthenticationCredentialsNotFoundException("User is not find or authenticated");
-        }
-        else {
-            return productRepository.findByCreatedByUserIsNullOrCreatedByUserId(user.getId());
-        }
+        User user = userService.getAuthUser().orElseThrow(
+                () -> new AuthenticationCredentialsNotFoundException("Пользователь не найден или не авторизован"));
+        return productRepository.findByCreatedByUserIsNullOrCreatedByUserId(user.getId());
     }
 
     @Transactional
@@ -43,6 +40,11 @@ public class ProductServiceImpl implements ProductService {
                 .stream()
                 .findFirst()
                 .orElse(null);
+    }
+
+    @Override
+    public Product saveProduct(Product productInfo) {
+        return productRepository.save(productInfo);
     }
 
     @Transactional
@@ -92,5 +94,39 @@ public class ProductServiceImpl implements ProductService {
                 .map(this::findProductByName)
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    @Transactional
+    public void updateProduct(UpdateProductRequest request) {
+        Product product = productRepository.findById(request.getId())
+                .orElseThrow(() -> new RuntimeException("Продукт не найден"));
+
+        User currentUser = userService.getAuthUser().orElseThrow();
+        if (product.getCreatedByUser() != null &&
+                !product.getCreatedByUser().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("У пользователя нет прав на редактирование этого продукта");
+        }
+
+        product.setName(request.getName());
+        product.setCaloriesPer100g(request.getCaloriesPer100g());
+        product.setProteinsPer100g(request.getProteinsPer100g());
+        product.setFatsPer100g(request.getFatsPer100g());
+        product.setCarbsPer100g(request.getCarbsPer100g());
+
+        productRepository.save(product);
+    }
+
+    @Transactional
+    public void deleteProduct(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Продукт не найден"));
+
+        User currentUser = userService.getAuthUser().orElseThrow();
+        if (product.getCreatedByUser() != null &&
+                !product.getCreatedByUser().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("У пользователя нет прав на удаление этого продукта");
+        }
+
+        productRepository.delete(product);
     }
 }

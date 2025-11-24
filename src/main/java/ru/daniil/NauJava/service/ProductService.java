@@ -1,6 +1,7 @@
 package ru.daniil.NauJava.service;
 
 import ru.daniil.NauJava.entity.Product;
+import ru.daniil.NauJava.request.UpdateProductRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,8 @@ public interface ProductService {
      */
     Product findProductByName(String productName);
 
+    Product saveProduct(Product productInfo);
+
     /**
      * Метод, что проверяет существование продукта по его имени
      * @param productName имя продукта
@@ -48,4 +51,8 @@ public interface ProductService {
     List<Product> findProductsWithMinCaloriesAndUser(Double calories, Long userId);
 
     boolean existsByNameIgnoreCase(String productName);
+
+    void updateProduct(UpdateProductRequest request);
+
+    void deleteProduct(Long id);
 }
