@@ -1,5 +1,6 @@
 package ru.daniil.NauJava.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -16,6 +17,7 @@ public class DailyReport {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @Column(name = "report_date", nullable = false)
@@ -110,6 +112,22 @@ public class DailyReport {
 
     public void setTotalCaloriesConsumed(Double totalCaloriesConsumed) {
         this.totalCaloriesConsumed = totalCaloriesConsumed;
+    }
+
+    public Boolean getGoalAchieved() {
+        return isGoalAchieved;
+    }
+
+    public void setGoalAchieved(Boolean goalAchieved) {
+        isGoalAchieved = goalAchieved;
+    }
+
+    public LocalDate getReportDate() {
+        return reportDate;
+    }
+
+    public void setReportDate(LocalDate reportDate) {
+        this.reportDate = reportDate;
     }
 
     @PrePersist

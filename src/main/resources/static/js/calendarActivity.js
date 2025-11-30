@@ -8,25 +8,21 @@ class NutritionCalendar {
         this.isSelecting = false;
         this.nutritionData = {};
         this.chart = null;
-        this.autoScrollSpeed = 5;
-        this.scrollDirection = 0;
+        this.autoScrollSpeed = 0;
         this.autoScrollInterval = null;
 
-        // Цели пользователя
-        this.userGoals = {
-            calories: 2000,
-            proteins: 150,
-            fats: 65,
-            carbs: 250
-        };
+        this.userGoals = userGoals;
+        this.apiEndpoints = apiEndpoints;
 
         this.initializeElements();
         this.setupEventListeners();
-        this.loadInitialData();
-        this.initializeChart();
-        this.setDefaultSelection();
-        this.renderCalendar();
-        this.centerOnToday();
+        this.loadNutritionData().then(() => {
+            this.renderCalendar();
+            this.initializeChart();
+            this.setDefaultSelection();
+            this.centerOnToday();
+
+        });
     }
 
     initializeElements() {
@@ -42,6 +38,7 @@ class NutritionCalendar {
             selectedDaysCount: document.getElementById('selectedDaysCount'),
             selectionStart: document.getElementById('selectionStart'),
             selectionEnd: document.getElementById('selectionEnd'),
+            selectionRange: document.getElementById('selectionRange'),
             nutritionChart: document.getElementById('nutritionChart'),
             calendarWrapper: document.querySelector('.calendar-wrapper')
         };
@@ -51,7 +48,6 @@ class NutritionCalendar {
         this.elements.prevMonth.addEventListener('click', () => this.changeMonth(-1));
         this.elements.nextMonth.addEventListener('click', () => this.changeMonth(1));
 
-        // Обработчики для выделения мышью
         this.elements.datesRow.addEventListener('mousedown', (e) => this.startSelection(e));
         this.elements.caloriesValues.addEventListener('mousedown', (e) => this.startSelection(e));
         this.elements.proteinsValues.addEventListener('mousedown', (e) => this.startSelection(e));
@@ -61,14 +57,72 @@ class NutritionCalendar {
         document.addEventListener('mousemove', (e) => this.updateSelection(e));
         document.addEventListener('mouseup', () => this.endSelection());
 
-        // Обработчики клавиатуры
         document.addEventListener('keydown', (e) => this.handleKeyPress(e));
 
-        // Обработчик для автоматической прокрутки при приближении к границам
         document.addEventListener('mousemove', (e) => this.handleAutoScroll(e));
     }
 
-    loadInitialData() {
+    async loadNutritionData() {
+        try {
+            const year = this.currentDate.getFullYear();
+            const month = this.currentDate.getMonth() + 1;
+
+            const response = await fetch(`${this.apiEndpoints.dailyReports}?year=${year}&month=${month}`, {
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            });
+
+            if (response.ok) {
+                const dailyReports = await response.json();
+                this.processNutritionData(dailyReports);
+            } else {
+                console.error('Ошибка загрузки данных:', response.status);
+                this.initializeEmptyData();
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки данных:', error);
+            this.initializeEmptyData();
+        }
+    }
+
+    processNutritionData(dailyReports) {
+        const year = this.currentDate.getFullYear();
+        const month = this.currentDate.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        this.nutritionData = {};
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateKey = this.formatDateKey(year, month, day);
+            this.nutritionData[dateKey] = {
+                calories: 0,
+                proteins: 0,
+                fats: 0,
+                carbs: 0,
+                hasData: false
+            };
+        }
+
+        dailyReports.forEach(report => {
+            const dateString = report.reportDate;
+            const [year, month, day] = dateString.split('-').map(Number);
+
+            const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+            if (this.nutritionData[dateKey]) {
+                this.nutritionData[dateKey] = {
+                    calories: report.totalCaloriesConsumed || 0,
+                    proteins: report.totalProteinsConsumed || 0,
+                    fats: report.totalFatsConsumed || 0,
+                    carbs: report.totalCarbsConsumed || 0,
+                    hasData: true
+                };
+            }
+        });
+    }
+
+    initializeEmptyData() {
         const year = this.currentDate.getFullYear();
         const month = this.currentDate.getMonth();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -76,58 +130,25 @@ class NutritionCalendar {
         this.nutritionData = {};
         for (let day = 1; day <= daysInMonth; day++) {
             const dateKey = this.formatDateKey(year, month, day);
-            // Создаем более реалистичные данные с пропусками
-            const hasData = Math.random() > 0.4;
-
-            // Генерируем данные, которые будут демонстрировать все цветовые состояния
-            const randomFactor = Math.random();
-            let calories, proteins, fats, carbs;
-
-            if (randomFactor < 0.25) {
-                // Слишком мало (<50%)
-                calories = Math.floor(this.userGoals.calories * 0.3);
-                proteins = Math.floor(this.userGoals.proteins * 0.4);
-                fats = Math.floor(this.userGoals.fats * 0.35);
-                carbs = Math.floor(this.userGoals.carbs * 0.25);
-            } else if (randomFactor < 0.5) {
-                // Близко к цели (50-100%)
-                calories = Math.floor(this.userGoals.calories * 0.8);
-                proteins = Math.floor(this.userGoals.proteins * 0.9);
-                fats = Math.floor(this.userGoals.fats * 0.75);
-                carbs = Math.floor(this.userGoals.carbs * 0.85);
-            } else if (randomFactor < 0.75) {
-                // На 15-30% больше (100-130%)
-                calories = Math.floor(this.userGoals.calories * 1.2);
-                proteins = Math.floor(this.userGoals.proteins * 1.15);
-                fats = Math.floor(this.userGoals.fats * 1.25);
-                carbs = Math.floor(this.userGoals.carbs * 1.1);
-            } else {
-                // Слишком много (>130%)
-                calories = Math.floor(this.userGoals.calories * 1.5);
-                proteins = Math.floor(this.userGoals.proteins * 1.4);
-                fats = Math.floor(this.userGoals.fats * 1.6);
-                carbs = Math.floor(this.userGoals.carbs * 1.45);
-            }
-
             this.nutritionData[dateKey] = {
-                calories: hasData ? calories : 0,
-                proteins: hasData ? proteins : 0,
-                fats: hasData ? fats : 0,
-                carbs: hasData ? carbs : 0
+                calories: 0,
+                proteins: 0,
+                fats: 0,
+                carbs: 0,
+                hasData: false
             };
         }
     }
 
     setDefaultSelection() {
-        // Установка выделения по умолчанию (вчера + сегодня)
         const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
+        const threeDaysAgo = new Date(today);
+        threeDaysAgo.setDate(threeDaysAgo.getDate() - 2);
 
         this.selectedRange.start = this.formatDateKey(
-            yesterday.getFullYear(),
-            yesterday.getMonth(),
-            yesterday.getDate()
+            threeDaysAgo.getFullYear(),
+            threeDaysAgo.getMonth(),
+            threeDaysAgo.getDate()
         );
         this.selectedRange.end = this.formatDateKey(
             today.getFullYear(),
@@ -136,6 +157,7 @@ class NutritionCalendar {
         );
 
         this.updateSelectionInfo();
+        this.updateChart();
     }
 
     formatDateKey(year, month, day) {
@@ -157,7 +179,7 @@ class NutritionCalendar {
     }
 
     getNutrientColor(value, goal, type) {
-        if (value === 0) return '';
+        if (value === 0 || !goal) return 'empty';
 
         const percentage = (value / goal) * 100;
 
@@ -174,7 +196,6 @@ class NutritionCalendar {
         const month = this.currentDate.getMonth();
         const daysInMonth = this.getDaysInMonth();
 
-        // Очистка
         this.elements.datesRow.innerHTML = '';
         this.elements.caloriesValues.innerHTML = '';
         this.elements.proteinsValues.innerHTML = '';
@@ -184,7 +205,6 @@ class NutritionCalendar {
         const today = new Date();
         const todayKey = this.formatDateKey(today.getFullYear(), today.getMonth(), today.getDate());
 
-        // Рендер дат
         for (let day = 1; day <= daysInMonth; day++) {
             const dateKey = this.formatDateKey(year, month, day);
             const dateCell = document.createElement('div');
@@ -203,7 +223,6 @@ class NutritionCalendar {
             this.elements.datesRow.appendChild(dateCell);
         }
 
-        // Рендер значений nutrition
         this.renderNutritionRow('calories', this.elements.caloriesValues);
         this.renderNutritionRow('proteins', this.elements.proteinsValues);
         this.renderNutritionRow('fats', this.elements.fatsValues);
@@ -222,18 +241,18 @@ class NutritionCalendar {
             valueCell.dataset.date = dateKey;
             valueCell.dataset.type = type;
 
-            const data = this.nutritionData[dateKey] || { calories: 0, proteins: 0, fats: 0, carbs: 0 };
+            const data = this.nutritionData[dateKey] || { calories: 0, proteins: 0, fats: 0, carbs: 0, hasData: false };
             const value = data[type];
 
-            // Создаем span для текста
             const valueSpan = document.createElement('span');
-            valueSpan.textContent = value;
+            valueSpan.textContent = value || '0';
             valueCell.appendChild(valueSpan);
 
-            // Добавляем цветовую градацию
-            const colorClass = this.getNutrientColor(value, this.userGoals[type], type);
-            if (colorClass) {
+            if (data.hasData && value > 0) {
+                const colorClass = this.getNutrientColor(value, this.userGoals[type], type);
                 valueCell.classList.add(colorClass);
+            } else {
+                valueCell.classList.add('empty');
             }
 
             if (this.isDateInRange(dateKey)) {
@@ -254,7 +273,6 @@ class NutritionCalendar {
             const cellRect = todayCell.getBoundingClientRect();
             const containerRect = container.getBoundingClientRect();
 
-            // Вычисляем позицию для центрирования
             const scrollLeft = todayCell.offsetLeft - (containerRect.width / 2) + (cellRect.width / 2);
             container.scrollLeft = Math.max(0, scrollLeft);
         }
@@ -298,7 +316,6 @@ class NutritionCalendar {
         const wrapperRect = wrapper.getBoundingClientRect();
         const mouseX = e.clientX;
 
-        // Определяем зоны автоматической прокрутки (по 3 ячейки с каждой стороны)
         const scrollZoneWidth = 80 * 3;
         const leftZoneEnd = wrapperRect.left + scrollZoneWidth;
         const rightZoneStart = wrapperRect.right - scrollZoneWidth;
@@ -306,7 +323,6 @@ class NutritionCalendar {
         let newScrollSpeed = 0;
 
         if (mouseX < leftZoneEnd) {
-            // Вычисляем ускорение: чем ближе к границе, тем быстрее
             const distanceFromEdge = leftZoneEnd - mouseX;
             newScrollSpeed = -Math.min(20, Math.max(5, distanceFromEdge / 4));
         } else if (mouseX > rightZoneStart) {
@@ -314,7 +330,6 @@ class NutritionCalendar {
             newScrollSpeed = Math.min(20, Math.max(5, distanceFromEdge / 4));
         }
 
-        // Если скорость изменилась, перезапускаем интервал
         if (newScrollSpeed !== this.autoScrollSpeed) {
             this.autoScrollSpeed = newScrollSpeed;
 
@@ -391,11 +406,10 @@ class NutritionCalendar {
         }
     }
 
-    changeMonth(direction) {
+    async changeMonth(direction) {
         this.currentDate.setMonth(this.currentDate.getMonth() + direction);
-        this.loadInitialData();
+        await this.loadNutritionData();
         this.renderCalendar();
-        // Не обновляем график при смене месяца, только при изменении выделения
     }
 
     updateSelectionInfo() {
@@ -407,6 +421,10 @@ class NutritionCalendar {
             this.elements.selectedDaysCount.textContent = daysDiff;
             this.elements.selectionStart.textContent = this.formatDisplayDate(this.selectedRange.start);
             this.elements.selectionEnd.textContent = this.formatDisplayDate(this.selectedRange.end);
+            this.elements.selectionRange.style.display = 'inline';
+        } else {
+            this.elements.selectedDaysCount.textContent = '0';
+            this.elements.selectionRange.style.display = 'none';
         }
     }
 
@@ -418,7 +436,6 @@ class NutritionCalendar {
     initializeChart() {
         const ctx = this.elements.nutritionChart.getContext('2d');
 
-        // Создаем плагин для целевых линий
         const targetLinePlugin = {
             id: 'targetLines',
             afterDatasetsDraw(chart) {
@@ -429,20 +446,20 @@ class NutritionCalendar {
 
                 ctx.save();
 
-                // Линия цели для калорий
-                const caloriesY = y.getPixelForValue(goals.calories);
-                ctx.strokeStyle = '#e74c3c';
-                ctx.setLineDash([5, 5]);
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(x.left, caloriesY);
-                ctx.lineTo(x.right, caloriesY);
-                ctx.stroke();
+                if (goals.calories) {
+                    const caloriesY = y.getPixelForValue(goals.calories);
+                    ctx.strokeStyle = '#e74c3c';
+                    ctx.setLineDash([5, 5]);
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x.left, caloriesY);
+                    ctx.lineTo(x.right, caloriesY);
+                    ctx.stroke();
 
-                // Подпись для линии калорий
-                ctx.fillStyle = '#e74c3c';
-                ctx.font = '12px Arial';
-                ctx.fillText('Цель: ' + goals.calories + ' ккал', x.right - 120, caloriesY - 5);
+                    ctx.fillStyle = '#e74c3c';
+                    ctx.font = '12px Arial';
+                    ctx.fillText('Цель: ' + goals.calories + ' ккал', x.right - 120, caloriesY - 5);
+                }
 
                 ctx.restore();
             }
@@ -534,8 +551,6 @@ class NutritionCalendar {
         });
 
         this.updateChartLegend();
-        // Первоначальное обновление графика для выделения по умолчанию
-        this.updateChart();
     }
 
     updateChart() {
@@ -574,9 +589,7 @@ class NutritionCalendar {
         this.chart.data.datasets[2].data = fatsData;
         this.chart.data.datasets[3].data = carbsData;
 
-        // Обновляем цели в конфигурации
         this.chart.options.goals = this.userGoals;
-
         this.chart.update('none');
     }
 
@@ -609,7 +622,6 @@ class NutritionCalendar {
     }
 }
 
-// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     new NutritionCalendar();
 });

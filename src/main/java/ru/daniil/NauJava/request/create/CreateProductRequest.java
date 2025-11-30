@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.request;
+package ru.daniil.NauJava.request.create;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;

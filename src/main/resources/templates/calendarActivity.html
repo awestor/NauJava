@@ -1,15 +1,22 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Анализ питания</title>
-    <link rel="stylesheet" href="/css/calendarActivity.css">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/calendarActivity.css}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
 </head>
 <body>
-<div class="container">
-    <h1>Анализ потребления питательных веществ</h1>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="main-container">
+    <div class="page-header">
+        <h1 class="page-title">Анализ потребления питательных веществ</h1>
+    </div>
 
     <div class="main-content">
         <!-- Блок пользовательских данных -->
@@ -17,39 +24,52 @@
             <h2>Данные пользователя</h2>
             <div class="user-info-card">
                 <div class="info-item">
+                    <label>Имя:</label>
+                    <span id="userName" th:text="${userProfile?.name + ' ' + userProfile?.surname}">Пользователь</span>
+                </div>
+                <div class="info-item">
                     <label>Пол:</label>
-                    <span id="userGender">Мужской</span>
+                    <span id="userGender" th:text="${#strings.defaultString(userProfile?.gender == 'M' ? 'Мужской' : 'Женский', 'Не указан')}">Не указан</span>
                 </div>
                 <div class="info-item">
                     <label>Рост:</label>
-                    <span id="userHeight">180 см</span>
+                    <span id="userHeight" th:text="${#strings.defaultString(userProfile?.height?.toString() + ' см', 'Не указан')}">Не указан</span>
                 </div>
                 <div class="info-item">
                     <label>Вес:</label>
-                    <span id="userWeight">75 кг</span>
+                    <span id="userWeight" th:text="${#strings.defaultString(userProfile?.weight?.toString() + ' кг', 'Не указан')}">Не указан</span>
                 </div>
                 <div class="info-item">
-                    <label>Желаемый вес:</label>
-                    <span id="targetWeight">70 кг</span>
+                    <label>Целевой вес:</label>
+                    <span id="targetWeight" th:text="${#strings.defaultString(userProfile?.targetWeight?.toString() + ' кг', 'Не указан')}">Не указан</span>
                 </div>
                 <div class="info-item highlight">
-                    <label>Цель по калориям:</label>
-                    <span id="calorieGoal">2000 ккал/день</span>
+                    <label>Текущая серия:</label>
+                    <span id="currentStreak" th:text="${#strings.defaultString(userProfile?.currentStreak?.toString() + ' дней', '0 дней')}">0 дней</span>
                 </div>
-                <div class="nutrient-goals">
+
+                <div class="nutrient-goals" th:if="${userProfile?.nutritionGoal != null}">
                     <h3>Цели по нутриентам:</h3>
                     <div class="goal-item">
+                        <span class="goal-label">Калории:</span>
+                        <span class="goal-value" id="calorieGoal" th:text="${userProfile.nutritionGoal.dailyCalorieGoal + ' ккал'}">2000 ккал</span>
+                    </div>
+                    <div class="goal-item" th:if="${userProfile.nutritionGoal.dailyProteinGoal != null}">
                         <span class="goal-label">Белки:</span>
-                        <span class="goal-value">150 г</span>
+                        <span class="goal-value" id="proteinGoal" th:text="${userProfile.nutritionGoal.dailyProteinGoal + ' г'}">150 г</span>
                     </div>
-                    <div class="goal-item">
+                    <div class="goal-item" th:if="${userProfile.nutritionGoal.dailyFatGoal != null}">
                         <span class="goal-label">Жиры:</span>
-                        <span class="goal-value">65 г</span>
+                        <span class="goal-value" id="fatGoal" th:text="${userProfile.nutritionGoal.dailyFatGoal + ' г'}">65 г</span>
                     </div>
-                    <div class="goal-item">
+                    <div class="goal-item" th:if="${userProfile.nutritionGoal.dailyCarbsGoal != null}">
                         <span class="goal-label">Углеводы:</span>
-                        <span class="goal-value">250 г</span>
+                        <span class="goal-value" id="carbsGoal" th:text="${userProfile.nutritionGoal.dailyCarbsGoal + ' г'}">250 г</span>
                     </div>
+                </div>
+                <div class="nutrient-goals" th:unless="${userProfile?.nutritionGoal != null}">
+                    <h3>Цели не установлены</h3>
+                    <p>Перейдите в настройки профиля для установки целей</p>
                 </div>
             </div>
         </div>
@@ -58,16 +78,16 @@
         <div class="calendar-section">
             <h2>Календарь потребления</h2>
             <div class="calendar-controls">
-                <button id="prevMonth">←</button>
-                <span id="currentMonth"></span>
-                <button id="nextMonth">→</button>
+                <button class="btn btn-secondary" id="prevMonth">←</button>
+                <span id="currentMonth" class="month-display"></span>
+                <button class="btn btn-secondary" id="nextMonth">→</button>
             </div>
 
             <div class="calendar-wrapper">
                 <div class="calendar-container">
                     <div class="calendar-header">
                         <div class="dates-header">
-                            <div class="dates-spacer" style="width: 100px;"></div>
+                            <div class="dates-spacer"></div>
                             <div class="dates-row" id="datesRow"></div>
                         </div>
                     </div>
@@ -96,26 +116,28 @@
             </div>
 
             <div class="selection-info">
-                Выбрано дней: <span id="selectedDaysCount">2</span>
-                (от <span id="selectionStart"></span> до <span id="selectionEnd"></span>)
+                Выбрано дней: <span id="selectedDaysCount">0</span>
+                <span id="selectionRange" style="margin-left: 10px;">
+                        (от <span id="selectionStart"></span> до <span id="selectionEnd"></span>)
+                    </span>
             </div>
 
             <div class="color-legend">
                 <div class="legend-item">
                     <div class="color-box low"></div>
-                    <span>Слишком мало</span>
+                    <span>Меньше 50% цели</span>
                 </div>
                 <div class="legend-item">
                     <div class="color-box good"></div>
-                    <span>Близко к цели</span>
+                    <span>50-100% цели</span>
                 </div>
                 <div class="legend-item">
                     <div class="color-box warning"></div>
-                    <span>На 15-30% больше</span>
+                    <span>100-130% цели</span>
                 </div>
                 <div class="legend-item">
                     <div class="color-box danger"></div>
-                    <span>Слишком много</span>
+                    <span>Больше 130% цели</span>
                 </div>
             </div>
         </div>
@@ -123,14 +145,30 @@
 
     <!-- График -->
     <div class="chart-section">
-        <h2>График потребления</h2>
+        <h2>График потребления за выбранный период</h2>
         <div class="chart-container">
             <canvas id="nutritionChart"></canvas>
         </div>
         <div class="chart-legend" id="chartLegend"></div>
     </div>
-</div>
+</main>
 
-<script src="/js/calendarActivity.js"></script>
+<script>
+    const userGoals = {
+        calories: [[${userProfile?.nutritionGoal?.dailyCalorieGoal ?: 2000}]],
+        proteins: [[${userProfile?.nutritionGoal?.dailyProteinGoal ?: 150}]],
+        fats: [[${userProfile?.nutritionGoal?.dailyFatGoal ?: 65}]],
+        carbs: [[${userProfile?.nutritionGoal?.dailyCarbsGoal ?: 250}]]
+    };
+
+    const apiEndpoints = {
+        dailyReports: '/api/daily-reports/data'
+    };
+
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+</script>
+<script th:src="@{/js/calendarActivity.js}"></script>
+
 </body>
 </html>

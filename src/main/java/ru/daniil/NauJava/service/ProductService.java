@@ -1,7 +1,8 @@
 package ru.daniil.NauJava.service;
 
 import ru.daniil.NauJava.entity.Product;
-import ru.daniil.NauJava.request.UpdateProductRequest;
+import ru.daniil.NauJava.request.create.CreateProductRequest;
+import ru.daniil.NauJava.request.update.UpdateProductRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,14 +28,13 @@ public interface ProductService {
      */
     Product findProductByName(String productName);
 
-    Product saveProduct(Product productInfo);
-
     /**
-     * Метод, что проверяет существование продукта по его имени
-     * @param productName имя продукта
-     * @return true если продукт найден, иначе - false
+     * Добавляет в БД продукт по его информации
+     * @param productInfo информация о продукте
+     * @return сохранённый продукт
      */
-    boolean productExists(String productName);
+    Product saveProduct(CreateProductRequest productInfo);
+
     /**
      * Метод, что проверяет существование продукта по его имени
      * @param userId id пользователя
@@ -42,17 +42,43 @@ public interface ProductService {
      */
     List<Product> findProductByUserId(Long userId);
 
+    /**
+     * Возвращает продукты потерявших ссылку на пользователя создавшего их
+     * @return список продуктов
+     */
     List<Product> findByCreatedByUserIsNull();
 
+    /**
+     * Возвращает все продукты, в названии которых есть указанная часть
+     * @param name часть названия продукта
+     * @return список продуктов
+     */
     List<Product> findByNameContainingIgnoreCase(String name);
 
+    /**
+     * Находит продукт по его id
+     * @param identifier id продукта
+     * @return продукт или null
+     */
     Optional<Product> findById(Long identifier);
 
-    List<Product> findProductsWithMinCaloriesAndUser(Double calories, Long userId);
+    /**
+     * Метод, что проверяет существование продукта по его имени
+     * @param productName имя продукта
+     * @return true если продукт найден, иначе - false
+     */
+    boolean productExists(String productName);
 
-    boolean existsByNameIgnoreCase(String productName);
 
+    /**
+     * Обновляет данные о продукте
+     * @param request UpdateProductRequest, что содержит данные для обновления
+     */
     void updateProduct(UpdateProductRequest request);
 
+    /**
+     * Удаляет продукт из БД
+     * @param id id продукта для удаления
+     */
     void deleteProduct(Long id);
 }

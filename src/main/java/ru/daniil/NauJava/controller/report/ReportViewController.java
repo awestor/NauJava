@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.controller;
+package ru.daniil.NauJava.controller.report;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.daniil.NauJava.entity.Report;
-import ru.daniil.NauJava.entity.ReportStatus;
+import ru.daniil.NauJava.enums.ReportStatus;
 import ru.daniil.NauJava.service.ReportService;
 
 import java.util.List;
 
 @Controller
-@RequestMapping("/view/reports")
+@RequestMapping("/admin/view/reports")
 public class ReportViewController {
     private final ReportService reportService;
 

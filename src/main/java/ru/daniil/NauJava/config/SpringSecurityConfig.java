@@ -17,6 +17,7 @@ public class SpringSecurityConfig {
         return security
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/mainPage/**",
                                 "/register",
                                 "/login",
                                 "/css/**",
@@ -32,18 +33,24 @@ public class SpringSecurityConfig {
                                 "/view/reports/**"
                         ).hasRole("ADMIN")
                         .requestMatchers(
-                                "/",
                                 "/view/products/**",
                                 "/api/products/**",
                                 "/view/meals/**",
-                                "/api/meals/**"
+                                "/api/meals/**",
+                                "/view/daily-reports/**"
+                        ).hasRole("USER")
+                        .requestMatchers(
+                                "/api/account/**",
+                                "/view/account",
+                                "/api/profile/**",
+                                "/api/daily-reports/**"
                         ).hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/view/products/", true)
+                        .defaultSuccessUrl("/", true)
                         .failureUrl("/login?error=true")
                         .permitAll()
                 )

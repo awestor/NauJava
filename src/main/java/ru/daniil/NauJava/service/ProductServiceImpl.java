@@ -6,8 +6,10 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.Product;
 import ru.daniil.NauJava.entity.User;
+import ru.daniil.NauJava.repository.MealEntryRepository;
 import ru.daniil.NauJava.repository.ProductRepository;
-import ru.daniil.NauJava.request.UpdateProductRequest;
+import ru.daniil.NauJava.request.create.CreateProductRequest;
+import ru.daniil.NauJava.request.update.UpdateProductRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +19,15 @@ import java.util.Optional;
 @Service
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
+    private final MealEntryRepository mealEntryRepository;
     private final UserService userService;
 
     @Autowired
-    public ProductServiceImpl(ProductRepository productRepository, UserService userService) {
+    public ProductServiceImpl(ProductRepository productRepository, UserService userService,
+                              MealEntryRepository mealEntryRepository) {
         this.userService = userService;
         this.productRepository = productRepository;
+        this.mealEntryRepository = mealEntryRepository;
     }
 
     @Transactional
@@ -43,8 +48,26 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product saveProduct(Product productInfo) {
-        return productRepository.save(productInfo);
+    public Product saveProduct(CreateProductRequest productInfo) {
+        Product newProduct = Optional.of(productInfo)
+                .map(request -> new Product(
+                        request.getName(),
+                        "description",
+                        request.getCaloriesPer100g(),
+                        request.getProteinsPer100g(),
+                        request.getFatsPer100g(),
+                        request.getCarbsPer100g()
+                ))
+                .orElseThrow(() -> new IllegalArgumentException("CreateProductRequest cannot be null"));
+        newProduct.setCreatedByUser(userService.getAuthUser().orElse(null));
+
+        Product product = productRepository.findById(newProduct.getId()).orElse(null);
+
+        if (product != null){
+            return null;
+        }
+
+        return productRepository.save(newProduct);
     }
 
     @Transactional
@@ -66,16 +89,6 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Optional<Product> findById(Long identifier) {
         return productRepository.findById(identifier);
-    }
-
-    @Override
-    public List<Product> findProductsWithMinCaloriesAndUser(Double calories, Long userId) {
-        return productRepository.findProductsWithMinCaloriesAndUser(calories, userId);
-    }
-
-    @Override
-    public boolean existsByNameIgnoreCase(String productName) {
-        return productRepository.existsByNameIgnoreCase(productName);
     }
 
     @Transactional
@@ -122,11 +135,13 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new RuntimeException("Продукт не найден"));
 
         User currentUser = userService.getAuthUser().orElseThrow();
+
         if (product.getCreatedByUser() != null &&
                 !product.getCreatedByUser().getId().equals(currentUser.getId())) {
             throw new RuntimeException("У пользователя нет прав на удаление этого продукта");
         }
 
+        mealEntryRepository.disconnectFromProduct(id);
         productRepository.delete(product);
     }
 }

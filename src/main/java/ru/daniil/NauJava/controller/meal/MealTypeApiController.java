@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.controller;
+package ru.daniil.NauJava.controller.meal;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

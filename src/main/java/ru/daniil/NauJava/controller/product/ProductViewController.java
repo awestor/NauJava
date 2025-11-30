@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.controller;
+package ru.daniil.NauJava.controller.product;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,14 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.daniil.NauJava.entity.Product;
-import ru.daniil.NauJava.request.CreateProductRequest;
+import ru.daniil.NauJava.request.create.CreateProductRequest;
 import ru.daniil.NauJava.service.ProductService;
 import ru.daniil.NauJava.service.UserService;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping("/view/products")
@@ -30,16 +27,6 @@ public class ProductViewController {
     ProductViewController(UserService userService, ProductService productService) {
         this.userService = userService;
         this.productService = productService;
-    }
-
-    /**
-     * Возвращает домашнюю страницу
-     *
-     * @return index.html
-     */
-    @GetMapping(value = "/")
-    public String getIndex() {
-        return "index";
     }
 
     /**
@@ -91,31 +78,20 @@ public class ProductViewController {
         }
 
         try {
-            Product product = new Product(
-                    createProductRequest.getName(),
-                    "description",
-                    createProductRequest.getCaloriesPer100g(),
-                    createProductRequest.getProteinsPer100g(),
-                    createProductRequest.getFatsPer100g(),
-                    createProductRequest.getCarbsPer100g()
-            );
-            product.setCreatedByUser(userService.getAuthUser().orElse(null));
-
-            Product savedProduct = productService.saveProduct(product);
-
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "Product '" + savedProduct.getName() + "' successfully created!");
-
+            Product savedProduct = productService.saveProduct(createProductRequest);
+            if (savedProduct == null){
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Ошибка при создании продукта: Продукт уже сохранён в БД");
+            }
+            else {
+                redirectAttributes.addFlashAttribute("successMessage",
+                        "Продукт '" + savedProduct.getName() + "' успешно сохранён!");
+            }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
-                    "Error creating product: " + e.getMessage());
+                    "ошибка при создании продукта: " + e.getMessage());
         }
 
         return "redirect:/view/products/list";
-    }
-
-    @GetMapping("/calendarActivity")
-    public String showCalendarActivity() {
-        return "calendarActivity";
     }
 }

@@ -12,14 +12,17 @@
       </div>
 
       <nav class="nav-menu">
-        <a class="nav-link" th:href="@{/view/products/}">Главная</a>
+        <a class="nav-link" th:href="@{/}">Главная</a>
         <a class="nav-link" th:href="@{/view/products/list}">Продукты</a>
         <a class="nav-link" th:href="@{/view/meals/list}">Приёмы пищи</a>
-        <a class="nav-link" th:href="@{/view/dailyReport/stat}">Статистика</a>
+        <a class="nav-link" th:href="@{/view/daily-reports/stat}">Статистика</a>
       </nav>
 
       <div class="user-info">
-        <span class="user-welcome">Welcome,</span>
+        <a class="user-welcome-link" th:href="@{/view/account}">
+          <span class="user-welcome">Welcome, </span>
+          <span class="user-login" th:text="${#authentication.principal.username}">user</span>
+        </a>
         <form class="logout-form" th:action="@{/logout}" method="post">
           <button type="submit" class="btn btn-logout">Logout</button>
         </form>

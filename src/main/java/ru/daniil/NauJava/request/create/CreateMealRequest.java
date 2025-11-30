@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.request;
+package ru.daniil.NauJava.request.create;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

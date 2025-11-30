@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.request;
+package ru.daniil.NauJava.request.update;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;

@@ -7,7 +7,15 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Entity
-@Table(name = "tbl_product")
+@Table(
+    name = "tbl_product",
+    uniqueConstraints = {
+        @UniqueConstraint(
+                columnNames = {"name", "created_by_user_id"},
+                name = "unique_product_name_user"
+        )
+    }
+)
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

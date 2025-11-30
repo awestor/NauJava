@@ -78,9 +78,26 @@
     gap: 16px;
 }
 
-.user-welcome {
-    font-size: 14px;
+.user-welcome-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
     color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.user-welcome-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.user-login {
+    font-weight: 600;
+    color: #ffd700;
 }
 
 .btn {
@@ -130,5 +147,11 @@
 
     .user-info {
         gap: 12px;
+    }
+
+    .user-welcome-link {
+        flex-direction: column;
+        gap: 2px;
+        text-align: center;
     }
 }

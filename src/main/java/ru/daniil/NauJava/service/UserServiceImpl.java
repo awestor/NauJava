@@ -13,7 +13,8 @@ import ru.daniil.NauJava.enums.RoleType;
 import ru.daniil.NauJava.exception.ValidationException;
 import ru.daniil.NauJava.repository.RoleRepository;
 import ru.daniil.NauJava.repository.UserRepository;
-import ru.daniil.NauJava.request.RegistrationRequest;
+import ru.daniil.NauJava.request.create.RegistrationRequest;
+import ru.daniil.NauJava.request.update.UpdateAccountRequest;
 
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -24,24 +25,21 @@ public class UserServiceImpl implements UserService {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile(
             "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!$%^()_+\\-=\\[\\]{};:'\",.<>])[A-Za-z\\d!$%^()_+\\-=\\[\\]{};:'\",.<>]{8,}$"
     );
-
-    private static final Pattern USERNAME_PATTERN = Pattern.compile("^.{3,}$");
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserProfileService userProfileService;
+
     @Autowired
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
-                           PasswordEncoder passwordEncoder, UserProfileService userProfileService) {
+                           PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.userProfileService = userProfileService;
+
         this.passwordEncoder = passwordEncoder;
     }
 
     public User registerUser(RegistrationRequest request) {
-        validateUserData(request.getName(), request.getSurname(), request.getEmail(),
-                request.getPassword(), request.getLogin());
+        validateUserData(request.getEmail(), request.getPassword(), request.getLogin());
 
         User user = new User(
                 request.getEmail(),
@@ -53,30 +51,36 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException("Роль USER не найдена в системе"));
         user.addRole(userRole);
 
-        User newUser = userRepository.save(user);
-
-        userProfileService.registerUserProfile(newUser, request);
-
-        return newUser;
+        return userRepository.save(user);
     }
 
-    public boolean updateLogin(String newLogin) {
-        getAuthUser().ifPresent(user -> user.setLogin(newLogin));
-        return true;
-    }
+    public void updateUserAccount(UpdateAccountRequest request) {
+        User currentUser = getAuthUser().orElseThrow(() ->
+                new RuntimeException("Пользователь не авторизован"));
 
-    public boolean updatePassword(String newPassword) {
-        getAuthUser().ifPresent(user -> user.setPassword(passwordEncoder.encode(newPassword)));
-        return true;
-    }
-
-    private void validateUserData(String name, String surname, String email, String password, String login) {
-        if (name == null || !USERNAME_PATTERN.matcher(name).matches()) {
-            throw new ValidationException("Имя пользователя должно содержать минимум 3 символа");
+        if (!currentUser.getLogin().equals(request.getLogin())) {
+            userRepository.findByLogin(request.getLogin()).ifPresent(user -> {
+                throw new RuntimeException("Пользователь с таким логином уже существует");
+            });
         }
-        if (surname == null || surname.trim().isEmpty()) {
-            throw new ValidationException("Фамилия обязательна для заполнения");
+
+        if (!currentUser.getEmail().equals(request.getEmail())) {
+            userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
+                throw new RuntimeException("Пользователь с таким email уже существует");
+            });
         }
+
+        currentUser.setLogin(request.getLogin());
+        currentUser.setEmail(request.getEmail());
+
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            currentUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        userRepository.save(currentUser);
+    }
+
+    private void validateUserData(String email, String password, String login) {
         if (email == null || !email.contains("@")) {
             throw new ValidationException("Некорректный формат email");
         }
@@ -89,14 +93,6 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByLogin(login)) {
             throw new ValidationException("Пользователь с логином " + login + " уже существует");
         }
-    }
-
-    public Optional<User> findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    public Optional<User> findUserById(Long userId) {
-        return userRepository.findById(userId);
     }
 
     public Optional<User> getAuthUser(){
@@ -113,13 +109,5 @@ public class UserServiceImpl implements UserService {
 
     public boolean userExists(String email) {
         return userRepository.findByEmail(email).isPresent();
-    }
-
-    public void deleteUserByEmail(String email) {
-        userRepository.findByEmail(email).ifPresent(userRepository::delete);
-    }
-
-    public void deleteUserById(Long id) {
-        userRepository.deleteById(id);
     }
 }

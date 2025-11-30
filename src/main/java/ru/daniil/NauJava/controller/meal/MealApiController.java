@@ -1,13 +1,13 @@
-package ru.daniil.NauJava.controller;
+package ru.daniil.NauJava.controller.meal;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.NauJava.entity.Meal;
-import ru.daniil.NauJava.request.CreateMealRequest;
+import ru.daniil.NauJava.request.create.CreateMealRequest;
 import ru.daniil.NauJava.request.MealEntryResponse;
 import ru.daniil.NauJava.request.MealResponse;
-import ru.daniil.NauJava.request.UpdateMealRequest;
+import ru.daniil.NauJava.request.update.UpdateMealRequest;
 import ru.daniil.NauJava.service.MealService;
 
 import java.util.List;
@@ -62,7 +62,6 @@ public class MealApiController {
         }
     }
 
-    // Метод для получения данных приема пищи для редактирования
     @GetMapping("/{id}")
     public ResponseEntity<MealResponse> getMeal(@PathVariable Long id) {
         try {

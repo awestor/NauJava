@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.controller;
+package ru.daniil.NauJava.controller.meal;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -40,8 +40,14 @@ public class MealViewController {
             date = LocalDate.now();
         }
 
-        DailyReport dailyReport = dailyReportService.getOrCreateDailyReportAuth(date);
-        List<Meal> meals = mealService.getByDailyReportId(dailyReport.getId());
+        DailyReport dailyReport = dailyReportService.getDailyReportAuth(date).orElse(null);
+        List<Meal> meals;
+        if(dailyReport != null) {
+            meals = mealService.getByDailyReportId(dailyReport.getId());
+        }
+        else {
+            meals = new ArrayList<>();
+        }
 
         Map<Long, List<MealEntry>> mealEntries = new HashMap<>();
         Map<Long, NutritionSumResponse> nutritionSums = new HashMap<>();

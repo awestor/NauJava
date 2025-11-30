@@ -14,8 +14,7 @@ import ru.daniil.NauJava.repository.MealTypeRepository;
 import ru.daniil.NauJava.request.NutritionSumResponse;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class MealServiceImpl implements MealService {
@@ -42,16 +41,6 @@ public class MealServiceImpl implements MealService {
         this.transactionManager = transactionManager;
     }
 
-    /*
-        Данный метод обёрнут в транзакционную обёртку
-        Список действий в классе:
-        1. Проверка на существование пользователя
-        2. Получение или создание DailyReport для сегодняшней даты
-        3. Создание приема пищи
-        4. Создание MealEntry для каждого продукта
-        5. Пересчёт "totals" для DailyReport
-        6. Коммит транзакции если все успешно
-         */
     @Override
     public Meal createMealWithProducts(String mealTypeName,
                                        List<String> productNames, List<Integer> quantities) {
@@ -68,7 +57,17 @@ public class MealServiceImpl implements MealService {
             Meal meal = createMeal(dailyReport, mealType);
             logger.debug("Создан прием пищи ID: {}", meal.getId());
 
-            List<MealEntry> mealEntries = mealEntryService.createMealEntries(meal, productNames, quantities);
+            Map<String, Integer> productQuantities = new HashMap<>();
+            for (int i = 0; i < productNames.size(); i++) {
+                String productName = productNames.get(i);
+                Integer quantity = quantities.get(i);
+                productQuantities.merge(productName, quantity, Integer::sum);
+            }
+
+            List<String> uniqueProductNames = new ArrayList<>(productQuantities.keySet());
+            List<Integer> summedQuantities = new ArrayList<>(productQuantities.values());
+
+            List<MealEntry> mealEntries = mealEntryService.createMealEntries(meal, uniqueProductNames, summedQuantities);
             for (MealEntry mealEntry : mealEntries) {
                 meal.addMealEntry(mealEntry);
             }
@@ -145,18 +144,14 @@ public class MealServiceImpl implements MealService {
         Meal meal = mealRepository.findById(mealId)
                 .orElseThrow(() -> new RuntimeException("Meal not found"));
 
-        logger.info("Сущность для редактирования найдена");
         MealType mealType = mealTypeRepository.findByName(mealTypeName)
                 .orElseThrow(() -> new RuntimeException("Meal type not found"));
         meal.setMealType(mealType);
-        logger.info("Тип приёма пищи найдена, тип: {}",  mealType.getName());
 
         mealEntryService.deleteByMealId(mealId);
-        logger.info("Все старые сущности MealEntry были удалены");
         meal.getMealEntries().clear();
 
         mealEntryService.createMealEntries(meal, productNames, quantities);
-        logger.info("Запись обновлена");
         return mealRepository.save(meal);
     }
 

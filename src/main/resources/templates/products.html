@@ -22,11 +22,23 @@
         </a>
     </div>
 
+    <!-- Поиск и управление -->
+    <div class="controls-section">
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Поиск продуктов по названию...">
+            <div class="search-icon">🔍</div>
+        </div>
+
+        <div class="pagination-info" id="paginationInfo">
+            Показано <span id="shownCount">0</span> из <span id="totalCount" th:text="${#lists.size(products)}">0</span> продуктов
+        </div>
+    </div>
+
     <div class="table-container">
         <table class="products-table">
             <thead>
             <tr>
-                <th data-sort="order" class="sortable sort-asc">
+                <th data-sort="order" class="sortable sort-desc">
                     <span class="th-content">№</span>
                 </th>
                 <th data-sort="name" class="sortable">
@@ -49,9 +61,9 @@
                 </th>
             </tr>
             </thead>
-            <tbody>
-            <tr th:each="product, stat : ${products}" th:data-product-id="${product.id}">
-                <td th:text="${stat.count}" class="font-mono"></td>
+            <tbody id="productsTableBody">
+            <tr th:each="product, stat : ${products}" th:data-product-id="${product.id}" class="product-row">
+                <td th:text="${stat.count}" class="font-mono sort-asc order-cell"></td>
                 <td th:text="${product.name}" class="product-name"></td>
                 <td th:text="${#numbers.formatDecimal(product.caloriesPer100g, 1, 2)} + ' ккал'" class="font-mono"></td>
                 <td th:text="${#numbers.formatDecimal(product.proteinsPer100g, 1, 2)} + ' г'" class="font-mono"></td>
@@ -72,6 +84,37 @@
         </table>
     </div>
 
+    <!-- Пагинация -->
+    <div class="pagination-container" id="paginationContainer" style="display: none;">
+        <div class="pagination">
+            <button class="pagination-btn" id="prevPage" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+            </button>
+
+            <div class="pagination-pages" id="paginationPages">
+                <!-- Страницы будут генерироваться динамически -->
+            </div>
+
+            <button class="pagination-btn" id="nextPage">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="page-size-selector">
+            <label for="pageSizeSelect">Показывать по:</label>
+            <select id="pageSizeSelect" class="page-size-select">
+                <option value="8">8</option>
+                <option value="16">16</option>
+                <option value="24">24</option>
+                <option value="48">48</option>
+            </select>
+        </div>
+    </div>
+
     <div th:if="${products.isEmpty()}" class="empty-state">
         <div class="empty-state-icon">📦</div>
         <h3 class="empty-state-title">Продукты не найдены</h3>
@@ -88,6 +131,10 @@
                 <div class="stat-item">
                     <span class="stat-label">Всего продуктов</span>
                     <span class="stat-value" th:text="${#lists.size(products)}">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Отфильтровано</span>
+                    <span class="stat-value" id="filteredProductsCount">0</span>
                 </div>
             </div>
         </div>

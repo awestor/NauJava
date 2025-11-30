@@ -1,15 +1,353 @@
+let allProducts = [];
+let filteredProducts = [];
+let currentPage = 1;
+let pageSize = 8;
+let currentSort = {
+    column: 'order',
+    direction: 'desc'
+};
+let searchTimeout = null;
+
 document.addEventListener('DOMContentLoaded', function() {
+    initializeProductsData();
     initializeTableSorting();
     initializeProductModals();
+    initializeSearch();
+    initializePagination();
 
     setTimeout(() => {
-        saveOriginalOrderNumbers();
         const orderHeader = document.querySelector('th[data-sort="order"]');
         if (orderHeader) {
             orderHeader.click();
         }
     }, 100);
 });
+
+function initializeProductsData() {
+    const productRows = document.querySelectorAll('.product-row');
+    allProducts = Array.from(productRows).map((row, index) => {
+        const originalOrder = parseInt(row.querySelector('.order-cell').textContent);
+        return {
+            id: row.getAttribute('data-product-id'),
+            name: row.querySelector('.product-name').textContent.trim(),
+            calories: parseFloat(row.cells[2].textContent.split(' ')[0]) || 0,
+            proteins: parseFloat(row.cells[3].textContent.split(' ')[0]) || 0,
+            fats: parseFloat(row.cells[4].textContent.split(' ')[0]) || 0,
+            carbs: parseFloat(row.cells[5].textContent.split(' ')[0]) || 0,
+            originalOrder: originalOrder,
+            element: row
+        };
+    });
+
+    filteredProducts = [...allProducts];
+    updateStats();
+    checkPaginationNeeded();
+}
+
+function initializeSearch() {
+    const searchInput = document.getElementById('searchInput');
+
+    searchInput.addEventListener('input', function(e) {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
+        searchTimeout = setTimeout(() => {
+            performSearch(e.target.value.trim());
+        }, 200);
+    });
+
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            e.target.value = '';
+            performSearch('');
+        }
+    });
+}
+
+function performSearch(searchTerm) {
+    if (searchTerm === '') {
+        filteredProducts = [...allProducts];
+    } else {
+        const searchLower = searchTerm.toLowerCase();
+        filteredProducts = allProducts.filter(product =>
+            product.name.toLowerCase().includes(searchLower)
+        );
+    }
+
+    currentPage = 1;
+    applySortingAndPagination();
+    updateStats();
+    checkPaginationNeeded();
+}
+
+function initializePagination() {
+    const pageSizeSelect = document.getElementById('pageSizeSelect');
+    const prevPageBtn = document.getElementById('prevPage');
+    const nextPageBtn = document.getElementById('nextPage');
+
+    pageSizeSelect.addEventListener('change', function(e) {
+        pageSize = parseInt(e.target.value);
+        currentPage = 1;
+        applySortingAndPagination();
+        updatePaginationControls();
+    });
+
+    prevPageBtn.addEventListener('click', function() {
+        if (currentPage > 1) {
+            currentPage--;
+            applySortingAndPagination();
+            updatePaginationControls();
+        }
+    });
+
+    nextPageBtn.addEventListener('click', function() {
+        const totalPages = Math.ceil(filteredProducts.length / pageSize);
+        if (currentPage < totalPages) {
+            currentPage++;
+            applySortingAndPagination();
+            updatePaginationControls();
+        }
+    });
+}
+
+function applySortingAndPagination() {
+    const sortedProducts = sortProducts([...filteredProducts]);
+
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
+
+    updateTableDisplay(paginatedProducts);
+    updatePaginationInfo();
+}
+
+function sortProducts(products) {
+    return products.sort((a, b) => {
+        const aValue = getProductValue(a, currentSort.column);
+        const bValue = getProductValue(b, currentSort.column);
+
+        if (currentSort.column === 'order') {
+            return currentSort.direction === 'asc' ?
+                a.originalOrder - b.originalOrder :
+                b.originalOrder - a.originalOrder;
+        }
+
+        if (['calories', 'proteins', 'fats', 'carbs'].includes(currentSort.column)) {
+            return currentSort.direction === 'asc' ? aValue - bValue : bValue - aValue;
+        }
+
+        if (currentSort.direction === 'asc') {
+            return aValue.localeCompare(bValue);
+        } else {
+            return bValue.localeCompare(aValue);
+        }
+    });
+}
+
+function getProductValue(product, column) {
+    switch (column) {
+        case 'name':
+            return product.name;
+        case 'calories':
+            return product.calories;
+        case 'proteins':
+            return product.proteins;
+        case 'fats':
+            return product.fats;
+        case 'carbs':
+            return product.carbs;
+        default:
+            return '';
+    }
+}
+
+function updateTableDisplay(productsToShow) {
+    const tbody = document.getElementById('productsTableBody');
+
+    tbody.innerHTML = '';
+
+    productsToShow.forEach((product) => {
+        const row = product.element.cloneNode(true);
+        row.querySelector('.order-cell').textContent = product.originalOrder;
+        tbody.appendChild(row);
+    });
+}
+
+function updatePaginationInfo() {
+    const shownCount = document.getElementById('shownCount');
+    const totalCount = document.getElementById('totalCount');
+    const startIndex = (currentPage - 1) * pageSize + 1;
+    const endIndex = Math.min(currentPage * pageSize, filteredProducts.length);
+
+    shownCount.textContent = `${startIndex}-${endIndex}`;
+    totalCount.textContent = filteredProducts.length;
+}
+
+function updatePaginationControls() {
+    const totalPages = Math.ceil(filteredProducts.length / pageSize);
+    const paginationPages = document.getElementById('paginationPages');
+    const prevPageBtn = document.getElementById('prevPage');
+    const nextPageBtn = document.getElementById('nextPage');
+
+    prevPageBtn.disabled = currentPage === 1;
+    nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+    paginationPages.innerHTML = '';
+
+    if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) {
+            addPageButton(i, paginationPages);
+        }
+    } else {
+        addPageButton(1, paginationPages);
+
+        if (currentPage > 3) {
+            addEllipsis(paginationPages);
+        }
+
+        const startPage = Math.max(2, currentPage - 1);
+        const endPage = Math.min(totalPages - 1, currentPage + 1);
+
+        for (let i = startPage; i <= endPage; i++) {
+            addPageButton(i, paginationPages);
+        }
+
+        if (currentPage < totalPages - 2) {
+            addEllipsis(paginationPages);
+        }
+
+        addPageButton(totalPages, paginationPages);
+    }
+}
+
+function addPageButton(pageNumber, container) {
+    const pageBtn = document.createElement('button');
+    pageBtn.className = `pagination-page ${pageNumber === currentPage ? 'active' : ''}`;
+    pageBtn.textContent = pageNumber;
+    pageBtn.addEventListener('click', () => {
+        currentPage = pageNumber;
+        applySortingAndPagination();
+        updatePaginationControls();
+    });
+    container.appendChild(pageBtn);
+}
+
+function addEllipsis(container) {
+    const ellipsis = document.createElement('span');
+    ellipsis.className = 'pagination-ellipsis';
+    ellipsis.textContent = '...';
+    container.appendChild(ellipsis);
+}
+
+function checkPaginationNeeded() {
+    const paginationContainer = document.getElementById('paginationContainer');
+
+    if (filteredProducts.length > pageSize) {
+        paginationContainer.style.display = 'flex';
+        updatePaginationControls();
+    } else {
+        paginationContainer.style.display = 'none';
+    }
+}
+
+function updateStats() {
+    const totalCountElement = document.getElementById('totalProductsCount');
+    const filteredCountElement = document.getElementById('filteredProductsCount');
+
+    if (totalCountElement) {
+        totalCountElement.textContent = allProducts.length;
+    }
+    if (filteredCountElement) {
+        filteredCountElement.textContent = allProducts.length - filteredProducts.length;
+    }
+}
+
+function initializeTableSorting() {
+    const table = document.querySelector('.products-table');
+    const headers = table.querySelectorAll('th.sortable');
+
+    headers.forEach(header => {
+        header.addEventListener('click', function() {
+            const column = this.getAttribute('data-sort');
+            sortTable(column);
+        });
+    });
+
+    function sortTable(column) {
+        if (currentSort.column === column) {
+            currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort.column = column;
+            currentSort.direction = 'asc';
+        }
+
+        applySortingAndPagination();
+        updateSortIndicators(column);
+    }
+
+    function updateSortIndicators(activeColumn) {
+        headers.forEach(header => {
+            header.classList.remove('sort-asc', 'sort-desc');
+            if (header.getAttribute('data-sort') === activeColumn) {
+                header.classList.add(`sort-${currentSort.direction}`);
+            }
+        });
+    }
+}
+
+function deleteProduct(productId) {
+    if (!confirm('Вы уверены, что хотите удалить этот продукт?')) {
+        return;
+    }
+
+    fetch(`/api/products/${productId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken()
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            showNotification('Продукт успешно удалён', 'success');
+
+            const deletedProduct = allProducts.find(p => p.id === productId.toString());
+            const deletedOrder = deletedProduct ? deletedProduct.originalOrder : null;
+
+            allProducts = allProducts.filter(p => p.id !== productId.toString());
+            filteredProducts = filteredProducts.filter(p => p.id !== productId.toString());
+
+            if (deletedOrder !== null) {
+                allProducts.forEach(product => {
+                    if (product.originalOrder > deletedOrder) {
+                        product.originalOrder -= 1;
+                    }
+                });
+                filteredProducts.forEach(product => {
+                    if (product.originalOrder > deletedOrder) {
+                        product.originalOrder -= 1;
+                    }
+                });
+            }
+
+            const totalPages = Math.ceil(filteredProducts.length / pageSize);
+            if (currentPage > totalPages && totalPages > 0) {
+                currentPage = totalPages;
+            }
+
+            applySortingAndPagination();
+            updateStats();
+            checkPaginationNeeded();
+        } else {
+            throw new Error(`HTTP ${response.status}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting product:', error);
+        alert('Ошибка при удалении продукта');
+    });
+}
 
 function validateProductName(input) {
     const value = input.value;
@@ -24,135 +362,12 @@ function validateProductName(input) {
     }
 }
 
-function initializeTableSorting() {
-    const table = document.querySelector('.products-table');
-    const headers = table.querySelectorAll('th.sortable');
-    let currentSort = {
-        column: 'order',
-        direction: 'desc'
-    };
-
-    headers.forEach(header => {
-        header.addEventListener('click', function() {
-            const column = this.getAttribute('data-sort');
-            sortTable(column);
-        });
-    });
-
-    function sortTable(column) {
-        const tbody = table.querySelector('tbody');
-        const rows = Array.from(tbody.querySelectorAll('tr'));
-
-        if (currentSort.column === column) {
-            currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-        } else {
-            currentSort.column = column;
-            currentSort.direction = 'asc';
-        }
-
-        rows.sort((a, b) => {
-            const aValue = getCellValue(a, column);
-            const bValue = getCellValue(b, column);
-
-            if (column === 'order') {
-                const aNum = parseInt(aValue) || 0;
-                const bNum = parseInt(bValue) || 0;
-                return currentSort.direction === 'asc' ? aNum - bNum : bNum - aNum;
-            }
-
-            if (['calories', 'proteins', 'fats', 'carbs'].includes(column)) {
-                const aNum = parseFloat(aValue) || 0;
-                const bNum = parseFloat(bValue) || 0;
-                return currentSort.direction === 'asc' ? aNum - bNum : bNum - aNum;
-            }
-
-            if (currentSort.direction === 'asc') {
-                return aValue.localeCompare(bValue);
-            } else {
-                return bValue.localeCompare(aValue);
-            }
-        });
-
-        tbody.innerHTML = '';
-        rows.forEach(row => tbody.appendChild(row));
-
-        updateSortIndicators(column);
-    }
-
-    function getCellValue(row, column) {
-        const cellIndex = getColumnIndex(column);
-        const cell = row.cells[cellIndex];
-        if (!cell) return '';
-
-        if (column === 'order') {
-            return cell.textContent.trim();
-        }
-
-        if (column === 'name') {
-            return cell.textContent.trim();
-        }
-
-        const text = cell.textContent.trim();
-        if (['calories', 'proteins', 'fats', 'carbs'].includes(column)) {
-            return text.split(' ')[0];
-        }
-
-        return text;
-    }
-
-    function getColumnIndex(column) {
-        const headers = table.querySelectorAll('th[data-sort]');
-        for (let i = 0; i < headers.length; i++) {
-            if (headers[i].getAttribute('data-sort') === column) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    function updateSortIndicators(activeColumn) {
-        headers.forEach(header => {
-            header.classList.remove('sort-asc', 'sort-desc');
-            if (header.getAttribute('data-sort') === activeColumn) {
-                header.classList.add(`sort-${currentSort.direction}`);
-            }
-        });
-    }
-}
-
-function saveOriginalOrderNumbers() {
-    const rows = document.querySelectorAll('.products-table tbody tr');
-    rows.forEach((row, index) => {
-        const orderCell = row.cells[0];
-        orderCell.setAttribute('data-original-order', (index + 1).toString());
-    });
-}
-
-function restoreOriginalOrderNumbers(rows) {
-    rows.forEach(row => {
-        const orderCell = row.cells[0];
-        const originalOrder = orderCell.getAttribute('data-original-order');
-        if (originalOrder) {
-            orderCell.textContent = originalOrder;
-        }
-    });
-}
-
-function renumberTableRows() {
-    const rows = document.querySelectorAll('.products-table tbody tr');
-    rows.forEach((row, index) => {
-        const orderCell = row.cells[0];
-        const newOrder = index + 1;
-        orderCell.textContent = newOrder;
-        orderCell.setAttribute('data-original-order', newOrder.toString());
-    });
-}
-
 function initializeProductModals() {
     document.getElementById('editProductForm').addEventListener('submit', function(e) {
         e.preventDefault();
         updateProduct();
     });
+
     const modal = document.getElementById('editProductModal');
     let mouseDownOnOverlay = false;
 
@@ -270,53 +485,6 @@ function updateProduct() {
     });
 }
 
-function deleteProduct(productId) {
-    if (!confirm('Вы уверены, что хотите удалить этот продукт?')) {
-        return;
-    }
-
-    fetch(`/api/products/${productId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': getCsrfToken()
-        }
-    })
-    .then(response => {
-        if (response.ok) {
-            showNotification('Продукт успешно удалён', 'success');
-            const row = document.querySelector(`tr[data-product-id="${productId}"]`);
-            if (row) {
-                row.remove();
-                renumberTableRows();
-            }
-            updateStats();
-        } else {
-            throw new Error(`HTTP ${response.status}`);
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting product:', error);
-        alert('Ошибка при удалении продукта');
-    });
-}
-
-function renumberTableRows() {
-    const rows = document.querySelectorAll('.products-table tbody tr');
-    rows.forEach((row, index) => {
-        const orderCell = row.cells[0];
-        orderCell.textContent = index + 1;
-    });
-}
-
-function updateStats() {
-    const totalCountElement = document.querySelector('.stat-value');
-    if (totalCountElement) {
-        const currentCount = parseInt(totalCountElement.textContent) || 0;
-        totalCountElement.textContent = Math.max(0, currentCount - 1);
-    }
-}
-
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
@@ -359,16 +527,19 @@ function getCsrfToken() {
     return metaToken ? metaToken.getAttribute('content') : '';
 }
 
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
+if (!document.querySelector('style[data-products]')) {
+    const style = document.createElement('style');
+    style.setAttribute('data-products', 'true');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
 
-    @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-`;
-document.head.appendChild(style);
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+}

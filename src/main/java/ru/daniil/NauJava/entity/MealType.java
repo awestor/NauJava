@@ -22,7 +22,7 @@ public class MealType {
     public MealType(){
     }
 
-    public MealType(String description, String name){
+    public MealType(String name, String description){
         this.description = description;
         this.name = name;
     }

@@ -1,14 +1,14 @@
-package ru.daniil.NauJava.controller;
+package ru.daniil.NauJava.controller.report;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import ru.daniil.NauJava.entity.ReportStatus;
+import ru.daniil.NauJava.enums.ReportStatus;
 import ru.daniil.NauJava.request.ReportCreationResponse;
 import ru.daniil.NauJava.service.ReportService;
 
 @Controller
-@RequestMapping("/api/reports")
+@RequestMapping("/admin/api/reports")
 public class ReportApiController {
 
     private final ReportService reportService;

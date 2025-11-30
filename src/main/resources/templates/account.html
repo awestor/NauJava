@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профиль пользователя</title>
+  <link rel="stylesheet" th:href="@{/css/header.css}">
+  <link rel="stylesheet" th:href="@{/css/account.css}">
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="main-container">
+  <div class="profile-layout">
+    <!-- Левая колонка -->
+    <div class="left-column">
+      <!-- Календарь -->
+      <div class="calendar-section">
+        <div class="calendar" id="calendar">
+          <div class="calendar-loading">
+            <div class="loading-spinner"></div>
+            <p>Загрузка календаря...</p>
+          </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="stats-section">
+          <div class="streak-card">
+            <div class="streak-icon">🔥</div>
+            <div class="streak-info">
+              <div class="streak-count" th:text="${userProfile.currentStreak} + ' дней'">0 дней</div>
+              <div class="streak-label">Текущая серия</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Целевые показатели -->
+      <div class="goals-section">
+        <h3 class="section-title">Целевые показатели</h3>
+        <div class="goals-table" th:if="${hasCompleteProfile}">
+          <div class="goal-row">
+            <span class="goal-label">Калории:</span>
+            <span class="goal-value" th:text="${nutritionGoal.dailyCalorieGoal} + ' ккал'">2000 ккал</span>
+          </div>
+          <div class="goal-row" th:if="${nutritionGoal.dailyProteinGoal}">
+            <span class="goal-label">Белки:</span>
+            <span class="goal-value" th:text="${nutritionGoal.dailyProteinGoal} + ' г'">150 г</span>
+          </div>
+          <div class="goal-row" th:if="${nutritionGoal.dailyFatGoal}">
+            <span class="goal-label">Жиры:</span>
+            <span class="goal-value" th:text="${nutritionGoal.dailyFatGoal} + ' г'">70 г</span>
+          </div>
+          <div class="goal-row" th:if="${nutritionGoal.dailyCarbsGoal}">
+            <span class="goal-label">Углеводы:</span>
+            <span class="goal-value" th:text="${nutritionGoal.dailyCarbsGoal} + ' г'">250 г</span>
+          </div>
+        </div>
+        <div class="goals-warning" th:unless="${hasCompleteProfile}">
+          <p>Заполните профиль для расчета целевых показателей</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Правая колонка -->
+    <div class="right-column">
+      <div class="tabs-section">
+        <div class="tabs-header">
+          <button class="tab-button active" data-tab="account">Аккаунт</button>
+          <button class="tab-button" data-tab="profile">Профиль</button>
+        </div>
+
+        <div class="tab-content active" id="accountTab">
+          <div class="info-card">
+            <div class="info-row">
+              <span class="info-label">Логин:</span>
+              <span class="info-value" th:text="${user.login}">user123</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Email:</span>
+              <span class="info-value" th:text="${user.email}">user@example.com</span>
+            </div>
+            <button class="btn btn-outline edit-btn" onclick="openEditAccountModal()">
+              Редактировать данные аккаунта
+            </button>
+          </div>
+        </div>
+
+        <div class="tab-content" id="profileTab">
+          <div class="info-card">
+            <div class="info-row">
+              <span class="info-label">Имя:</span>
+              <span class="info-value" th:text="${userProfile.name} ?: '-'">Иван</span>
+            </div>
+              <div class="info-row">
+                  <span class="info-label">Фамилия:</span>
+                  <span class="info-value" th:text="${userProfile.surname} ?: '-'">Иванов</span>
+              </div>
+              <div class="info-row">
+                  <span class="info-label">Отчество:</span>
+                  <span class="info-value" th:text="${userProfile.patronymic} ?: '-'">-</span>
+              </div>
+            <div class="info-row" th:if="${date}">
+              <span class="info-label">Дата рождения:</span>
+                <span class="info-value" th:if="${date != null}"
+                      th:text="${#dates.format(date, 'dd.MM.yyyy')}">01.01.1990</span>
+                <span class="info-value" th:unless="${date != null}">--.--.----</span>
+            </div>
+              <div class="info-row">
+                  <span class="info-label">Пол:</span>
+                  <span class="info-value" th:if="${userProfile.gender != null && userProfile.gender == 'M'}">Мужской</span>
+                  <span class="info-value" th:if="${userProfile.gender != null && userProfile.gender == 'F'}">Женский</span>
+                  <span class="info-value" th:unless="${userProfile.gender != null}">-</span>
+              </div>
+              <div class="info-row">
+                  <span class="info-label">Рост:</span>
+                  <span class="info-value" th:if="${userProfile.height != null}"
+                        th:text="${userProfile.height} + ' см'">180 см</span>
+                  <span class="info-value" th:unless="${userProfile.height != null}">-</span>
+              </div>
+              <div class="info-row">
+                  <span class="info-label">Вес:</span>
+                  <span class="info-value" th:if="${userProfile.weight != null}"
+                        th:text="${userProfile.weight} + ' кг'">75 кг</span>
+                  <span class="info-value" th:unless="${userProfile.weight != null}">-</span>
+              </div>
+              <div class="info-row">
+                  <span class="info-label">Целевой вес:</span>
+                  <span class="info-value" th:if="${userProfile.targetWeight != null}"
+                        th:text="${userProfile.targetWeight} + ' кг'">70 кг</span>
+                  <span class="info-value" th:unless="${userProfile.targetWeight != null}">-</span>
+              </div>
+              <div class="info-row">
+                  <span class="info-label">Уровень активности:</span>
+                  <span class="info-value" th:if="${userProfile.activityLevel != null}"
+                        th:text="${userProfile.activityLevel.levelName}">Умеренная</span>
+                  <span class="info-value" th:unless="${userProfile.activityLevel != null}">-</span>
+              </div>
+              <button class="btn btn-outline edit-btn" onclick="openEditProfileModal()">
+                  Редактировать данные профиля
+              </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Модальное окно редактирования аккаунта -->
+<div id="accountModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Редактирование аккаунта</h3>
+      <button type="button" class="btn-close" onclick="closeAccountModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="accountForm">
+        <div class="form-group">
+          <label for="login" class="form-label">Логин</label>
+          <input type="text" id="login" name="login" class="form-input"
+                 th:value="${user.login}" required>
+          <div class="error-message" id="loginError"></div>
+          <div class="form-hint">Минимум 6 символов, только буквы, цифры и подчеркивания</div>
+        </div>
+        <div class="form-group">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" id="email" name="email" class="form-input"
+                 th:value="${user.email}" required>
+          <div class="error-message" id="emailError"></div>
+        </div>
+        <div class="form-group">
+          <label for="password" class="form-label">Новый пароль</label>
+          <input type="password" id="password" name="password" class="form-input">
+          <div class="error-message" id="passwordError"></div>
+          <div class="form-hint">Минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы</div>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword" class="form-label">Подтверждение пароля</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" class="form-input">
+          <div class="error-message" id="confirmPasswordError"></div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeAccountModal()">Отмена</button>
+          <button type="submit" class="btn btn-primary" id="accountSubmitBtn">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно редактирования профиля -->
+<div id="profileModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Редактирование профиля</h3>
+      <button type="button" class="btn-close" onclick="closeProfileModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="profileForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name" class="form-label">Имя</label>
+            <input type="text" id="name" name="name" class="form-input"
+                   th:value="${userProfile.name}" required>
+            <div class="error-message" id="nameError"></div>
+          </div>
+          <div class="form-group">
+            <label for="surname" class="form-label">Фамилия</label>
+            <input type="text" id="surname" name="surname" class="form-input"
+                   th:value="${userProfile.surname}" required>
+            <div class="error-message" id="surnameError"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="patronymic" class="form-label">Отчество</label>
+          <input type="text" id="patronymic" name="patronymic" class="form-input"
+                 th:value="${userProfile.patronymic}">
+          <div class="error-message" id="patronymicError"></div>
+        </div>
+        <div class="form-group">
+          <label for="dateOfBirth" class="form-label">Дата рождения</label>
+          <input type="date" id="dateOfBirth" name="dateOfBirth" class="form-input"
+                 th:value="${userProfile.dateOfBirth}">
+          <div class="error-message" id="dateOfBirthError"></div>
+        </div>
+        <div class="form-group">
+          <label for="gender" class="form-label">Пол</label>
+          <select id="gender" name="gender" class="form-select">
+            <option value="">Выберите пол</option>
+            <option value="M" th:selected="${userProfile.gender == 'M'}">Мужской</option>
+            <option value="F" th:selected="${userProfile.gender == 'F'}">Женский</option>
+          </select>
+          <div class="error-message" id="genderError"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="height" class="form-label">Рост (см)</label>
+            <input type="number" id="height" name="height" class="form-input"
+                   th:value="${userProfile.height}" min="100" max="250">
+            <div class="error-message" id="heightError"></div>
+          </div>
+          <div class="form-group">
+            <label for="weight" class="form-label">Вес (кг)</label>
+            <input type="number" id="weight" name="weight" class="form-input"
+                   th:value="${userProfile.weight}" min="30" max="300" step="0.1">
+            <div class="error-message" id="weightError"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="targetWeight" class="form-label">Целевой вес (кг)</label>
+          <input type="number" id="targetWeight" name="targetWeight" class="form-input"
+                 th:value="${userProfile.targetWeight}" min="30" max="300" step="0.1">
+          <div class="error-message" id="targetWeightError"></div>
+        </div>
+        <div class="form-group">
+          <label for="activityLevel" class="form-label">Уровень активности</label>
+          <select id="activityLevel" name="activityLevelId" class="form-select">
+            <option value="">Выберите уровень активности</option>
+            <option th:each="level : ${activityLevels}"
+                    th:value="${level.id}"
+                    th:text="${level.levelName}"
+                    th:selected="${userProfile.activityLevel != null && userProfile.activityLevel.id == level.id}">
+            </option>
+          </select>
+          <div class="error-message" id="activityLevelError"></div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeProfileModal()">Отмена</button>
+          <button type="submit" class="btn btn-primary" id="profileSubmitBtn">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+    let originalAccountData = null;
+    let originalProfileData = null;
+    let isSubmitting = false;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeCalendar();
+        initializeTabs();
+        storeOriginalData();
+    });
+
+    function storeOriginalData() {
+      originalAccountData = {
+        login: document.getElementById('login')?.value || '',
+        email: document.getElementById('email')?.value || ''
+      };
+
+      const dateOfBirthInput = document.getElementById('dateOfBirth');
+      const heightInput = document.getElementById('height');
+      const weightInput = document.getElementById('weight');
+      const targetWeightInput = document.getElementById('targetWeight');
+      const activityLevelInput = document.getElementById('activityLevel');
+
+      originalProfileData = {
+        name: document.getElementById('name')?.value || '',
+        surname: document.getElementById('surname')?.value || '',
+        patronymic: document.getElementById('patronymic')?.value || '',
+        dateOfBirth: dateOfBirthInput?.value || '',
+        gender: document.getElementById('gender')?.value || '',
+        height: heightInput?.value || '',
+        weight: weightInput?.value || '',
+        targetWeight: targetWeightInput?.value || '',
+        activityLevelId: activityLevelInput?.value || ''
+      };
+    }
+
+    function hasAccountChanges() {
+        if (!originalAccountData) return true;
+
+        const currentData = {
+            login: document.getElementById('login').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        };
+
+        return currentData.login !== originalAccountData.login ||
+               currentData.email !== originalAccountData.email ||
+               currentData.password !== '';
+    }
+
+    // Проверка изменений в данных профиля
+    function hasProfileChanges() {
+      if (!originalProfileData) return true;
+
+      const dateOfBirthInput = document.getElementById('dateOfBirth');
+      const heightInput = document.getElementById('height');
+      const weightInput = document.getElementById('weight');
+      const targetWeightInput = document.getElementById('targetWeight');
+      const activityLevelInput = document.getElementById('activityLevel');
+
+      const currentData = {
+          name: document.getElementById('name').value,
+          surname: document.getElementById('surname').value,
+          patronymic: document.getElementById('patronymic').value,
+          dateOfBirth: dateOfBirthInput?.value || '',
+          gender: document.getElementById('gender').value,
+          height: heightInput?.value || '',
+          weight: weightInput?.value || '',
+          targetWeight: targetWeightInput?.value || '',
+          activityLevelId: activityLevelInput?.value || ''
+      };
+
+      // Функция для сравнения значений с учетом null
+      const valuesEqual = (val1, val2) => {
+          const normalizedVal1 = val1 === '' ? null : val1;
+          const normalizedVal2 = val2 === '' ? null : val2;
+          return normalizedVal1 === normalizedVal2;
+      };
+
+      return !valuesEqual(currentData.name, originalProfileData.name) ||
+             !valuesEqual(currentData.surname, originalProfileData.surname) ||
+             !valuesEqual(currentData.patronymic, originalProfileData.patronymic) ||
+             !valuesEqual(currentData.dateOfBirth, originalProfileData.dateOfBirth) ||
+             !valuesEqual(currentData.gender, originalProfileData.gender) ||
+             !valuesEqual(currentData.height, originalProfileData.height) ||
+             !valuesEqual(currentData.weight, originalProfileData.weight) ||
+             !valuesEqual(currentData.targetWeight, originalProfileData.targetWeight) ||
+             !valuesEqual(currentData.activityLevelId, originalProfileData.activityLevelId);
+    }
+
+    function initializeTabs() {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                button.classList.add('active');
+                document.getElementById(tabId + 'Tab').classList.add('active');
+            });
+        });
+    }
+
+    // Функции для модальных окон
+    function openEditAccountModal() {
+        clearErrors('accountForm');
+        document.getElementById('accountModal').classList.add('active');
+    }
+
+    function closeAccountModal() {
+        document.getElementById('accountModal').classList.remove('active');
+    }
+
+    function openEditProfileModal() {
+      clearErrors('profileForm');
+      initializeProfileForm();
+      document.getElementById('profileModal').classList.add('active');
+    }
+
+    function closeProfileModal() {
+        document.getElementById('profileModal').classList.remove('active');
+    }
+
+    // Очистка ошибок
+    function clearErrors(formId) {
+        const form = document.getElementById(formId);
+        const errorMessages = form.querySelectorAll('.error-message');
+        errorMessages.forEach(error => error.textContent = '');
+    }
+
+    // Валидация пароля
+    function validatePassword(password) {
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!$%^()_+\-=\[\]{};:'",.<>])[A-Za-z\d!$%^()_+\-=\[\]{};:'",.<>]{8,}$/;
+        return regex.test(password);
+    }
+
+    // Валидация логина
+    function validateLogin(login) {
+        const regex = /^[a-zA-Z0-9_]+$/;
+        return login.length >= 6 && regex.test(login);
+    }
+
+    // Блокировка отправки
+    function setSubmittingState(isSubmitting) {
+        window.isSubmitting = isSubmitting;
+    }
+
+    document.getElementById('accountForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        if (isSubmitting) {
+            showNotification('Пожалуйста, подождите перед повторной отправкой', 'info');
+            return;
+        }
+
+        if (!hasAccountChanges()) {
+            showNotification('Данные не были изменены', 'info');
+            closeAccountModal();
+            return;
+        }
+
+        clearErrors('accountForm');
+
+        const formData = new FormData(this);
+        const password = formData.get('password');
+        const confirmPassword = formData.get('confirmPassword');
+        const login = formData.get('login');
+        const email = formData.get('email');
+
+        let isValid = true;
+
+        // Валидация логина
+        if (!validateLogin(login)) {
+            document.getElementById('loginError').textContent = 'Логин должен содержать минимум 6 символов (только буквы, цифры и подчеркивания)';
+            isValid = false;
+        }
+
+        // Валидация email
+        if (!email) {
+            document.getElementById('emailError').textContent = 'Email обязателен';
+            isValid = false;
+        }
+
+        // Валидация пароля (если указан)
+        if (password) {
+            if (!validatePassword(password)) {
+                document.getElementById('passwordError').textContent = 'Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы, цифры и специальные символы';
+                isValid = false;
+            }
+
+            if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'Пароли не совпадают';
+                isValid = false;
+            }
+        }
+
+        if (!isValid) return;
+
+        const data = {
+            login: login,
+            email: email,
+            password: password || null
+        };
+
+        const submitBtn = document.getElementById('accountSubmitBtn');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Сохранение...';
+        setSubmittingState(true);
+
+        fetch('/api/account/update', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            body: JSON.stringify(data)
+        })
+        .then(async response => {
+            console.log('Response status:', response.status);
+
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Получен не JSON ответ от сервера');
+            }
+
+            const responseData = await response.json();
+            if (response.ok) {
+                closeAccountModal();
+                showNotification('Данные аккаунта успешно обновлены', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                if (responseData.validationErrors) {
+                    responseData.validationErrors.forEach(error => {
+                        const errorElement = document.getElementById(error.field + 'Error');
+                        if (errorElement) {
+                            errorElement.textContent = error.message;
+                        }
+                    });
+                } else if (responseData.message) {
+                    showNotification(responseData.message, 'error');
+                } else {
+                    showNotification('Ошибка при обновлении данных аккаунта', 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Ошибка при обновлении данных аккаунта', 'error');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            setTimeout(() => setSubmittingState(false), 1000);
+        });
+    });
+
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      if (isSubmitting) {
+          showNotification('Пожалуйста, подождите перед повторной отправкой', 'info');
+          return;
+      }
+
+      if (!hasProfileChanges()) {
+          showNotification('Данные не были изменены', 'info');
+          closeProfileModal();
+          return;
+      }
+
+      clearErrors('profileForm');
+
+      const formData = new FormData(this);
+
+      const parseFormValue = (value) => {
+          if (value === '' || value === null || value === undefined) {
+              return null;
+          }
+          return value;
+      };
+
+      const parseNumberValue = (value) => {
+          if (value === '' || value === null || value === undefined) {
+              return null;
+          }
+          return parseFloat(value);
+      };
+
+      const parseIntValue = (value) => {
+          if (value === '' || value === null || value === undefined) {
+              return null;
+          }
+          return parseInt(value);
+      };
+
+      const data = {
+          name: parseFormValue(formData.get('name')),
+          surname: parseFormValue(formData.get('surname')),
+          patronymic: parseFormValue(formData.get('patronymic')),
+          dateOfBirth: parseFormValue(formData.get('dateOfBirth')),
+          gender: parseFormValue(formData.get('gender')),
+          height: parseIntValue(formData.get('height')),
+          weight: parseNumberValue(formData.get('weight')),
+          targetWeight: parseNumberValue(formData.get('targetWeight')),
+          activityLevelId: parseIntValue(formData.get('activityLevelId'))
+      };
+
+      const submitBtn = document.getElementById('profileSubmitBtn');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Сохранение...';
+      setSubmittingState(true);
+
+      fetch('/api/profile/update', {
+          method: 'PUT',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': getCsrfToken()
+          },
+          body: JSON.stringify(data)
+      })
+      .then(async response => {
+          console.log('Response status:', response.status);
+
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+              throw new Error('Получен не JSON ответ от сервера');
+          }
+          const responseData = await response.json();
+
+          if (response.ok) {
+              closeProfileModal();
+              showNotification('Данные профиля успешно обновлены', 'success');
+              setTimeout(() => location.reload(), 1000);
+          } else {
+              if (responseData.validationErrors) {
+                  responseData.validationErrors.forEach(error => {
+                      const errorElement = document.getElementById(error.field + 'Error');
+                      if (errorElement) {
+                          errorElement.textContent = error.message;
+                      }
+                  });
+              } else if (responseData.message) {
+                  showNotification(responseData.message, 'error');
+              } else {
+                  showNotification('Ошибка при обновлении данных профиля', 'error');
+              }
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          showNotification('Ошибка при обновлении данных профиля', 'error');
+      })
+      .finally(() => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+          setTimeout(() => setSubmittingState(false), 1000);
+      });
+    });
+
+    // Функция для получения CSRF токена
+    function getCsrfToken() {
+        const metaToken = document.querySelector('meta[name="_csrf"]');
+        return metaToken ? metaToken.getAttribute('content') : '';
+    }
+
+    // Закрытие модальных окон при клике на оверлей
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+    });
+
+    // Функция показа уведомлений
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        `;
+
+        if (type === 'success') {
+            notification.style.background = '#2ea043';
+        } else if (type === 'error') {
+            notification.style.background = '#cf222e';
+        } else if (type === 'info') {
+            notification.style.background = '#0969da';
+        } else {
+            notification.style.background = '#656d76';
+        }
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    // Инициализация календаря
+    function initializeCalendar() {
+        const calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+
+        calendarEl.innerHTML = `
+            <div class="calendar-loading">
+                <div class="loading-spinner"></div>
+                <p>Загрузка календаря...</p>
+            </div>
+        `;
+
+        loadCalendarData();
+    }
+
+    async function loadCalendarData() {
+        try {
+            const response = await fetch('/api/daily-reports/calendar', {
+                headers: {
+                    'X-CSRF-TOKEN': getCsrfToken()
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Ошибка загрузки данных календаря');
+            }
+
+            const calendarData = await response.json();
+            renderCalendar(calendarData);
+        } catch (error) {
+            console.error('Error loading calendar data:', error);
+            showCalendarError();
+        }
+    }
+
+    // Отрисовка календаря
+    function renderCalendar(calendarData) {
+        const calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+
+        // Создаем календарь на текущий месяц
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDay = firstDay.getDay();
+
+        let calendarHTML = '<div class="calendar-header">';
+        calendarHTML += '<div class="calendar-month">' +
+                        today.toLocaleString('ru-RU', { month: 'long', year: 'numeric' }) +
+                        '</div>';
+        calendarHTML += '</div>';
+        calendarHTML += '<div class="calendar-grid">';
+
+        const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+        weekdays.forEach(day => {
+            calendarHTML += `<div class="calendar-weekday">${day}</div>`;
+        });
+
+        for (let i = 0; i < (startingDay === 0 ? 6 : startingDay - 1); i++) {
+            calendarHTML += '<div class="calendar-day empty"></div>';
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(year, month, day);
+
+            const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+            const dateString = localDate.toISOString().split('T')[0]; // Формат YYYY-MM-DD
+
+            const todayWithoutTime = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const dateWithoutTime = new Date(year, month, day);
+
+            const isToday = dateWithoutTime.getTime() === todayWithoutTime.getTime();
+            const isPast = dateWithoutTime < todayWithoutTime;
+            const isFuture = dateWithoutTime > todayWithoutTime;
+
+            const dayData = calendarData.find(d => d.date === dateString);
+            const isGoalAchieved = dayData ? dayData.isGoalAchieved : false;
+
+            let dayClass = 'calendar-day';
+            if (isToday) dayClass += ' today';
+            if (isPast) {
+                dayClass += isGoalAchieved ? ' achieved' : ' not-achieved';
+            } else if (isFuture) {
+                dayClass += ' future';
+            }
+
+            calendarHTML += `<div class="${dayClass}" title="${dateString}: ${isGoalAchieved ? 'Цель достигнута' : 'Цель не достигнута'}">${day}</div>`;
+        }
+
+        calendarHTML += '</div>';
+
+        // Легенда
+        calendarHTML += `
+            <div class="calendar-legend">
+                <div class="legend-item">
+                    <span class="legend-color achieved"></span>
+                    <span>Цель достигнута</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color not-achieved"></span>
+                    <span>Цель не достигнута</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color future"></span>
+                    <span>Будущие дни</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color today"></span>
+                    <span>Сегодня</span>
+                </div>
+            </div>
+        `;
+
+        calendarEl.innerHTML = calendarHTML;
+    }
+
+    function initializeProfileForm() {
+      const inputs = {
+          dateOfBirth: document.getElementById('dateOfBirth'),
+          height: document.getElementById('height'),
+          weight: document.getElementById('weight'),
+          targetWeight: document.getElementById('targetWeight'),
+          activityLevel: document.getElementById('activityLevel')
+      };
+
+      Object.keys(inputs).forEach(key => {
+          const input = inputs[key];
+          if (input && !input.value) {
+              if (key === 'dateOfBirth') {
+                  input.placeholder = 'дд.мм.гггг';
+              } else if (key === 'activityLevel') {
+              } else {
+                  input.placeholder = 'Не указано';
+              }
+          }
+      });
+    }
+
+    function showCalendarError() {
+        const calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+
+        calendarEl.innerHTML = `
+            <div class="calendar-error">
+                <div class="error-icon">⚠️</div>
+                <p>Не удалось загрузить данные календаря</p>
+                <button class="btn btn-outline" onclick="initializeCalendar()">Повторить</button>
+            </div>
+        `;
+    }
+</script>
+</body>
+</html>

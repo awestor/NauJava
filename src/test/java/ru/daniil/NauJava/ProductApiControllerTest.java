@@ -16,7 +16,7 @@ import ru.daniil.NauJava.entity.Product;
 import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.repository.ProductRepository;
 import ru.daniil.NauJava.repository.UserRepository;
-import ru.daniil.NauJava.request.RegistrationRequest;
+import ru.daniil.NauJava.request.create.RegistrationRequest;
 import ru.daniil.NauJava.service.UserServiceImpl;
 
 import static io.restassured.RestAssured.given;

@@ -1,240 +1,217 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calorie Tracker</title>
-  <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-        background-color: #f6f8fa;
-        color: #24292f;
-        line-height: 1.5;
-    }
-
-    .header {
-        background: linear-gradient(135deg, #2ea043 0%, #238636 100%);
-        color: white;
-        padding: 20px 0;
-    }
-
-    .nav-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .logo-text {
-        font-size: 24px;
-        font-weight: 700;
-    }
-
-    .logo-accent {
-        color: #ffd700;
-    }
-
-    .user-info {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .user-welcome {
-        font-size: 14px;
-    }
-
-    .logout-form {
-        display: inline;
-    }
-
-    .btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-logout {
-        background-color: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .btn-logout:hover {
-        background-color: rgba(255, 255, 255, 0.3);
-    }
-
-    .container {
-        max-width: 1200px;
-        margin: 40px auto;
-        padding: 0 20px;
-    }
-
-    .menu {
-        list-style: none;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-    }
-
-    .menu li {
-        margin: 0;
-    }
-
-    .menu a {
-        display: block;
-        padding: 30px;
-        background: white;
-        color: #24292f;
-        text-decoration: none;
-        border-radius: 8px;
-        text-align: center;
-        transition: all 0.2s ease;
-        border: 1px solid #e1e4e8;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    .menu a:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        border-color: #2ea043;
-    }
-
-    .menu-icon {
-        font-size: 32px;
-        margin-bottom: 10px;
-        display: block;
-    }
-
-    .menu-title {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 8px;
-        display: block;
-    }
-
-    .menu-description {
-        font-size: 14px;
-        color: #656d76;
-        display: block;
-    }
-
-    .auth-buttons {
-        text-align: center;
-        margin-top: 30px;
-    }
-
-    .btn-auth {
-        padding: 12px 24px;
-        margin: 0 10px;
-    }
-
-    .btn-login {
-        background-color: #2ea043;
-        color: white;
-    }
-
-    .btn-login:hover {
-        background-color: #238636;
-    }
-
-    .btn-register {
-        background-color: #f6f8fa;
-        color: #24292f;
-        border: 1px solid #e1e4e8;
-    }
-
-    .btn-register:hover {
-        background-color: #eaeef2;
-    }
-
-    .admin-badge {
-        background: #ffd700;
-        color: #000;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
-        margin-left: 8px;
-    }
-  </style>
+  <link rel="stylesheet" th:href="@{/css/header.css}">
+  <link rel="stylesheet" th:href="@{/css/index.css}">
 </head>
 <body>
-<div class="header">
-  <div class="nav-container">
-    <div class="logo">
-      <span class="logo-text">Calorie<span class="logo-accent">Tracker</span></span>
+<div th:replace="${#authorization.expression('hasRole(''USER'')')} ?
+                ~{fragments/header :: header} :
+                ~{fragments/adminHeader :: header}"></div>
+<main class="main-container">
+  <!-- Контент для авторизованных пользователей -->
+    <div sec:authorize="isAuthenticated()">
+      <div class="page-header">
+        <h1 class="page-title">Добро пожаловать в Calorie Tracker</h1>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Основные функции для обычных пользователей -->
+        <div class="menu-card" sec:authorize="hasRole('USER')">
+          <a th:href="@{/view/products/list}" class="card-link">
+            <div class="card-icon">🥗</div>
+            <h3 class="card-title">Мои продукты</h3>
+            <p class="card-description">Просмотр и управление вашими продуктами питания</p>
+          </a>
+        </div>
+
+        <div class="menu-card" sec:authorize="hasRole('USER')">
+          <a th:href="@{/view/meals/list}" class="card-link">
+            <div class="card-icon">🍽️</div>
+            <h3 class="card-title">Приёмы пищи</h3>
+            <p class="card-description">Управление приёмами пищи и отслеживание питания</p>
+          </a>
+        </div>
+
+        <div class="menu-card" sec:authorize="hasRole('USER')">
+          <a th:href="@{/view/daily-reports/stat}" class="card-link">
+            <div class="card-icon">📈</div>
+            <h3 class="card-title">Анализ питания</h3>
+            <p class="card-description">Графики и статистика потребления питательных веществ</p>
+          </a>
+        </div>
+
+        <!-- Административные функции -->
+        <div class="menu-card admin-card" sec:authorize="hasRole('ADMIN')">
+          <a th:href="@{/swagger-ui.html}" class="card-link" target="_blank">
+            <div class="card-icon">📚</div>
+            <h3 class="card-title">API Documentation</h3>
+            <p class="card-description">Документация API в Swagger UI</p>
+            <span class="admin-badge">ADMIN</span>
+          </a>
+        </div>
+
+        <div class="menu-card admin-card" sec:authorize="hasRole('ADMIN')">
+          <a th:href="@{/admin/users}" class="card-link">
+            <div class="card-icon">👥</div>
+            <h3 class="card-title">Пользователи</h3>
+            <p class="card-description">Управление зарегистрированными пользователями системы</p>
+            <span class="admin-badge">ADMIN</span>
+          </a>
+        </div>
+
+        <div class="menu-card admin-card" sec:authorize="hasRole('ADMIN')">
+          <a th:href="@{/admin/view/reports/}" class="card-link">
+            <div class="card-icon">📊</div>
+            <h3 class="card-title">Отчёты активности</h3>
+            <p class="card-description">Анализ активности всех пользователей системы</p>
+            <span class="admin-badge">ADMIN</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Быстрый доступ к сегодняшним данным -->
+      <div class="quick-stats" sec:authorize="!hasRole('ADMIN')">
+        <h2 class="section-title">Сегодняшняя статистика</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="todayCalories">--</div>
+            <div class="stat-label">ккал потреблено</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="todayMeals">--</div>
+            <div class="stat-label">приёмов пищи</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="todayGoal">--</div>
+            <div class="stat-label">% от цели</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="user-info" hidden=sec:authorize="isAuthenticated()">
-      <span class="user-welcome">
-          Welcome, <span sec:authentication="name"></span>
-          <span class="admin-badge" sec:authorize="hasRole('ADMIN')">ADMIN</span>
-      </span>
-    </div>
+    <!-- Контент для неавторизованных пользователей -->
+    <div sec:authorize="!isAuthenticated()">
+      <div class="hero-section">
+        <div class="hero-content">
+          <h1 class="hero-title">Calorie<span class="logo-accent">Tracker</span></h1>
+          <p class="hero-subtitle">
+            Контроль калорийности продуктов питания проще, чем кажется
+          </p>
+          <p class="hero-description">
+            Отслеживайте потребление питательных веществ, достигайте своих целей
+            и ведите здоровый образ жизни с помощью нашего удобного трекера калорий.
+          </p>
 
-    <div class="user-info" hidden=sec:authorize="!isAuthenticated()">
-      <form th:action="@{/logout}" method="post" class="logout-form">
-        <button type="submit" class="btn btn-logout" name="logout">
-          Logout
-        </button>
-      </form>
-    </div>
-  </div>
-</div>
+          <div class="hero-features">
+            <div class="feature">
+              <span class="feature-icon">📊</span>
+              <span class="feature-text">Детальная статистика</span>
+            </div>
+            <div class="feature">
+              <span class="feature-icon">📱</span>
+              <span class="feature-text">Удобный интерфейс</span>
+            </div>
+            <div class="feature">
+              <span class="feature-icon">🎯</span>
+              <span class="feature-text">Достижение целей</span>
+            </div>
+          </div>
 
-<div class="container">
-  <div sec:authorize="isAuthenticated()">
-    <ul class="menu">
-      <li>
-        <a th:href="@{/view/products/list}">
-          <span class="menu-icon">📊</span>
-          <span class="menu-title">Показать список ваших продуктов</span>
-          <span class="menu-description">Показ продуктов, что были зарегистрированы в системе</span>
-        </a>
-      </li>
-      <li>
-        <a th:href="@{/view/meals/list}">
-          <span class="menu-icon">📊</span>
-          <span class="menu-title">Показать приёмы пищи за сегодня</span>
-          <span class="menu-description">Показ приёмов пищи, что были занесены в систему сегодня</span>
-        </a>
-      </li>
-      <li sec:authorize="hasRole('ADMIN')">
-        <a th:href="@{/swagger-ui.html}">
-          <span class="menu-icon">📚</span>
-          <span class="menu-title">API Documentation</span>
-          <span class="menu-description">Access Swagger UI for API documentation</span>
-        </a>
-      </li>
-    </ul>
-  </div>
+          <div class="auth-buttons">
+            <a th:href="@{/login}" class="btn btn-primary btn-large">
+              Войти в систему
+            </a>
+            <a th:href="@{/register}" class="btn btn-secondary btn-large">
+              Зарегистрироваться
+            </a>
+          </div>
+        </div>
 
-  <div sec:authorize="!isAuthenticated()">
-    <div style="text-align: center; padding: 60px 0;">
-      <h1 style="margin-bottom: 20px;">Welcome to Calorie Tracker</h1>
-      <p style="color: #656d76; margin-bottom: 30px; font-size: 18px;">
-        Контроль калорийности продуктов питания проще чем кажется.
-      </p>
+        <div class="hero-visual">
+          <div class="visual-card">
+            <div class="chart-placeholder"></div>
+            <div class="stats-preview">
+              <div class="preview-stat">
+                <span class="preview-label">Калории</span>
+                <span class="preview-value">1850/2000</span>
+              </div>
+              <div class="preview-stat">
+                <span class="preview-label">Белки</span>
+                <span class="preview-value">120/150г</span>
+              </div>
+              <div class="preview-stat">
+                <span class="preview-label">Серия</span>
+                <span class="preview-value highlight">7 дней</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Информационный раздел -->
+      <div class="info-section">
+        <h2 class="section-title">Почему выбирают CalorieTracker?</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-card-icon">🍎</div>
+            <h3>Простой учёт продуктов</h3>
+            <p>Добавляйте продукты быстро и легко с помощью нашей обширной базы данных</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-icon">📈</div>
+            <h3>Детальная аналитика</h3>
+            <p>Наглядные графики и отчёты помогут понять ваши пищевые привычки</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-icon">🎯</div>
+            <h3>Достижение целей</h3>
+            <p>Ставьте реалистичные цели и отслеживайте прогресс в их достижении</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-icon">📱</div>
+            <h3>Удобный интерфейс</h3>
+            <p>Интуитивно понятный дизайн для комфортного использования каждый день</p>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+  </main>
+
+  <script>
+    // Загрузка сегодняшней статистики для авторизованных пользователей
+    document.addEventListener('DOMContentLoaded', function() {
+        const authSection = document.querySelector('[sec\\:authorize="isAuthenticated()"]');
+        if (authSection && !authSection.hasAttribute('hidden')) {
+            loadTodayStats();
+        }
+    });
+
+    async function loadTodayStats() {
+        try {
+            const response = await fetch('/api/daily-reports/today/stats');
+            if (response.ok) {
+                const stats = await response.json();
+                updateStatsDisplay(stats);
+            }
+        } catch (error) {
+            console.log('Не удалось загрузить статистику за сегодня');
+        }
+    }
+
+    function updateStatsDisplay(stats) {
+        const caloriesElem = document.getElementById('todayCalories');
+        const mealsElem = document.getElementById('todayMeals');
+        const goalElem = document.getElementById('todayGoal');
+
+        if (caloriesElem) caloriesElem.textContent = stats.calories || '0';
+        if (mealsElem) mealsElem.textContent = stats.meals || '0';
+        if (goalElem) goalElem.textContent = stats.goalPercentage || '0%';
+    }
+  </script>
 </body>
 </html>

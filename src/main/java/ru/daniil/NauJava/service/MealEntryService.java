@@ -26,11 +26,30 @@ public interface MealEntryService {
      */
     MealEntry createMealEntry(Meal meal, Product product, Integer quantity);
 
+    /**
+     * Возвращает суммарные питательные ценности в пределах 1 приёма пищи
+     * @param mealId id приёма пищи
+     * @return NutritionSumResponse с данными о суммарном потреблении
+     */
     NutritionSumResponse getNutritionSumByMealId(Long mealId);
 
+    /**
+     * Возвращает суммарные питательные ценности в пределах 1 дня
+     * @param dailyReportId id приёма пищи
+     * @return NutritionSumResponse с данными о суммарном потреблении
+     */
     NutritionSumResponse getNutritionSumByDailyReportId(Long dailyReportId);
 
+    /**
+     * Возвращает все записи о съеденных продуктах в течении 1 приёма пищи
+     * @param mealId id приёма пищи
+     * @return список MealEntry
+     */
     List<MealEntry> getAllByMealId(Long mealId);
 
+    /**
+     * Удаляет приём пищи по его id
+     * @param mealId id приёма пищи
+     */
     void deleteByMealId(Long mealId);
 }

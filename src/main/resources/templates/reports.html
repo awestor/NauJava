@@ -1,34 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports - Calorie Tracker</title>
     <link th:href="@{/css/reports.css}" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
 <body>
-<div class="header">
-    <div class="nav-container">
-        <div class="logo">
-            <a href="/view/products/" style="color: white; text-decoration: none;">
-                <span class="logo-text">Calorie<span class="logo-accent">Tracker</span></span>
-            </a>
-        </div>
-
-        <div class="user-info">
-                <span class="user-welcome">
-                    Welcome, <span sec:authentication="name"></span>
-                </span>
-            <form th:action="@{/logout}" method="post" class="logout-form">
-                <button type="submit" class="btn btn-logout">
-                    Logout
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
+<div th:replace="~{fragments/header :: header}"></div>
 
 <div class="container">
     <div class="page-header">
@@ -76,7 +58,7 @@
 
         const csrfToken = getCsrfToken();
 
-        fetch('/api/reports/generate', {
+        fetch('/admin/api/reports/generate', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -104,7 +86,7 @@
     });
 
     function checkReportStatus(reportId) {
-        fetch(`/api/reports/${reportId}/status`, {
+        fetch(`/admin/api/reports/${reportId}/status`, {
             credentials: 'include'
         })
             .then(response => {
@@ -136,7 +118,7 @@
 
         reportMessage.textContent = 'Report generated successfully!';
         reportMessage.style.color = '#1a7f37';
-        viewReportLink.href = `/view/reports/${reportId}`;
+        viewReportLink.href = `/admin/view/reports/${reportId}`;
         viewReportLink.style.display = 'inline-block';
         reportResult.style.display = 'block';
 

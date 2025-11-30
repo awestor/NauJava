@@ -56,6 +56,10 @@ public interface MealEntryRepository extends CrudRepository<MealEntry, Long> {
     List<Object[]> findNutritionSumByDailyReportId(@Param("dailyReportId") Long dailyReportId);
 
     @Modifying
-    @Query("DELETE FROM MealEntry me WHERE me.meal.id = :mealId")
+    @Query("DELETE FROM MealEntry me WHERE me.meal.id = :mealId AND FUNCTION('DATE', me.meal.eatenAt) = CURRENT_DATE")
     void deleteByMealId(@Param("mealId") Long mealId);
+
+    @Modifying
+    @Query("UPDATE MealEntry me SET me.product = NULL WHERE me.product.id = :productId")
+    void disconnectFromProduct(@Param("productId") Long productId);
 }

@@ -12,7 +12,7 @@ import ru.daniil.NauJava.enums.RoleType;
 import ru.daniil.NauJava.exception.ValidationException;
 import ru.daniil.NauJava.repository.RoleRepository;
 import ru.daniil.NauJava.repository.UserRepository;
-import ru.daniil.NauJava.request.RegistrationRequest;
+import ru.daniil.NauJava.request.create.RegistrationRequest;
 import ru.daniil.NauJava.service.UserDetailsServiceImpl;
 import ru.daniil.NauJava.service.UserServiceImpl;
 
