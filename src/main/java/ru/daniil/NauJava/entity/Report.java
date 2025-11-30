@@ -1,6 +1,7 @@
 package ru.daniil.NauJava.entity;
 
 import jakarta.persistence.*;
+import ru.daniil.NauJava.enums.ReportStatus;
 
 import java.time.LocalDateTime;
 

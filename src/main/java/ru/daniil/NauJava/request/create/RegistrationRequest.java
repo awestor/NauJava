@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.request;
+package ru.daniil.NauJava.request.create;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -25,7 +25,7 @@ public class RegistrationRequest {
     @Schema(description = "Пароль", example = "Password123!", requiredMode = Schema.RequiredMode.REQUIRED)
     private String password;
 
-    @NotBlank(message = "Имя обязательно")
+    /*@NotBlank(message = "Имя обязательно")
     @Size(min = 6, message = "Имя пользователя должно содержать минимум 6 символов")
     @Schema(description = "Имя пользователя", example = "Иван", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
@@ -35,18 +35,18 @@ public class RegistrationRequest {
     private String surname;
 
     @Schema(description = "Отчество пользователя", example = "Иванович")
-    private String patronymic;
+    private String patronymic;*/
 
     public RegistrationRequest() {}
 
-    public RegistrationRequest(String email, String password, String login,
-                               String name, String surname, String patronymic) {
+    public RegistrationRequest(String email, String password, String login
+                               /*String name, String surname, String patronymic*/) {
         this.email = email;
         this.login = login;
         this.password = password;
-        this.name = name;
+        /*this.name = name;
         this.surname = surname;
-        this.patronymic = patronymic;
+        this.patronymic = patronymic;*/
     }
 
     public String getEmail() { return email; }
@@ -55,14 +55,14 @@ public class RegistrationRequest {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public String getName() { return name; }
+    /*public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
     public String getSurname() { return surname; }
     public void setSurname(String surname) { this.surname = surname; }
 
     public String getPatronymic() { return patronymic; }
-    public void setPatronymic(String patronymic) { this.patronymic = patronymic; }
+    public void setPatronymic(String patronymic) { this.patronymic = patronymic; }*/
 
     public String getLogin() { return login; }
 

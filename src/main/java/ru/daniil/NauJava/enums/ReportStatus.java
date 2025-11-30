@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.entity;
+package ru.daniil.NauJava.enums;
 
 public enum ReportStatus {
     CREATED("Создан"),

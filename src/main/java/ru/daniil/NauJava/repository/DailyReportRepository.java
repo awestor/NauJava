@@ -28,4 +28,25 @@ public interface DailyReportRepository extends CrudRepository<DailyReport, Long>
     long countByUserIdAndIsGoalAchievedTrue(Long userId);
 
     long countByUserIdAndIsGoalAchievedFalse(Long userId);
+
+    /**
+     * Находит все DailyReport для пользователя за указанный период
+     * @param userId ID пользователя
+     * @param startDate начальная дата (включительно)
+     * @param endDate конечная дата (включительно)
+     * @return список отчетов за период
+     */
+    @Query("SELECT dr FROM DailyReport dr " +
+            "WHERE dr.user.id = :userId " +
+            "AND dr.reportDate BETWEEN :startDate AND :endDate " +
+            "ORDER BY dr.reportDate")
+    List<DailyReport> findByUserIdAndDateRange(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
+    List<DailyReport> findByUserIdAndReportDateBetween(
+            Long userId,
+            LocalDate startDate,
+            LocalDate endDate);
 }

@@ -1,27 +1,30 @@
-package ru.daniil.NauJava.controller;
+package ru.daniil.NauJava.controller.product;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.NauJava.entity.Product;
-import ru.daniil.NauJava.repository.ProductRepository;
+import ru.daniil.NauJava.request.ProductInfoResponse;
+import ru.daniil.NauJava.request.update.UpdateProductRequest;
 import ru.daniil.NauJava.service.ProductService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
-public class ProductController {
+public class ProductApiController {
     private final ProductService productService;
 
     @Autowired
-    ProductController(ProductService productService) {
+    ProductApiController(ProductService productService) {
         this.productService = productService;
     }
 
     /**
      * Возвращает все продукты, что сохранены в базе данных
-     *
      * @return все продукты в БД
      */
     @GetMapping("/all")
@@ -30,14 +33,15 @@ public class ProductController {
     }
 
     /**
-     * Возвращает все продукты, у которых поле CreatedByUser == null,
-     * что сохранены в базе данных
+     * Возвращает все продукты, что сохранены в базе данных
      *
-     * @return системные продукты в БД
+     * @return все продукты в БД
      */
-    @GetMapping("/system")
-    public List<Product> getAllSystemProducts() {
-        return productService.findByCreatedByUserIsNull();
+    @GetMapping("/all/baseInfo")
+    public List<ProductInfoResponse> getAllBaseInfoProducts() {
+        return productService.getAll().stream()
+                .map(product -> new ProductInfoResponse(product.getId(), product.getName()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -78,29 +82,6 @@ public class ProductController {
     }
 
     /**
-     * Возвращает все продукты системы с калорийностью выше указанной
-     *
-     * @param calories минимум калорий
-     * @return список продуктов системы
-     */
-    @GetMapping("/getProductsWithMinCalories/system")
-    public List<Product> getSystemProductsWithMinCalories(@RequestParam Double calories) {
-        return productService.findProductsWithMinCaloriesAndUser(calories, null);
-    }
-
-    /**
-     * Возвращает все продукты пользователя с калорийностью выше указанной
-     *
-     * @param calories минимум калорий
-     * @param userId   идентификатор пользователя
-     * @return список продуктов пользователя
-     */
-    @GetMapping("/getProductsWithMinCalories/{userId}")
-    public List<Product> getUserProductsWithMinCalories(@PathVariable Double calories, @RequestParam Long userId) {
-        return productService.findProductsWithMinCaloriesAndUser(calories, userId);
-    }
-
-    /**
      * Возвращает true если продукт(ы) с таким названием существуют в БД и
      * false если таковых не найдено
      *
@@ -109,6 +90,31 @@ public class ProductController {
      */
     @GetMapping("/existsProductsByName")
     public boolean existsProductsByName(@RequestParam String productName) {
-        return productService.existsByNameIgnoreCase(productName);
+        return productService.productExists(productName);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateProduct(@PathVariable Long id,
+                                              @Valid @RequestBody UpdateProductRequest request) {
+        try {
+            if (!id.equals(request.getId())) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            productService.updateProduct(request);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        try {
+            productService.deleteProduct(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

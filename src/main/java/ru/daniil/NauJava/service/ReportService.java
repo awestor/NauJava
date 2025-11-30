@@ -1,10 +1,9 @@
 package ru.daniil.NauJava.service;
 
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.Report;
 import ru.daniil.NauJava.entity.ReportData;
-import ru.daniil.NauJava.entity.ReportStatus;
+import ru.daniil.NauJava.enums.ReportStatus;
 import ru.daniil.NauJava.repository.ProductRepository;
 import ru.daniil.NauJava.repository.ReportRepository;
 import ru.daniil.NauJava.repository.UserRepository;

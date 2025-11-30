@@ -16,7 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.repository.RoleRepository;
 import ru.daniil.NauJava.repository.UserRepository;
-import ru.daniil.NauJava.request.RegistrationRequest;
+import ru.daniil.NauJava.request.create.RegistrationRequest;
 import ru.daniil.NauJava.service.UserServiceImpl;
 
 import java.time.Duration;

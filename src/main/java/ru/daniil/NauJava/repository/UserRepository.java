@@ -15,10 +15,10 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     /**
      * Находит всех пользователей с указанным именем
-     * @param name имя пользователя
+     * @param login логин пользователя
      */
-    @Query("FROM User WHERE name = :name")
-    List<User> findByNameIgnoreCase(String name);
+    @Query("FROM User WHERE login = :login")
+    List<User> findByLoginIgnoreCase(String login);
 
     Optional<User> findByEmail(String email);
 

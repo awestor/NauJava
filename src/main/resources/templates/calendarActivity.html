@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ питания</title>
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/calendarActivity.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="main-container">
+    <div class="page-header">
+        <h1 class="page-title">Анализ потребления питательных веществ</h1>
+    </div>
+
+    <div class="main-content">
+        <!-- Блок пользовательских данных -->
+        <div class="user-info-section">
+            <h2>Данные пользователя</h2>
+            <div class="user-info-card">
+                <div class="info-item">
+                    <label>Имя:</label>
+                    <span id="userName" th:text="${userProfile?.name + ' ' + userProfile?.surname}">Пользователь</span>
+                </div>
+                <div class="info-item">
+                    <label>Пол:</label>
+                    <span id="userGender" th:text="${#strings.defaultString(userProfile?.gender == 'M' ? 'Мужской' : 'Женский', 'Не указан')}">Не указан</span>
+                </div>
+                <div class="info-item">
+                    <label>Рост:</label>
+                    <span id="userHeight" th:text="${#strings.defaultString(userProfile?.height?.toString() + ' см', 'Не указан')}">Не указан</span>
+                </div>
+                <div class="info-item">
+                    <label>Вес:</label>
+                    <span id="userWeight" th:text="${#strings.defaultString(userProfile?.weight?.toString() + ' кг', 'Не указан')}">Не указан</span>
+                </div>
+                <div class="info-item">
+                    <label>Целевой вес:</label>
+                    <span id="targetWeight" th:text="${#strings.defaultString(userProfile?.targetWeight?.toString() + ' кг', 'Не указан')}">Не указан</span>
+                </div>
+                <div class="info-item highlight">
+                    <label>Текущая серия:</label>
+                    <span id="currentStreak" th:text="${#strings.defaultString(userProfile?.currentStreak?.toString() + ' дней', '0 дней')}">0 дней</span>
+                </div>
+
+                <div class="nutrient-goals" th:if="${userProfile?.nutritionGoal != null}">
+                    <h3>Цели по нутриентам:</h3>
+                    <div class="goal-item">
+                        <span class="goal-label">Калории:</span>
+                        <span class="goal-value" id="calorieGoal" th:text="${userProfile.nutritionGoal.dailyCalorieGoal + ' ккал'}">2000 ккал</span>
+                    </div>
+                    <div class="goal-item" th:if="${userProfile.nutritionGoal.dailyProteinGoal != null}">
+                        <span class="goal-label">Белки:</span>
+                        <span class="goal-value" id="proteinGoal" th:text="${userProfile.nutritionGoal.dailyProteinGoal + ' г'}">150 г</span>
+                    </div>
+                    <div class="goal-item" th:if="${userProfile.nutritionGoal.dailyFatGoal != null}">
+                        <span class="goal-label">Жиры:</span>
+                        <span class="goal-value" id="fatGoal" th:text="${userProfile.nutritionGoal.dailyFatGoal + ' г'}">65 г</span>
+                    </div>
+                    <div class="goal-item" th:if="${userProfile.nutritionGoal.dailyCarbsGoal != null}">
+                        <span class="goal-label">Углеводы:</span>
+                        <span class="goal-value" id="carbsGoal" th:text="${userProfile.nutritionGoal.dailyCarbsGoal + ' г'}">250 г</span>
+                    </div>
+                </div>
+                <div class="nutrient-goals" th:unless="${userProfile?.nutritionGoal != null}">
+                    <h3>Цели не установлены</h3>
+                    <p>Перейдите в настройки профиля для установки целей</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Календарь -->
+        <div class="calendar-section">
+            <h2>Календарь потребления</h2>
+            <div class="calendar-controls">
+                <button class="btn btn-secondary" id="prevMonth">←</button>
+                <span id="currentMonth" class="month-display"></span>
+                <button class="btn btn-secondary" id="nextMonth">→</button>
+            </div>
+
+            <div class="calendar-wrapper">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <div class="dates-header">
+                            <div class="dates-spacer"></div>
+                            <div class="dates-row" id="datesRow"></div>
+                        </div>
+                    </div>
+
+                    <div class="calendar-body">
+                        <div class="nutrition-rows">
+                            <div class="nutrition-row" data-type="calories">
+                                <div class="row-label">ккал</div>
+                                <div class="values" id="caloriesValues"></div>
+                            </div>
+                            <div class="nutrition-row" data-type="proteins">
+                                <div class="row-label">белки (г)</div>
+                                <div class="values" id="proteinsValues"></div>
+                            </div>
+                            <div class="nutrition-row" data-type="fats">
+                                <div class="row-label">жиры (г)</div>
+                                <div class="values" id="fatsValues"></div>
+                            </div>
+                            <div class="nutrition-row" data-type="carbs">
+                                <div class="row-label">углеводы (г)</div>
+                                <div class="values" id="carbsValues"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="selection-info">
+                Выбрано дней: <span id="selectedDaysCount">0</span>
+                <span id="selectionRange" style="margin-left: 10px;">
+                        (от <span id="selectionStart"></span> до <span id="selectionEnd"></span>)
+                    </span>
+            </div>
+
+            <div class="color-legend">
+                <div class="legend-item">
+                    <div class="color-box low"></div>
+                    <span>Меньше 50% цели</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box good"></div>
+                    <span>50-100% цели</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box warning"></div>
+                    <span>100-130% цели</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box danger"></div>
+                    <span>Больше 130% цели</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- График -->
+    <div class="chart-section">
+        <h2>График потребления за выбранный период</h2>
+        <div class="chart-container">
+            <canvas id="nutritionChart"></canvas>
+        </div>
+        <div class="chart-legend" id="chartLegend"></div>
+    </div>
+</main>
+
+<script>
+    const userGoals = {
+        calories: [[${userProfile?.nutritionGoal?.dailyCalorieGoal ?: 2000}]],
+        proteins: [[${userProfile?.nutritionGoal?.dailyProteinGoal ?: 150}]],
+        fats: [[${userProfile?.nutritionGoal?.dailyFatGoal ?: 65}]],
+        carbs: [[${userProfile?.nutritionGoal?.dailyCarbsGoal ?: 250}]]
+    };
+
+    const apiEndpoints = {
+        dailyReports: '/api/daily-reports/data'
+    };
+
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+</script>
+<script th:src="@{/js/calendarActivity.js}"></script>
+
+</body>
+</html>

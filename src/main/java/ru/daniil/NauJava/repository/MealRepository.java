@@ -7,6 +7,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 import ru.daniil.NauJava.entity.Meal;
 import ru.daniil.NauJava.entity.MealEntry;
+import ru.daniil.NauJava.entity.MealType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,14 +18,14 @@ import java.util.List;
 public interface MealRepository extends CrudRepository<Meal, Long> {
     List<Meal> findByDailyReportId(Long dailyReportId);
 
-    List<Meal> findByDailyReportUserIdAndMealType(Long userId, String mealType);
+    List<Meal> findByDailyReportUserIdAndMealType(Long userId, MealType mealType);
 
     List<Meal> findByDailyReportUserIdAndDailyReportReportDate(Long userId, LocalDate reportDate);
 
     @Query("SELECT me.product.id FROM MealEntry me WHERE me.id = :mealEntryId")
     List<Long> findProductIdByMealEntryId(@Param("mealEntryId") Long mealEntryId);
 
-    boolean existsByDailyReportIdAndMealType(Long dailyReportId, String mealType);
+    boolean existsByDailyReportIdAndMealType(Long dailyReportId, MealType mealType);
 
-    long countByDailyReportIdAndMealType(Long dailyReportId, String mealType);
+    long countByDailyReportIdAndMealType(Long dailyReportId, MealType mealType);
 }

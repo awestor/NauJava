@@ -43,8 +43,8 @@ public class ProductRepositoryTest {
         testUser.setEmail("test@example.com");
         testUser.setLogin("Test");
         testUser.setPassword("password");
-        testUser.setName("John");
-        testUser.setSurname("Doe");
+        //testUser.setName("John");
+        //testUser.setSurname("Doe");
         testUser = userRepository.save(testUser);
 
         // Создание тестовой продукции от системы
@@ -197,8 +197,8 @@ public class ProductRepositoryTest {
         newUser.setEmail("new@example.com");
         newUser.setLogin("Test4");
         newUser.setPassword("pass");
-        newUser.setName("New");
-        newUser.setSurname("User");
+        //newUser.setName("New");
+        //newUser.setSurname("User");
         newUser = userRepository.save(newUser);
 
         List<Product> result = productRepository.findByCreatedByUserId(newUser.getId());
@@ -328,8 +328,8 @@ public class ProductRepositoryTest {
         otherUser.setEmail("other@example.com");
         otherUser.setLogin("Test2");
         otherUser.setPassword("pass");
-        otherUser.setName("Other");
-        otherUser.setSurname("User");
+        //otherUser.setName("Other");
+        //otherUser.setSurname("User");
         otherUser = userRepository.save(otherUser);
 
 
@@ -579,8 +579,8 @@ public class ProductRepositoryTest {
         newUser.setEmail("newuser@example.com");
         newUser.setLogin("Test3");
         newUser.setPassword("password");
-        newUser.setName("New");
-        newUser.setSurname("User");
+        //newUser.setName("New");
+        //newUser.setSurname("User");
         newUser = userRepository.save(newUser);
 
         Double minCalories = 50.0;

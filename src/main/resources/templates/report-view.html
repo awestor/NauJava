@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Report View - Calorie Tracker</title>
   <link th:href="@{/css/reports.css}" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/header.css}">
   <style>
     .report-content {
         background: white;
@@ -49,30 +50,12 @@
   </style>
 </head>
 <body>
-<div class="header">
-  <div class="nav-container">
-    <div class="logo">
-      <a href="/view/products/" style="color: white; text-decoration: none;">
-        <span class="logo-text">Calorie<span class="logo-accent">Tracker</span></span>
-      </a>
-    </div>
-
-    <div class="user-info">
-      Welcome, <span sec:authentication="name"></span>
-      <span class="admin-badge" sec:authorize="hasRole('ADMIN')">ADMIN</span>
-      <form th:action="@{/logout}" method="post" class="logout-form">
-        <button type="submit" class="btn btn-logout">
-          Logout
-        </button>
-      </form>
-    </div>
-  </div>
-</div>
+<div th:replace="~{fragments/header :: header}"></div>
 
 <div class="container">
   <div class="report-header">
     <h1>Report #<span th:text="${reportId}"></span></h1>
-    <a th:href="@{/reports}" class="back-link">← Back to Reports</a>
+    <a th:href="@{/admin/view/reports/}" class="back-link">← Back to Reports</a>
   </div>
 
   <div th:if="${status.name() == 'COMPLETED'}">

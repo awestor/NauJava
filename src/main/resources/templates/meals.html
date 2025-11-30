@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Просмотр приёмов пищи</title>
+  <link rel="stylesheet" th:href="@{/css/header.css}">
+  <link rel="stylesheet" th:href="@{/css/meals.css}">
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="main-container">
+  <div class="page-header">
+    <h1 class="page-title">Мои приёмы пищи</h1>
+    <button class="btn btn-primary" onclick="createNewMeal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Создать запись
+    </button>
+  </div>
+
+  <!-- Кастомный календарь -->
+  <div class="calendar-section">
+    <div class="calendar-controls">
+      <button class="btn btn-secondary" id="prevMonth">←</button>
+      <span id="currentMonth" class="month-display"></span>
+      <button class="btn btn-secondary" id="nextMonth">→</button>
+    </div>
+
+    <div class="calendar-grid" id="calendarGrid">
+      <!-- Календарь будет заполнен через JavaScript -->
+    </div>
+
+    <div class="selected-date-info">
+      Выбрана дата: <span id="selectedDateDisplay"></span>
+    </div>
+  </div>
+
+  <!-- Контейнер для приёмов пищи -->
+  <div id="mealsContainer">
+    <div th:each="meal : ${meals}" class="meal-section">
+      <div class="meal-header">
+        <h3 class="meal-title" th:text="${meal.mealType}">Завтрак</h3>
+        <div class="action-buttons" th:if="${isToday}">
+          <button class="btn-icon" th:onclick="'editMeal(' + ${meal.id} + ')'" title="Редактировать">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xMSA0SDRhMiAyIDAgMCAwLTIgMnYxNGEyIDIgMCAwIDAgMiAyaDE0YTIgMiAwIDAgMCAyLTJ2LTciPjwvcGF0aD48cGF0aCBkPSJNMTguNSAyLjVhMi4xMjEgMi4xMjEgMCAwIDEgMyAzTDEyIDE1bC00IDEgMS00IDkuNS05LjV6Ij48L3BhdGg+PC9zdmc+"
+                 alt="Редактировать" width="16" height="16">
+          </button>
+          <button class="btn-icon" th:onclick="'deleteMeal(' + ${meal.id} + ')'"title="Удалить">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjMgNiA1IDYgMjEgNiI+PC9wb2x5bGluZT48cGF0aCBkPSJNMTkgNnYxNGEyIDIgMCAwIDEtMiAySDdhMiAyIDAgMCAxLTItMlY2bTMgMFY0YTIgMiAwIDAgMSAyLTJoNGEyIDIgMCAwIDEgMiAydjIiPjwvcGF0aD48L3N2Zz4="
+                 alt="Удалить" width="16" height="16">
+          </button>
+        </div>
+      </div>
+
+      <div class="meal-content">
+        <table class="nutrition-table">
+          <thead>
+          <tr>
+            <th>Название продукта</th>
+            <th class="text-right">Калории</th>
+            <th class="text-right">Протеины</th>
+            <th class="text-right">Жиры</th>
+            <th class="text-right">Углеводы</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="entry : ${mealEntries.get(meal.id)}">
+            <td th:text="${entry.product?.name ?: 'Продукт был удалён'}">Яблоко</td>
+            <td class="text-right font-mono" th:text="${entry.calculatedCalories}">52</td>
+            <td class="text-right font-mono" th:text="${#numbers.formatDecimal(entry.calculatedProteins, 1, 2)}">0.3</td>
+            <td class="text-right font-mono" th:text="${#numbers.formatDecimal(entry.calculatedFats, 1, 2)}">0.2</td>
+            <td class="text-right font-mono" th:text="${#numbers.formatDecimal(entry.calculatedCarbs, 1, 2)}">14</td>
+          </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td><strong>Суммарно потреблено</strong></td>
+              <td class="text-right font-mono text-success"
+                  th:text="${nutritionSums.get(meal.id)?.totalCalories ?: 0}">0</td>
+              <td class="text-right font-mono"
+                  th:text="${#numbers.formatDecimal(nutritionSums.get(meal.id)?.totalProteins ?: 0, 1, 2)}">0.0</td>
+              <td class="text-right font-mono"
+                  th:text="${#numbers.formatDecimal(nutritionSums.get(meal.id)?.totalFats ?: 0, 1, 2)}">0.0</td>
+              <td class="text-right font-mono"
+                  th:text="${#numbers.formatDecimal(nutritionSums.get(meal.id)?.totalCarbs ?: 0, 1, 2)}">0.0</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div th:if="${meals.isEmpty()}" class="empty-state">
+    <div class="empty-state-icon">🍽️</div>
+    <h3 class="empty-state-title">Приёмы пищи не найдены</h3>
+    <p class="empty-state-description">На выбранную дату приёмы пищи не добавлены.</p>
+    <button class="btn btn-primary" onclick="createNewMeal()" th:if="${isToday}">
+      Создать первый приём пищи
+    </button>
+  </div>
+
+  <div id="mealModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Создать приём пищи</h3>
+        <button type="button" class="btn-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="mealForm">
+          <input type="hidden" id="mealId" name="id">
+
+          <div class="form-group">
+            <label for="mealTypeSelect" class="form-label">Тип приёма пищи</label>
+            <select id="mealTypeSelect" class="form-select" name="mealTypeName" required>
+              <option value="">Выберите тип приёма пищи</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Продукты</label>
+            <div id="productsContainer">
+              <!-- Продукты будут добавляться динамически -->
+            </div>
+
+            <button type="button" id="addProductBtn" class="add-product-btn" onclick="addProductRow()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              Добавить продукт
+            </button>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+            <button type="submit" class="btn btn-primary" id="submitBtn">Создать</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script th:src="@{/js/meals.js}"></script>
+</body>
+</html>
