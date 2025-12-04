@@ -1,5 +1,6 @@
 package ru.daniil.NauJava.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.ActivityLevel;
@@ -9,8 +10,12 @@ import ru.daniil.NauJava.entity.DailyReport;
 import ru.daniil.NauJava.repository.DailyReportRepository;
 import ru.daniil.NauJava.repository.UserProfileRepository;
 import ru.daniil.NauJava.request.update.UpdateProfileRequest;
+import ru.daniil.NauJava.service.activityLevel.ActivityLevelService;
+import ru.daniil.NauJava.service.nutritionGoal.NutritionGoalService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -98,7 +103,6 @@ public class UserProfileServiceImpl implements UserProfileService {
         LocalDate lastUpdate = userProfile.getUpdatedAt().toLocalDate();
 
         if (!today.equals(lastUpdate)) {
-            // Проверяем вчерашний день
             LocalDate yesterday = today.minusDays(1);
             boolean yesterdayGoalAchieved = dailyReportRepository
                     .findByUserIdAndReportDate(userProfile.getUser().getId(), yesterday)
@@ -131,5 +135,62 @@ public class UserProfileServiceImpl implements UserProfileService {
                 !Objects.equals(request.getGender(), existingProfile.getGender()) ||
                 !Objects.equals(request.getActivityLevelId(),
                         existingProfile.getActivityLevel() != null ? existingProfile.getActivityLevel().getId() : null);
+    }
+
+    /**
+     * Получение профиля по логину пользователя
+     */
+    public UserProfile getProfileByUserLogin(String login) {
+        User user = userService.findByLogin(login);
+        return userProfileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Профиль пользователя не найден"));
+    }
+
+    /**
+     * Форматирование ФИО: Фамилия И.О.
+     */
+    public String formatFIO(UserProfile profile) {
+        StringBuilder fio = new StringBuilder();
+
+        // Фамилия полностью
+        if (profile.getSurname() != null && !profile.getSurname().isEmpty()) {
+            fio.append(profile.getSurname());
+        } else {
+            fio.append("-");
+        }
+
+        // Инициалы имени
+        if (profile.getName() != null && !profile.getName().isEmpty()) {
+            fio.append(" ");
+            fio.append(profile.getName().charAt(0)).append(".");
+        }
+
+        // Инициалы отчества
+        if (profile.getPatronymic() != null && !profile.getPatronymic().isEmpty()) {
+            fio.append(profile.getPatronymic().charAt(0)).append(".");
+        }
+
+        return fio.toString().trim();
+    }
+
+    /**
+     * Получение времени последнего обновления профиля
+     */
+    public LocalDateTime getLastProfileUpdate(Long userId) {
+        return userProfileRepository.findLastUpdateByUserId(userId);
+    }
+
+    /**
+     * Получение среднего значения currentStreak
+     */
+    public Double getAverageCurrentStreak() {
+        return userProfileRepository.findAverageCurrentStreak();
+    }
+
+    /**
+     * Получение всех профилей пользователей
+     */
+    public List<UserProfile> getAllUserProfiles() {
+        return (List<UserProfile>) userProfileRepository.findAll();
     }
 }

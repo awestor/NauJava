@@ -28,4 +28,10 @@ public interface MealRepository extends CrudRepository<Meal, Long> {
     boolean existsByDailyReportIdAndMealType(Long dailyReportId, MealType mealType);
 
     long countByDailyReportIdAndMealType(Long dailyReportId, MealType mealType);
+
+    @Query("SELECT MAX(m.eatenAt) FROM Meal m WHERE m.dailyReport.user.id = :userId")
+    LocalDateTime findLastMealActivityByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(DISTINCT m.dailyReport.user.id) FROM Meal m WHERE m.eatenAt >= :after")
+    Long countUsersWithActivityAfter(@Param("after") LocalDateTime after);
 }

@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.service;
+package ru.daniil.NauJava.service.activityLevel;
 
 import ru.daniil.NauJava.entity.ActivityLevel;
 

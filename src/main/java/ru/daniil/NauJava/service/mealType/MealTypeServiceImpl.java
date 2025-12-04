@@ -1,8 +1,7 @@
-package ru.daniil.NauJava.service;
+package ru.daniil.NauJava.service.mealType;
 
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.MealType;
-import ru.daniil.NauJava.repository.MealEntryRepository;
 import ru.daniil.NauJava.repository.MealTypeRepository;
 
 import java.util.List;

@@ -4,6 +4,7 @@ import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.request.create.RegistrationRequest;
 import ru.daniil.NauJava.request.update.UpdateAccountRequest;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
@@ -32,4 +33,8 @@ public interface UserService {
      * @return сущность пользователя User
      */
     User registerUser(RegistrationRequest request);
+
+    User findByLogin(String login);
+    List<User> findAllUsers();
+    long countAllUsers();
 }

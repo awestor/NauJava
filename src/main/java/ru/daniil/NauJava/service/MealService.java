@@ -2,6 +2,7 @@ package ru.daniil.NauJava.service;
 
 import ru.daniil.NauJava.entity.Meal;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,4 +60,8 @@ public interface MealService {
      * @param dailyReportId id дневного отчёта
      */
     void updateNutritionSum(Long dailyReportId);
+
+    LocalDateTime getLastMealActivityByUserId(Long userId);
+    Long countUsersWithActivityAfter(LocalDateTime after);
+    List<Meal> getMealsByDailyReportId(Long dailyReportId);
 }

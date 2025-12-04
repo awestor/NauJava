@@ -1,7 +1,5 @@
-package ru.daniil.NauJava.service;
+package ru.daniil.NauJava.service.nutritionGoal;
 
-import org.springframework.scheduling.annotation.Async;
-import ru.daniil.NauJava.entity.NutritionGoal;
 import ru.daniil.NauJava.entity.UserProfile;
 
 public interface NutritionGoalService {

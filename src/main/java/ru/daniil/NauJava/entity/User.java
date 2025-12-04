@@ -139,6 +139,14 @@ public class User implements UserDetails {
         this.email = email;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public void addRole(Role role) {
         roles.add(role);
         role.getUsers().add(this);

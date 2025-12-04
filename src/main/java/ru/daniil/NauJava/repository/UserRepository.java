@@ -1,5 +1,6 @@
 package ru.daniil.NauJava.repository;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -27,4 +28,6 @@ public interface UserRepository extends CrudRepository<User, Long> {
     boolean existsByLogin(String login);
 
     boolean existsByEmail(String email);
+
+    List<User> findAllByOrderByIdAsc();
 }

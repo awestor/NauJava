@@ -14,6 +14,7 @@ import ru.daniil.NauJava.repository.MealTypeRepository;
 import ru.daniil.NauJava.request.NutritionSumResponse;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -159,5 +160,26 @@ public class MealServiceImpl implements MealService {
     @Override
     public Optional<Meal> getMealById(Long mealId){
         return mealRepository.findById(mealId);
+    }
+
+    /**
+     * Получение последней активности пользователя по приёмам пищи
+     */
+    public LocalDateTime getLastMealActivityByUserId(Long userId) {
+        return mealRepository.findLastMealActivityByUserId(userId);
+    }
+
+    /**
+     * Подсчет пользователей с активностью после указанной даты
+     */
+    public Long countUsersWithActivityAfter(LocalDateTime after) {
+        return mealRepository.countUsersWithActivityAfter(after);
+    }
+
+    /**
+     * Получение приёмов пищи по отчёту
+     */
+    public List<Meal> getMealsByDailyReportId(Long dailyReportId) {
+        return mealRepository.findByDailyReportId(dailyReportId);
     }
 }

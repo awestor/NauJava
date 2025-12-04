@@ -1,8 +1,10 @@
 package ru.daniil.NauJava.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.openqa.selenium.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +18,7 @@ import ru.daniil.NauJava.repository.UserRepository;
 import ru.daniil.NauJava.request.create.RegistrationRequest;
 import ru.daniil.NauJava.request.update.UpdateAccountRequest;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -105,6 +108,25 @@ public class UserServiceImpl implements UserService {
 
         User userDetails = (User) authentication.getPrincipal();
         return Optional.ofNullable(userDetails);
+    }
+
+    public User findByLogin(String login) {
+        return userRepository.findByLogin(login)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
+    }
+
+    /**
+     * Получение всех пользователей
+     */
+    public List<User> findAllUsers() {
+        return userRepository.findAllByOrderByIdAsc();
+    }
+
+    /**
+     * Подсчет общего количества пользователей
+     */
+    public long countAllUsers() {
+        return userRepository.count();
     }
 
     public boolean userExists(String email) {

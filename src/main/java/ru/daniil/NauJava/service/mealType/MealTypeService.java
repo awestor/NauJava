@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.service;
+package ru.daniil.NauJava.service.mealType;
 
 import ru.daniil.NauJava.entity.MealType;
 

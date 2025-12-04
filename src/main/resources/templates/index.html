@@ -56,7 +56,7 @@
         </div>
 
         <div class="menu-card admin-card" sec:authorize="hasRole('ADMIN')">
-          <a th:href="@{/admin/users}" class="card-link">
+          <a th:href="@{/admin/view/users}" class="card-link">
             <div class="card-icon">👥</div>
             <h3 class="card-title">Пользователи</h3>
             <p class="card-description">Управление зарегистрированными пользователями системы</p>
@@ -65,7 +65,7 @@
         </div>
 
         <div class="menu-card admin-card" sec:authorize="hasRole('ADMIN')">
-          <a th:href="@{/admin/view/reports/}" class="card-link">
+          <a th:href="@{/admin/view/reports}" class="card-link">
             <div class="card-icon">📊</div>
             <h3 class="card-title">Отчёты активности</h3>
             <p class="card-description">Анализ активности всех пользователей системы</p>
@@ -73,29 +73,10 @@
           </a>
         </div>
       </div>
-
-      <!-- Быстрый доступ к сегодняшним данным -->
-      <div class="quick-stats" sec:authorize="!hasRole('ADMIN')">
-        <h2 class="section-title">Сегодняшняя статистика</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-value" id="todayCalories">--</div>
-            <div class="stat-label">ккал потреблено</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="todayMeals">--</div>
-            <div class="stat-label">приёмов пищи</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="todayGoal">--</div>
-            <div class="stat-label">% от цели</div>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- Контент для неавторизованных пользователей -->
     <div sec:authorize="!isAuthenticated()">
+      <!-- Контент для неавторизованных пользователей -->
       <div class="hero-section">
         <div class="hero-content">
           <h1 class="hero-title">Calorie<span class="logo-accent">Tracker</span></h1>

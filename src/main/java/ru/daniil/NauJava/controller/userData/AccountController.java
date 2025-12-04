@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.entity.UserProfile;
-import ru.daniil.NauJava.service.ActivityLevelService;
+import ru.daniil.NauJava.service.activityLevel.ActivityLevelService;
 import ru.daniil.NauJava.service.UserProfileService;
 import ru.daniil.NauJava.service.UserService;
 

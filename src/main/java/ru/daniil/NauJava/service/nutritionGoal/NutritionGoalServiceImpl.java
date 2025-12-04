@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.service;
+package ru.daniil.NauJava.service.nutritionGoal;
 
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.ActivityLevel;

@@ -8,6 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.request.create.RegistrationRequest;
@@ -16,6 +17,7 @@ import ru.daniil.NauJava.service.UserService;
 
 
 @Controller
+@RequestMapping()
 public class AuthController {
     private final UserService userService;
     private final UserProfileService userProfileService;

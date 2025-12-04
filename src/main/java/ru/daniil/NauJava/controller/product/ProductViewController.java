@@ -80,14 +80,17 @@ public class ProductViewController {
         try {
             Product savedProduct = productService.saveProduct(createProductRequest);
             if (savedProduct == null){
+                System.err.println("Ошибка при создании продукта");
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Ошибка при создании продукта: Продукт уже сохранён в БД");
             }
             else {
+                System.out.println("Продукт успешно создан");
                 redirectAttributes.addFlashAttribute("successMessage",
                         "Продукт '" + savedProduct.getName() + "' успешно сохранён!");
             }
         } catch (Exception e) {
+            System.err.println("Ошибка при создании продукта " + e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage",
                     "ошибка при создании продукта: " + e.getMessage());
         }

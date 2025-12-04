@@ -61,12 +61,9 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("CreateProductRequest cannot be null"));
         newProduct.setCreatedByUser(userService.getAuthUser().orElse(null));
 
-        Product product = productRepository.findById(newProduct.getId()).orElse(null);
-
-        if (product != null){
+        if (productRepository.existsByNameIgnoreCase(newProduct.getName())){
             return null;
         }
-
         return productRepository.save(newProduct);
     }
 

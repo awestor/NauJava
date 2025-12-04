@@ -4,6 +4,9 @@ import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.entity.UserProfile;
 import ru.daniil.NauJava.request.update.UpdateProfileRequest;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 public interface UserProfileService {
     /**
      * Возвращает данные профиля переданного пользователя
@@ -42,4 +45,11 @@ public interface UserProfileService {
      * @return true или false
      */
     boolean hasCompleteProfile(UserProfile userProfile);
+
+    UserProfile getProfileByUserLogin(String login);
+
+    String formatFIO(UserProfile profile);
+    LocalDateTime getLastProfileUpdate(Long userId);
+    Double getAverageCurrentStreak();
+    List<UserProfile> getAllUserProfiles();
 }

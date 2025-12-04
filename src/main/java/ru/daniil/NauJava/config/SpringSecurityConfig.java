@@ -7,14 +7,38 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
+import ru.daniil.NauJava.config.filter.SwaggerCsrfRequestHandler;
+import ru.daniil.NauJava.config.filter.SwaggerRequestFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfig {
 
+    private final SwaggerRequestFilter swaggerRequestFilter;
+    private final SwaggerCsrfRequestHandler swaggerCsrfRequestHandler;
+
+    public SpringSecurityConfig(SwaggerRequestFilter swaggerRequestFilter,
+                          SwaggerCsrfRequestHandler swaggerCsrfRequestHandler) {
+        this.swaggerRequestFilter = swaggerRequestFilter;
+        this.swaggerCsrfRequestHandler = swaggerCsrfRequestHandler;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity security) throws Exception {
         return security
+                .addFilterBefore(swaggerRequestFilter, CsrfFilter.class)
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(swaggerCsrfRequestHandler)
+                        .ignoringRequestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/favicon.ico"
+                        )
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/mainPage/**",
@@ -62,6 +86,13 @@ public class SpringSecurityConfig {
                         .permitAll()
                 )
                 .build();
+    }
+
+    @Bean
+    public CsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        repository.setCookiePath("/");
+        return repository;
     }
 
     @Bean
