@@ -110,9 +110,9 @@ public class UserServiceImpl implements UserService {
         return Optional.ofNullable(userDetails);
     }
 
-    public User findByLogin(String login) {
-        return userRepository.findByLogin(login)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
+    @Override
+    public Optional<User> findByLogin(String login) {
+        return userRepository.findByLogin(login);
     }
 
     /**

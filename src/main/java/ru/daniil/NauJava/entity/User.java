@@ -147,6 +147,14 @@ public class User implements UserDetails {
         this.createdAt = createdAt;
     }
 
+    public UserProfile getUserProfile() {
+        return userProfile;
+    }
+
+    public void setUserProfile(UserProfile userProfile) {
+        this.userProfile = userProfile;
+    }
+
     public void addRole(Role role) {
         roles.add(role);
         role.getUsers().add(this);

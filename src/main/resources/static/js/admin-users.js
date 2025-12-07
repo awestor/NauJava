@@ -484,7 +484,7 @@ function getCsrfToken() {
     return metaToken ? metaToken.getAttribute('content') : '';
 }
 
-// Автообновление данных каждые 5 минут
+// Автообновление данных каждые 10 минут
 setInterval(() => {
     loadUsersData();
-}, 5 * 60 * 1000);
+}, 10 * 60 * 1000);

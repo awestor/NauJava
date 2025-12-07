@@ -2,7 +2,8 @@ package ru.daniil.NauJava.service;
 
 import ru.daniil.NauJava.entity.DailyReport;
 import ru.daniil.NauJava.entity.User;
-import ru.daniil.NauJava.request.CalendarDayResponse;
+import ru.daniil.NauJava.response.CalendarDayResponse;
+import ru.daniil.NauJava.response.DailyReportResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -58,5 +59,5 @@ public interface DailyReportService {
      * @param month месяц
      * @return список DailyReport
      */
-    List<DailyReport> getDailyReportsForMonth(int year, int month);
+    List<DailyReportResponse> getDailyReportsForMonth(int year, int month);
 }

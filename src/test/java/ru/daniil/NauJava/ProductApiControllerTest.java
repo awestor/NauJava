@@ -22,9 +22,9 @@ import ru.daniil.NauJava.service.UserServiceImpl;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+//@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProductApiControllerTest {
 
     @LocalServerPort
@@ -55,8 +55,8 @@ class ProductApiControllerTest {
         registerUser.setEmail("test@example.com");
         registerUser.setLogin("testuser");
         registerUser.setPassword("Password123!");
-        registerUser.setName("John");
-        registerUser.setSurname("Doe");
+        //registerUser.setName("John");
+        //registerUser.setSurname("Doe");
         userService.registerUser(registerUser);
 
         if (userRepository.findByEmail("test@example.com").isPresent()) {

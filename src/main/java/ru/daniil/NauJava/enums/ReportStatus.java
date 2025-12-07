@@ -2,6 +2,7 @@ package ru.daniil.NauJava.enums;
 
 public enum ReportStatus {
     CREATED("Создан"),
+    PROCESSING("Формируется"),
     COMPLETED("Завершен"),
     ERROR("Ошибка");
 

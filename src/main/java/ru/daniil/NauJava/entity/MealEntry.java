@@ -61,6 +61,10 @@ public class MealEntry {
         this.id = id;
     }
 
+    public Meal getMeal() {
+        return meal;
+    }
+
     public void setMeal(Meal meal) {
         this.meal = meal;
     }

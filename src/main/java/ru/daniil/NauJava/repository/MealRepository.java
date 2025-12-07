@@ -34,4 +34,17 @@ public interface MealRepository extends CrudRepository<Meal, Long> {
 
     @Query("SELECT COUNT(DISTINCT m.dailyReport.user.id) FROM Meal m WHERE m.eatenAt >= :after")
     Long countUsersWithActivityAfter(@Param("after") LocalDateTime after);
+
+    @Query("SELECT DISTINCT dr.user.id FROM Meal m JOIN m.dailyReport dr " +
+            "WHERE m.eatenAt BETWEEN :start AND :end")
+    List<Long> findDistinctUserIdsWithMealsBetween(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(m) FROM Meal m JOIN m.dailyReport dr " +
+            "WHERE dr.user.id IN :userIds AND m.eatenAt BETWEEN :start AND :end")
+    Long countMealsForUsersBetweenDates(
+            @Param("userIds") List<Long> userIds,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end);
 }

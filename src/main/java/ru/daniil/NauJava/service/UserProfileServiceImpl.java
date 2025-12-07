@@ -141,7 +141,8 @@ public class UserProfileServiceImpl implements UserProfileService {
      * Получение профиля по логину пользователя
      */
     public UserProfile getProfileByUserLogin(String login) {
-        User user = userService.findByLogin(login);
+        User user = userService.findByLogin(login)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
         return userProfileRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Профиль пользователя не найден"));
     }

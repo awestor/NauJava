@@ -2,6 +2,7 @@ package ru.daniil.NauJava.controller.product;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.daniil.NauJava.entity.Product;
+import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.request.create.CreateProductRequest;
 import ru.daniil.NauJava.service.ProductService;
 import ru.daniil.NauJava.service.UserService;
@@ -38,7 +40,9 @@ public class ProductViewController {
     @GetMapping("/list")
     public ModelAndView productListView() {
         Map<String, Object> model = new HashMap<>();
-        List<Product> products = productService.getAll();
+        User user = userService.getAuthUser().orElseThrow(
+                () -> new AuthenticationCredentialsNotFoundException("Пользователь не найден или не авторизован"));
+        List<Product> products = productService.getAll(user.getId());
 
         products.sort(Comparator.comparing(Product::getId));
 

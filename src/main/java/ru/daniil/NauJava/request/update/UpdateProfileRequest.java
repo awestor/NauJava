@@ -36,22 +36,103 @@ public class UpdateProfileRequest {
 
     private Long activityLevelId;
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getSurname() { return surname; }
-    public void setSurname(String surname) { this.surname = surname; }
-    public String getPatronymic() { return patronymic; }
-    public void setPatronymic(String patronymic) { this.patronymic = patronymic; }
-    public LocalDate getDateOfBirth() { return dateOfBirth; }
-    public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
-    public String getGender() { return gender; }
-    public void setGender(String gender) { this.gender = gender; }
-    public Integer getHeight() { return height; }
-    public void setHeight(Integer height) { this.height = height; }
-    public Double getWeight() { return weight; }
-    public void setWeight(Double weight) { this.weight = weight; }
-    public Double getTargetWeight() { return targetWeight; }
-    public void setTargetWeight(Double targetWeight) { this.targetWeight = targetWeight; }
-    public Long getActivityLevelId() { return activityLevelId; }
-    public void setActivityLevelId(Long activityLevelId) { this.activityLevelId = activityLevelId; }
+    public UpdateProfileRequest() {
+    }
+
+    public UpdateProfileRequest(Long activityLevelId) {
+        this.activityLevelId = activityLevelId;
+    }
+
+    public UpdateProfileRequest(String name, Integer height, Double weight) {
+        this.name = name;
+        this.height = height;
+        this.weight = weight;
+    }
+
+    public UpdateProfileRequest(String name, String surname,
+                                String patronymic, LocalDate dateOfBirth,
+                                String gender, Integer height, Double weight,
+                                Double targetWeight, Long activityLevelId) {
+        this.name = name;
+        this.surname = surname;
+        this.patronymic = patronymic;
+        this.dateOfBirth = dateOfBirth;
+        this.gender = gender;
+        this.height = height;
+        this.weight = weight;
+        this.targetWeight = targetWeight;
+        this.activityLevelId = activityLevelId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+
+    public String getPatronymic() {
+        return patronymic;
+    }
+
+    public void setPatronymic(String patronymic) {
+        this.patronymic = patronymic;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public Integer getHeight() {
+        return height;
+    }
+
+    public void setHeight(Integer height) {
+        this.height = height;
+    }
+
+    public Double getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Double weight) {
+        this.weight = weight;
+    }
+
+    public Double getTargetWeight() {
+        return targetWeight;
+    }
+
+    public void setTargetWeight(Double targetWeight) {
+        this.targetWeight = targetWeight;
+    }
+
+    public Long getActivityLevelId() {
+        return activityLevelId;
+    }
+
+    public void setActivityLevelId(Long activityLevelId) {
+        this.activityLevelId = activityLevelId;
+    }
 }

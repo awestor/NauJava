@@ -5,8 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.NauJava.entity.Meal;
 import ru.daniil.NauJava.request.create.CreateMealRequest;
-import ru.daniil.NauJava.request.MealEntryResponse;
-import ru.daniil.NauJava.request.MealResponse;
+import ru.daniil.NauJava.response.MealEntryResponse;
+import ru.daniil.NauJava.response.MealResponse;
 import ru.daniil.NauJava.request.update.UpdateMealRequest;
 import ru.daniil.NauJava.service.MealService;
 

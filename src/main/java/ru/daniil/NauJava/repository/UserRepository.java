@@ -7,6 +7,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 import ru.daniil.NauJava.entity.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,4 +31,6 @@ public interface UserRepository extends CrudRepository<User, Long> {
     boolean existsByEmail(String email);
 
     List<User> findAllByOrderByIdAsc();
+
+    Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

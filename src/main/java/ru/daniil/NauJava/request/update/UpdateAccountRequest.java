@@ -19,6 +19,18 @@ public class UpdateAccountRequest {
             message = "Пароль должен содержать минимум 8 символов, включая заглавные и строчные буквы латинского алфавита, цифры и специальные символы (кроме @/|\\*#&?)")
     private String password;
 
+
+    public UpdateAccountRequest(String login, String email) {
+        this.login = login;
+        this.email = email;
+    }
+
+    public UpdateAccountRequest(String login, String email, String password) {
+        this.login = login;
+        this.email = email;
+        this.password = password;
+    }
+
     public String getLogin() { return login; }
     public void setLogin(String login) { this.login = login; }
     public String getEmail() { return email; }

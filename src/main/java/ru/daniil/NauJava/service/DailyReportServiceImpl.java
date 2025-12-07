@@ -2,12 +2,14 @@ package ru.daniil.NauJava.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.DailyReport;
 import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.repository.DailyReportRepository;
-import ru.daniil.NauJava.request.CalendarDayResponse;
-import ru.daniil.NauJava.request.NutritionSumResponse;
+import ru.daniil.NauJava.response.CalendarDayResponse;
+import ru.daniil.NauJava.response.DailyReportResponse;
+import ru.daniil.NauJava.response.NutritionSumResponse;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -86,6 +88,9 @@ public class DailyReportServiceImpl implements DailyReportService {
                 .orElseGet(() -> createDailyReport(user, LocalDate.now()));
     }
 
+    @Cacheable(value = "calendar-month",
+            key = "'reports:' + #targetDate")
+    @Override
     public List<CalendarDayResponse> getCalendarDataForMonth(LocalDate targetDate) {
         User user = userService.getAuthUser()
                 .orElseThrow(() -> new RuntimeException("Пользователь не авторизован"));
@@ -117,16 +122,32 @@ public class DailyReportServiceImpl implements DailyReportService {
         return calendarData;
     }
 
-    public List<CalendarDayResponse> getCalendarDataForCurrentMonth() {
-        return getCalendarDataForMonth(LocalDate.now());
-    }
-
-    public List<DailyReport> getDailyReportsForMonth(int year, int month) {
-        User user = userService.getAuthUser().orElseThrow();
+    @Cacheable(value = "daily-reports",
+            key = "'reports:' + #year + '-' + #month")
+    @Override
+    public List<DailyReportResponse> getDailyReportsForMonth(int year, int month) {
+        User user = userService.getAuthUser()
+                .orElseThrow(() -> new RuntimeException("Пользователь не авторизован"));
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
-        return dailyReportRepository.findByUserIdAndReportDateBetween(
+        List<DailyReport> dailyReport = dailyReportRepository.findByUserIdAndReportDateBetween(
                 user.getId(), startDate, endDate);
+
+        return dailyReport.stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
+
+    private DailyReportResponse convertToResponse(DailyReport report) {
+        return new DailyReportResponse(
+                    report.getId(),
+                    report.getTotalCaloriesConsumed(),
+                    report.getTotalProteinsConsumed(),
+                    report.getTotalFatsConsumed(),
+                    report.getTotalCarbsConsumed(),
+                    report.getGoalAchieved(),
+                    report.getReportDate().toString()
+                );
     }
 }

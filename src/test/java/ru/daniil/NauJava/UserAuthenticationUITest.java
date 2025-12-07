@@ -73,8 +73,8 @@ class UserAuthenticationUITest {
         registerUser.setEmail("test@example.com");
         registerUser.setLogin("testuser");
         registerUser.setPassword("Password123!");
-        registerUser.setName("John");
-        registerUser.setSurname("Doe");
+        //registerUser.setName("John");
+        //registerUser.setSurname("Doe");
         userService.registerUser(registerUser);
 
         if (userRepository.findByEmail("test@example.com").isPresent()) {

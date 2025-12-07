@@ -3,11 +3,14 @@ package ru.daniil.NauJava.controller.product;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.NauJava.entity.Product;
-import ru.daniil.NauJava.request.ProductInfoResponse;
+import ru.daniil.NauJava.entity.User;
+import ru.daniil.NauJava.response.ProductInfoResponse;
 import ru.daniil.NauJava.request.update.UpdateProductRequest;
 import ru.daniil.NauJava.service.ProductService;
+import ru.daniil.NauJava.service.UserService;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,10 +20,13 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/products")
 public class ProductApiController {
     private final ProductService productService;
+    private final UserService userService;
 
     @Autowired
-    ProductApiController(ProductService productService) {
+    ProductApiController(ProductService productService,
+                         UserService userService) {
         this.productService = productService;
+        this.userService = userService;
     }
 
     /**
@@ -29,7 +35,9 @@ public class ProductApiController {
      */
     @GetMapping("/all")
     public Iterable<Product> getAllProducts() {
-        return productService.getAll();
+        User user = userService.getAuthUser().orElseThrow(
+                () -> new AuthenticationCredentialsNotFoundException("Пользователь не найден или не авторизован"));
+        return productService.getAll(user.getId());
     }
 
     /**
@@ -39,7 +47,9 @@ public class ProductApiController {
      */
     @GetMapping("/all/baseInfo")
     public List<ProductInfoResponse> getAllBaseInfoProducts() {
-        return productService.getAll().stream()
+        User user = userService.getAuthUser().orElseThrow(
+                () -> new AuthenticationCredentialsNotFoundException("Пользователь не найден или не авторизован"));
+        return productService.getAll(user.getId()).stream()
                 .map(product -> new ProductInfoResponse(product.getId(), product.getName()))
                 .collect(Collectors.toList());
     }

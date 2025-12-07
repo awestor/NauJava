@@ -15,14 +15,14 @@
         <a class="nav-link" th:href="@{/}">Главная</a>
         <a class="nav-link" th:href="@{/swagger-ui.html}">Swagger UI</a>
         <a class="nav-link" th:href="@{/admin/view/users}">Пользователи</a>
-        <a class="nav-link" th:href="@{/admin/view/reports}">Отчёты</a>
+        <a class="nav-link" th:href="@{/admin/view/reports/list}">Отчёты</a>
       </nav>
 
       <div class="user-info">
-        <a class="user-welcome-link" th:href="@{/view/account}">
+        <div>
           <span class="user-welcome">Welcome, </span>
           <span class="user-login" th:text="${#authentication.principal.username}">user</span>
-        </a>
+        </div>
         <form class="logout-form" th:action="@{/logout}" method="post">
           <button type="submit" class="btn btn-logout">Logout</button>
         </form>

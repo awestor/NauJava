@@ -1,6 +1,7 @@
 package ru.daniil.NauJava.service;
 
 import ru.daniil.NauJava.entity.Product;
+import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.request.create.CreateProductRequest;
 import ru.daniil.NauJava.request.update.UpdateProductRequest;
 
@@ -12,7 +13,7 @@ public interface ProductService {
      * Находит все продукты пользователя и системы
      * @return список продуктов с этим названием
      */
-    List<Product> getAll();
+    List<Product> getAll(Long userId);
 
     /**
      * Находит несколько продуктов по именам

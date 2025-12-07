@@ -2,42 +2,46 @@ package ru.daniil.NauJava.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
-import org.springframework.security.web.csrf.CsrfTokenRepository;
-import ru.daniil.NauJava.config.filter.SwaggerCsrfRequestHandler;
-import ru.daniil.NauJava.config.filter.SwaggerRequestFilter;
+import ru.daniil.NauJava.config.jwt.JwtAuthenticationFilter;
+import ru.daniil.NauJava.config.swagger.CsrfRequestMatcher;
+import ru.daniil.NauJava.config.swagger.SwaggerCsrfRequestHandler;
 
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfig {
 
-    private final SwaggerRequestFilter swaggerRequestFilter;
-    private final SwaggerCsrfRequestHandler swaggerCsrfRequestHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CorsConfig baseCorsConfig;
 
-    public SpringSecurityConfig(SwaggerRequestFilter swaggerRequestFilter,
-                          SwaggerCsrfRequestHandler swaggerCsrfRequestHandler) {
-        this.swaggerRequestFilter = swaggerRequestFilter;
-        this.swaggerCsrfRequestHandler = swaggerCsrfRequestHandler;
+    public SpringSecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                                CorsConfig baseCorsConfig,
+                                SwaggerCsrfRequestHandler swaggerCsrfRequestHandler) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.baseCorsConfig = baseCorsConfig;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity security) throws Exception {
         return security
-                .addFilterBefore(swaggerRequestFilter, CsrfFilter.class)
+                .cors(cors -> cors.configurationSource(baseCorsConfig.corsConfigurationSource()))
+
+                .addFilterBefore(jwtAuthenticationFilter, CsrfFilter.class)
+
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(swaggerCsrfRequestHandler)
-                        .ignoringRequestMatchers(
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/favicon.ico"
-                        )
+                        .requireCsrfProtectionMatcher(new CsrfRequestMatcher())
+                )
+
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -67,7 +71,9 @@ public class SpringSecurityConfig {
                                 "/api/account/**",
                                 "/view/account",
                                 "/api/profile/**",
-                                "/api/daily-reports/**"
+                                "/api/daily-reports/**",
+                                "/api/auth/token",
+                                "/api/auth/validate"
                         ).hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -89,10 +95,9 @@ public class SpringSecurityConfig {
     }
 
     @Bean
-    public CsrfTokenRepository csrfTokenRepository() {
-        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-        repository.setCookiePath("/");
-        return repository;
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+            throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 
     @Bean

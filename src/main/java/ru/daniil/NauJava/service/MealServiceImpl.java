@@ -11,7 +11,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import ru.daniil.NauJava.entity.*;
 import ru.daniil.NauJava.repository.MealRepository;
 import ru.daniil.NauJava.repository.MealTypeRepository;
-import ru.daniil.NauJava.request.NutritionSumResponse;
+import ru.daniil.NauJava.response.NutritionSumResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -68,7 +68,8 @@ public class MealServiceImpl implements MealService {
             List<String> uniqueProductNames = new ArrayList<>(productQuantities.keySet());
             List<Integer> summedQuantities = new ArrayList<>(productQuantities.values());
 
-            List<MealEntry> mealEntries = mealEntryService.createMealEntries(meal, uniqueProductNames, summedQuantities);
+            List<MealEntry> mealEntries = mealEntryService.createMealEntries
+                    (meal, uniqueProductNames, summedQuantities);
             for (MealEntry mealEntry : mealEntries) {
                 meal.addMealEntry(mealEntry);
             }
@@ -181,5 +182,20 @@ public class MealServiceImpl implements MealService {
      */
     public List<Meal> getMealsByDailyReportId(Long dailyReportId) {
         return mealRepository.findByDailyReportId(dailyReportId);
+    }
+
+    @Override
+    public List<Meal> getMealsForDate(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        DailyReport dailyReport = dailyReportService.getDailyReportAuth(date).orElse(null);
+
+        if(dailyReport != null) {
+            return getByDailyReportId(dailyReport.getId());
+        }
+        else {
+            return new ArrayList<>();
+        }
     }
 }

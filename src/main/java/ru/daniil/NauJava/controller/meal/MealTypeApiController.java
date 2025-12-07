@@ -3,7 +3,7 @@ package ru.daniil.NauJava.controller.meal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.daniil.NauJava.request.MealTypeResponse;
+import ru.daniil.NauJava.response.MealTypeResponse;
 import ru.daniil.NauJava.service.mealType.MealTypeService;
 
 import java.util.List;

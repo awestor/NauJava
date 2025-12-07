@@ -2,6 +2,7 @@ package ru.daniil.NauJava.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.Product;
@@ -30,12 +31,14 @@ public class ProductServiceImpl implements ProductService {
         this.mealEntryRepository = mealEntryRepository;
     }
 
-    @Transactional
+    @Cacheable(value = "user-products",
+            key = "'products:' + #userId")
     @Override
-    public List<Product> getAll() {
-        User user = userService.getAuthUser().orElseThrow(
-                () -> new AuthenticationCredentialsNotFoundException("Пользователь не найден или не авторизован"));
-        return productRepository.findByCreatedByUserIsNullOrCreatedByUserId(user.getId());
+    public List<Product> getAll(Long userId) {
+        if (userId == null){
+            return new ArrayList<>();
+        }
+        return productRepository.findByCreatedByUserIsNullOrCreatedByUserId(userId);
     }
 
     @Transactional
@@ -49,9 +52,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product saveProduct(CreateProductRequest productInfo) {
+        if (productInfo == null){
+            throw new NullPointerException();
+        }
         Product newProduct = Optional.of(productInfo)
                 .map(request -> new Product(
                         request.getName(),
+                        // я не успел реализовать работу с описанием продуктов, так что это по хорошему бы удалить
                         "description",
                         request.getCaloriesPer100g(),
                         request.getProteinsPer100g(),
@@ -60,8 +67,7 @@ public class ProductServiceImpl implements ProductService {
                 ))
                 .orElseThrow(() -> new IllegalArgumentException("CreateProductRequest cannot be null"));
         newProduct.setCreatedByUser(userService.getAuthUser().orElse(null));
-
-        if (productRepository.existsByNameIgnoreCase(newProduct.getName())){
+        if (productRepository.existsByNameIgnoreCase(productInfo.getName())){
             return null;
         }
         return productRepository.save(newProduct);

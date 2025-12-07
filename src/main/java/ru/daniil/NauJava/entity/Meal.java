@@ -78,6 +78,14 @@ public class Meal {
         return mealType.getName();
     }
 
+    public LocalDateTime getEatenAt() {
+        return eatenAt;
+    }
+
+    public void setEatenAt(LocalDateTime eatenAt) {
+        this.eatenAt = eatenAt;
+    }
+
     public Integer getTotalCalories() {
         return mealEntries.stream()
                 .mapToInt(MealEntry::getCalculatedCalories)

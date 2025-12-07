@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import ru.daniil.NauJava.entity.DailyReport;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,4 +50,6 @@ public interface DailyReportRepository extends CrudRepository<DailyReport, Long>
             Long userId,
             LocalDate startDate,
             LocalDate endDate);
+
+    Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

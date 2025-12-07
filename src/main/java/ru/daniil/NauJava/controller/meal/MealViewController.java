@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ru.daniil.NauJava.entity.DailyReport;
 import ru.daniil.NauJava.entity.Meal;
 import ru.daniil.NauJava.entity.MealEntry;
-import ru.daniil.NauJava.request.NutritionSumResponse;
+import ru.daniil.NauJava.response.NutritionSumResponse;
 import ru.daniil.NauJava.service.DailyReportService;
 import ru.daniil.NauJava.service.MealEntryService;
 import ru.daniil.NauJava.service.MealService;
@@ -36,18 +36,7 @@ public class MealViewController {
     @GetMapping("/list")
     public String getMealsForDate(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                   Model model) {
-        if (date == null) {
-            date = LocalDate.now();
-        }
-
-        DailyReport dailyReport = dailyReportService.getDailyReportAuth(date).orElse(null);
-        List<Meal> meals;
-        if(dailyReport != null) {
-            meals = mealService.getByDailyReportId(dailyReport.getId());
-        }
-        else {
-            meals = new ArrayList<>();
-        }
+        List<Meal> meals = mealService.getMealsForDate(date);
 
         Map<Long, List<MealEntry>> mealEntries = new HashMap<>();
         Map<Long, NutritionSumResponse> nutritionSums = new HashMap<>();

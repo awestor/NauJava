@@ -55,3 +55,4 @@ folderEnd/
 dependency-reduced-pom.xml
 org/
 db.cache
+docker_conf

@@ -3,6 +3,7 @@ package ru.daniil.NauJava.entity;
 import jakarta.persistence.*;
 import ru.daniil.NauJava.enums.ReportStatus;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,17 +21,35 @@ public class Report {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "report_period_start", nullable = false)
+    private LocalDate reportPeriodStart;
+
+    @Column(name = "report_period_end", nullable = false)
+    private LocalDate reportPeriodEnd;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    @Column(name = "execution_time_users")
-    private Long executionTimeUsers;
+    @Column(name = "total_execution_time")
+    private Long totalExecutionTime;
 
-    @Column(name = "execution_time_products")
-    private Long executionTimeProducts;
+    @Column(name = "total_users_registered")
+    private Long totalUsersRegistered;
+
+    @Column(name = "total_products_created")
+    private Long totalProductsCreated;
+
+    @Column(name = "average_meals_per_active_user")
+    private Double averageMealsPerActiveUser;
+
+    @Column(name = "total_daily_reports_created")
+    private Long totalDailyReportsCreated;
+
+    @Column(name = "active_users_count")
+    private Long activeUsersCount;
 
     /**
      * Конструктор по умолчанию для формирования сущности отчёта.
@@ -44,9 +63,10 @@ public class Report {
      * Конструктор для формирования сущности отчёта с указанным статусом
      * и временем создания.
      */
-    public Report(ReportStatus status) {
+    public Report(LocalDate reportPeriodStart, LocalDate reportPeriodEnd) {
         this();
-        this.status = status;
+        this.reportPeriodStart = reportPeriodStart;
+        this.reportPeriodEnd = reportPeriodEnd;
     }
 
     public Long getId() {
@@ -77,11 +97,79 @@ public class Report {
         this.completedAt = completedAt;
     }
 
-    public void setExecutionTimeUsers(Long executionTimeUsers) {
-        this.executionTimeUsers = executionTimeUsers;
+    public LocalDate getReportPeriodStart() {
+        return reportPeriodStart;
     }
 
-    public void setExecutionTimeProducts(Long executionTimeProducts) {
-        this.executionTimeProducts = executionTimeProducts;
+    public void setReportPeriodStart(LocalDate reportPeriodStart) {
+        this.reportPeriodStart = reportPeriodStart;
+    }
+
+    public LocalDate getReportPeriodEnd() {
+        return reportPeriodEnd;
+    }
+
+    public void setReportPeriodEnd(LocalDate reportPeriodEnd) {
+        this.reportPeriodEnd = reportPeriodEnd;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getCompletedAt() {
+        return completedAt;
+    }
+
+    public Long getTotalExecutionTime() {
+        return totalExecutionTime;
+    }
+
+    public void setTotalExecutionTime(Long totalExecutionTime) {
+        this.totalExecutionTime = totalExecutionTime;
+    }
+
+    public Long getTotalUsersRegistered() {
+        return totalUsersRegistered;
+    }
+
+    public void setTotalUsersRegistered(Long totalUsersRegistered) {
+        this.totalUsersRegistered = totalUsersRegistered;
+    }
+
+    public Long getTotalProductsCreated() {
+        return totalProductsCreated;
+    }
+
+    public void setTotalProductsCreated(Long totalProductsCreated) {
+        this.totalProductsCreated = totalProductsCreated;
+    }
+
+    public Double getAverageMealsPerActiveUser() {
+        return averageMealsPerActiveUser;
+    }
+
+    public void setAverageMealsPerActiveUser(Double averageMealsPerActiveUser) {
+        this.averageMealsPerActiveUser = averageMealsPerActiveUser;
+    }
+
+    public Long getTotalDailyReportsCreated() {
+        return totalDailyReportsCreated;
+    }
+
+    public void setTotalDailyReportsCreated(Long totalDailyReportsCreated) {
+        this.totalDailyReportsCreated = totalDailyReportsCreated;
+    }
+
+    public Long getActiveUsersCount() {
+        return activeUsersCount;
+    }
+
+    public void setActiveUsersCount(Long activeUsersCount) {
+        this.activeUsersCount = activeUsersCount;
     }
 }

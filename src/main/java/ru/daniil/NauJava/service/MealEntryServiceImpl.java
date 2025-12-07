@@ -5,7 +5,7 @@ import ru.daniil.NauJava.entity.Meal;
 import ru.daniil.NauJava.entity.MealEntry;
 import ru.daniil.NauJava.entity.Product;
 import ru.daniil.NauJava.repository.MealEntryRepository;
-import ru.daniil.NauJava.request.NutritionSumResponse;
+import ru.daniil.NauJava.response.NutritionSumResponse;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -34,7 +34,7 @@ public interface UserService {
      */
     User registerUser(RegistrationRequest request);
 
-    User findByLogin(String login);
+    Optional<User> findByLogin(String login);
     List<User> findAllUsers();
     long countAllUsers();
 }
