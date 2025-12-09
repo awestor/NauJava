@@ -19,14 +19,14 @@ import java.util.*;
 
 @Service
 public class MealServiceImpl implements MealService {
-    private static final Logger logger = LoggerFactory.getLogger(MealServiceImpl.class);
-
     private final MealRepository mealRepository;
     private final MealEntryService mealEntryService;
     private final MealTypeRepository mealTypeRepository;
     private final UserService userService;
     private final DailyReportService dailyReportService;
     private final PlatformTransactionManager transactionManager;
+
+    private static final Logger methodLogger = LoggerFactory.getLogger("METHOD-LOGGER");
 
     public MealServiceImpl(MealRepository mealRepository,
                            MealEntryService mealEntryService,
@@ -49,14 +49,16 @@ public class MealServiceImpl implements MealService {
         LocalDate today = LocalDate.now();
 
         try {
-            logger.info("Начало создания приема пищи для пользователя, тип: {}",  mealTypeName);
+            methodLogger.info("{MealServiceImpl.createMealWithProducts} |" +
+                    " Начало создания приема пищи для пользователя, тип: {}",  mealTypeName);
 
             DailyReport dailyReport = dailyReportService.getOrCreateDailyReportAuth(today);
 
             MealType mealType = mealTypeRepository.findByName(mealTypeName)
                     .orElseThrow(() -> new NotFoundException("Указанный тип приёма пищи не найден в системе"));
             Meal meal = createMeal(dailyReport, mealType);
-            logger.debug("Создан прием пищи ID: {}", meal.getId());
+            methodLogger.debug("{MealServiceImpl.createMealWithProducts} |" +
+                    " Создан прием пищи ID: {}", meal.getId());
 
             Map<String, Integer> productQuantities = new HashMap<>();
             for (int i = 0; i < productNames.size(); i++) {
@@ -76,17 +78,20 @@ public class MealServiceImpl implements MealService {
 
             transactionManager.commit(status);
 
-            logger.info("Успешно создан прием пищи ID: {} с {} продуктами для пользователя",
-                    meal.getId(), mealEntries.size());
+            methodLogger.info("{MealServiceImpl.createMealWithProducts} |" +
+                    " Успешно создан прием пищи ID: {} с {} продуктами для пользователя"
+                    , meal.getId(), mealEntries.size());
 
             return meal;
 
         } catch (Exception ex) {
             if (!status.isCompleted()) {
-                logger.error("Откат транзакции для пользователя. Причина: {}", ex.getMessage());
+                methodLogger.error("{MealServiceImpl.createMealWithProducts} |" +
+                        "Откат транзакции для пользователя. Причина: {}", ex.getMessage());
                 transactionManager.rollback(status);
             } else {
-                logger.error("Транзакция уже завершена для пользователя. Причина: {}", ex.getMessage());
+                methodLogger.error("{MealServiceImpl.createMealWithProducts} |" +
+                        "Транзакция уже завершена для пользователя. Причина: {}", ex.getMessage());
             }
             throw ex;
         }
@@ -116,6 +121,7 @@ public class MealServiceImpl implements MealService {
     }
 
     @Transactional
+    @Override
     public List<Meal> getByDailyReportId(Long dailyReportId){
         return mealRepository.findByDailyReportId(dailyReportId);
     }
@@ -163,25 +169,14 @@ public class MealServiceImpl implements MealService {
         return mealRepository.findById(mealId);
     }
 
-    /**
-     * Получение последней активности пользователя по приёмам пищи
-     */
+    @Override
     public LocalDateTime getLastMealActivityByUserId(Long userId) {
         return mealRepository.findLastMealActivityByUserId(userId);
     }
 
-    /**
-     * Подсчет пользователей с активностью после указанной даты
-     */
+    @Override
     public Long countUsersWithActivityAfter(LocalDateTime after) {
         return mealRepository.countUsersWithActivityAfter(after);
-    }
-
-    /**
-     * Получение приёмов пищи по отчёту
-     */
-    public List<Meal> getMealsByDailyReportId(Long dailyReportId) {
-        return mealRepository.findByDailyReportId(dailyReportId);
     }
 
     @Override
@@ -197,5 +192,15 @@ public class MealServiceImpl implements MealService {
         else {
             return new ArrayList<>();
         }
+    }
+
+    @Override
+    public List<Long> findDistinctUserIdsWithMealsBetween(LocalDateTime start, LocalDateTime end) {
+        return mealRepository.findDistinctUserIdsWithMealsBetween(start, end);
+    }
+
+    @Override
+    public Long countMealsForUsersBetweenDates(List<Long> activeUserIds, LocalDateTime start, LocalDateTime end) {
+        return mealRepository.countMealsForUsersBetweenDates(activeUserIds, start, end);
     }
 }

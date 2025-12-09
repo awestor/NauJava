@@ -13,6 +13,10 @@ import org.springframework.data.domain.Pageable;
 import ru.daniil.NauJava.entity.Report;
 import ru.daniil.NauJava.enums.ReportStatus;
 import ru.daniil.NauJava.repository.*;
+import ru.daniil.NauJava.service.DailyReportService;
+import ru.daniil.NauJava.service.MealService;
+import ru.daniil.NauJava.service.ProductService;
+import ru.daniil.NauJava.service.UserService;
 import ru.daniil.NauJava.service.admin.ReportServiceImpl;
 
 import java.time.LocalDate;
@@ -32,16 +36,16 @@ class ReportServiceTest {
     private ReportRepository reportRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Mock
-    private ProductRepository productRepository;
+    private ProductService productService;
 
     @Mock
-    private MealRepository mealRepository;
+    private MealService mealService;
 
     @Mock
-    private DailyReportRepository dailyReportRepository;
+    private DailyReportService dailyReportService;
 
     @InjectMocks
     private ReportServiceImpl reportService;
@@ -273,11 +277,11 @@ class ReportServiceTest {
         when(reportRepository.findById(1L)).thenReturn(Optional.of(report));
         when(reportRepository.save(any(Report.class))).thenReturn(report);
 
-        when(userRepository.countByCreatedAtBetween(any(), any())).thenReturn(5L);
-        when(productRepository.countByCreatedAtBetween(any(), any())).thenReturn(10L);
-        when(dailyReportRepository.countByCreatedAtBetween(any(), any())).thenReturn(15L);
-        when(mealRepository.findDistinctUserIdsWithMealsBetween(any(), any())).thenReturn(List.of(1L, 2L, 3L));
-        when(mealRepository.countMealsForUsersBetweenDates(anyList(), any(), any())).thenReturn(20L);
+        when(userService.countByCreatedAtBetween(any(), any())).thenReturn(5L);
+        when(productService.countByCreatedAtBetween(any(), any())).thenReturn(10L);
+        when(dailyReportService.countByCreatedAtBetween(any(), any())).thenReturn(15L);
+        when(mealService.findDistinctUserIdsWithMealsBetween(any(), any())).thenReturn(List.of(1L, 2L, 3L));
+        when(mealService.countMealsForUsersBetweenDates(anyList(), any(), any())).thenReturn(20L);
 
         reportService.generateReportAsync(1L);
 
@@ -297,11 +301,11 @@ class ReportServiceTest {
 
         when(reportRepository.findById(1L)).thenReturn(Optional.of(report));
         when(reportRepository.save(any(Report.class))).thenReturn(report);
-        when(userRepository.countByCreatedAtBetween(start, end)).thenReturn(3L);
-        when(productRepository.countByCreatedAtBetween(any(), any())).thenReturn(0L);
-        when(dailyReportRepository.countByCreatedAtBetween(any(), any())).thenReturn(0L);
-        when(mealRepository.findDistinctUserIdsWithMealsBetween(any(), any())).thenReturn(List.of());
-        when(mealRepository.countMealsForUsersBetweenDates(anyList(), any(), any())).thenReturn(0L);
+        when(userService.countByCreatedAtBetween(start, end)).thenReturn(3L);
+        when(productService.countByCreatedAtBetween(any(), any())).thenReturn(0L);
+        when(dailyReportService.countByCreatedAtBetween(any(), any())).thenReturn(0L);
+        when(mealService.findDistinctUserIdsWithMealsBetween(any(), any())).thenReturn(List.of());
+        when(mealService.countMealsForUsersBetweenDates(anyList(), any(), any())).thenReturn(0L);
 
         reportService.generateReportAsync(1L);
 
@@ -311,7 +315,7 @@ class ReportServiceTest {
             Thread.currentThread().interrupt();
         }
 
-        verify(userRepository, atLeastOnce()).countByCreatedAtBetween(any(), any());
+        verify(userService, atLeastOnce()).countByCreatedAtBetween(any(), any());
     }
 
     @Test

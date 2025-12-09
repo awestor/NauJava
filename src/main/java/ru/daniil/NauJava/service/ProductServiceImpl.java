@@ -3,7 +3,6 @@ package ru.daniil.NauJava.service;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.Product;
 import ru.daniil.NauJava.entity.User;
@@ -12,6 +11,7 @@ import ru.daniil.NauJava.repository.ProductRepository;
 import ru.daniil.NauJava.request.create.CreateProductRequest;
 import ru.daniil.NauJava.request.update.UpdateProductRequest;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -80,11 +80,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> findByCreatedByUserIsNull() {
-        return productRepository.findByCreatedByUserIsNull();
-    }
-
-    @Override
     public List<Product> findByNameContainingIgnoreCase(String name) {
         return productRepository.findByNameContainingIgnoreCase(name);
     }
@@ -100,6 +95,11 @@ public class ProductServiceImpl implements ProductService {
         return !productRepository.findByNameContainingIgnoreCase(productName).isEmpty();
     }
 
+    @Override
+    public Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end) {
+        return productRepository.countByCreatedAtBetween(start, end);
+    }
+
     @Transactional
     @Override
     public List<Product> findProductsByNames(List<String> productNames) {
@@ -113,6 +113,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Transactional
+    @Override
     public void updateProduct(UpdateProductRequest request) {
         Product product = productRepository.findById(request.getId())
                 .orElseThrow(() -> new RuntimeException("Продукт не найден"));
@@ -133,6 +134,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Transactional
+    @Override
     public void deleteProduct(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Продукт не найден"));

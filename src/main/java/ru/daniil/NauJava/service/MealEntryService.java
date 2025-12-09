@@ -9,6 +9,15 @@ import java.util.List;
 
 public interface MealEntryService {
     /**
+     * Создает один "MealEntry"
+     * @param meal приём пищи
+     * @param product продукт питания
+     * @param quantity количество
+     * @return сохранённую сущность
+     */
+    MealEntry createMealEntry(Meal meal, Product product, Integer quantity);
+
+    /**
      * Создает "MealEntry" для каждого продукта
      * @param meal приём пищи
      * @param productNames название продукта
@@ -18,13 +27,11 @@ public interface MealEntryService {
     List<MealEntry> createMealEntries(Meal meal, List<String> productNames, List<Integer> quantities);
 
     /**
-     * Создает один "MealEntry"
-     * @param meal приём пищи
-     * @param product продукт питания
-     * @param quantity количество
-     * @return сохранённую сущность
+     * Возвращает все записи о съеденных продуктах в течении 1 приёма пищи
+     * @param mealId id приёма пищи
+     * @return список MealEntry
      */
-    MealEntry createMealEntry(Meal meal, Product product, Integer quantity);
+    List<MealEntry> getAllByMealId(Long mealId);
 
     /**
      * Возвращает суммарные питательные ценности в пределах 1 приёма пищи
@@ -39,13 +46,6 @@ public interface MealEntryService {
      * @return NutritionSumResponse с данными о суммарном потреблении
      */
     NutritionSumResponse getNutritionSumByDailyReportId(Long dailyReportId);
-
-    /**
-     * Возвращает все записи о съеденных продуктах в течении 1 приёма пищи
-     * @param mealId id приёма пищи
-     * @return список MealEntry
-     */
-    List<MealEntry> getAllByMealId(Long mealId);
 
     /**
      * Удаляет приём пищи по его id

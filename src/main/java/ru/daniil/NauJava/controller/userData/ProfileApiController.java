@@ -1,6 +1,8 @@
 package ru.daniil.NauJava.controller.userData;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,6 +22,8 @@ public class ProfileApiController {
 
     private final UserProfileService userProfileService;
 
+    private static final Logger logger = LoggerFactory.getLogger(ProfileApiController.class);
+
     public ProfileApiController(UserProfileService userProfileService) {
         this.userProfileService = userProfileService;
     }
@@ -27,6 +31,7 @@ public class ProfileApiController {
     @PutMapping("/update")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
         try {
+            logger.info("PUT /api/profile/update | Обновление данных пользователя");
             userProfileService.updateUserProfile(request);
             System.out.println("Обновление профиля завершено успешно");
 
@@ -34,8 +39,11 @@ public class ProfileApiController {
             response.put("message", "Данные профиля успешно обновлены");
             response.put("status", "success");
 
+            logger.debug("Обновление профиля пользователя завершено успешно.");
+
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
+            logger.warn("Ошибка при обновлении профиля: {}", e.getMessage());
             System.out.println("Ошибка при обновлении профиля: " + e.getMessage());
             ApiError apiError = new ApiError(
                     e.getMessage(),
@@ -45,6 +53,7 @@ public class ProfileApiController {
             );
             return ResponseEntity.badRequest().body(apiError);
         } catch (Exception e) {
+            logger.error("Неожиданная ошибка при обновлении профиля: {}", e.getMessage());
             System.out.println("Неожиданная ошибка при обновлении профиля: " + e.getMessage());
             ApiError apiError = new ApiError(
                     "Ошибка при обновлении данных профиля",

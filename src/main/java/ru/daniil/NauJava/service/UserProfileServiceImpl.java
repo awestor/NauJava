@@ -1,6 +1,5 @@
 package ru.daniil.NauJava.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.ActivityLevel;
@@ -15,7 +14,6 @@ import ru.daniil.NauJava.service.nutritionGoal.NutritionGoalService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -137,19 +135,6 @@ public class UserProfileServiceImpl implements UserProfileService {
                         existingProfile.getActivityLevel() != null ? existingProfile.getActivityLevel().getId() : null);
     }
 
-    /**
-     * Получение профиля по логину пользователя
-     */
-    public UserProfile getProfileByUserLogin(String login) {
-        User user = userService.findByLogin(login)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
-        return userProfileRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Профиль пользователя не найден"));
-    }
-
-    /**
-     * Форматирование ФИО: Фамилия И.О.
-     */
     public String formatFIO(UserProfile profile) {
         StringBuilder fio = new StringBuilder();
 
@@ -174,24 +159,11 @@ public class UserProfileServiceImpl implements UserProfileService {
         return fio.toString().trim();
     }
 
-    /**
-     * Получение времени последнего обновления профиля
-     */
     public LocalDateTime getLastProfileUpdate(Long userId) {
         return userProfileRepository.findLastUpdateByUserId(userId);
     }
 
-    /**
-     * Получение среднего значения currentStreak
-     */
     public Double getAverageCurrentStreak() {
         return userProfileRepository.findAverageCurrentStreak();
-    }
-
-    /**
-     * Получение всех профилей пользователей
-     */
-    public List<UserProfile> getAllUserProfiles() {
-        return (List<UserProfile>) userProfileRepository.findAll();
     }
 }

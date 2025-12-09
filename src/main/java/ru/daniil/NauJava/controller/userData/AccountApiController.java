@@ -1,6 +1,8 @@
 package ru.daniil.NauJava.controller.userData;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,6 +22,8 @@ public class AccountApiController {
 
     private final UserService userService;
 
+    private static final Logger logger = LoggerFactory.getLogger(AccountApiController.class);
+
     public AccountApiController(UserService userService) {
         this.userService = userService;
     }
@@ -27,8 +31,12 @@ public class AccountApiController {
     @PutMapping("/update")
     public ResponseEntity<?> updateAccount(@Valid @RequestBody UpdateAccountRequest request) {
         try {
+            logger.info("PUT /api/account/update | Обновление учётной записи пользователя");
+
             userService.updateUserAccount(request);
-            System.out.println("Обновление аккаунта завершено успешно");
+
+            logger.debug("Обновление учётной записи пользователя c логином {} завершено успешно.",
+                    request.getLogin());
 
             Map<String, String> response = new HashMap<>();
             response.put("message", "Данные аккаунта успешно обновлены");
@@ -36,6 +44,7 @@ public class AccountApiController {
 
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
+            logger.warn("Ошибка при обновлении аккаунта: {}", e.getMessage());
             System.out.println("Ошибка при обновлении аккаунта: " + e.getMessage());
             ApiError apiError = new ApiError(
                     e.getMessage(),
@@ -45,6 +54,7 @@ public class AccountApiController {
             );
             return ResponseEntity.badRequest().body(apiError);
         } catch (Exception e) {
+            logger.error("Неожиданная ошибка при обновлении аккаунта: {}", e.getMessage());
             System.out.println("Неожиданная ошибка при обновлении аккаунта: " + e.getMessage());
             ApiError apiError = new ApiError(
                     "Ошибка при обновлении данных аккаунта",

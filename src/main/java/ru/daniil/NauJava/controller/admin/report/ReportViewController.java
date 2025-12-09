@@ -8,11 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.daniil.NauJava.enums.ReportStatus;
-import ru.daniil.NauJava.response.ReportResponse;
 import ru.daniil.NauJava.service.admin.ReportService;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Controller
 @RequestMapping("/admin/view/reports")
@@ -32,15 +30,14 @@ public class ReportViewController {
     public String showReportsPage(@RequestParam(defaultValue = "0") int page,
                                   @RequestParam(defaultValue = "8") int size,
                                   Model model) {
-        List<ReportResponse> response = reportService.getPaginateReports(page, size);
-        Long totalElement = reportService.countReports();
-        model.addAttribute("reports", response);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("pageSize", size);
-        model.addAttribute("totalElements", totalElement);
-        model.addAttribute("totalPages", (totalElement == 0) ?
-                 0 : (totalElement / size + 1));
         model.addAttribute("today", LocalDate.now());
+        model.addAttribute("periodStart", LocalDate.now().minusDays(7).toString());
+        model.addAttribute("periodEnd", LocalDate.now().toString());
+
+        model.addAttribute("currentPage", 0);
+        model.addAttribute("pageSize", 8);
+        model.addAttribute("totalElements", 0);
+        model.addAttribute("totalPages", 0);
         return "reports";
     }
 

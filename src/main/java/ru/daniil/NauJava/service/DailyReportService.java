@@ -6,17 +6,11 @@ import ru.daniil.NauJava.response.CalendarDayResponse;
 import ru.daniil.NauJava.response.DailyReportResponse;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 public interface DailyReportService {
-    /**
-     * Получает или создает DailyReport для авторизованного пользователя на указанную дату
-     * @param reportDate дата(год, месяц, день) за который формируется отчёт
-     * @return полученный объект сущности DailyReport
-     */
-    DailyReport getOrCreateDailyReportAuth(LocalDate reportDate);
-
     /**
      * Получает дневной отчёт для авторизованного пользователя
      * @param reportDate дата за который создан дневной отчёт
@@ -25,18 +19,19 @@ public interface DailyReportService {
     Optional<DailyReport> getDailyReportAuth(LocalDate reportDate);
 
     /**
+     * Получает или создает DailyReport для авторизованного пользователя на указанную дату
+     * @param reportDate дата(год, месяц, день) за который формируется отчёт
+     * @return полученный объект сущности DailyReport
+     */
+    DailyReport getOrCreateDailyReportAuth(LocalDate reportDate);
+
+    /**
      * Получает или создает DailyReport для пользователя на указанную дату
      * @param user объект с данными по пользователю
      * @param reportDate дата(год, месяц, день) за который формируется отчёт
      * @return полученный объект сущности DailyReport
      */
     DailyReport getOrCreateDailyReport(User user, LocalDate reportDate);
-
-    /**
-     * Пересчитывает общие показатели для DailyReport
-     * @param dailyReport дневной отчёт
-     */
-    void recalculateDailyReportTotals(DailyReport dailyReport);
 
     /**
      * Получает по его id или создаёт дневной отчёт в случае необходимости
@@ -54,10 +49,24 @@ public interface DailyReportService {
     List<CalendarDayResponse> getCalendarDataForMonth(LocalDate targetDate);
 
     /**
-     * Получает данные по дневным отчётам за год и месяц
+     * Получает данные по дневным отчётам за месяц в году
      * @param year год
      * @param month месяц
      * @return список DailyReport
      */
     List<DailyReportResponse> getDailyReportsForMonth(int year, int month);
+
+    /**
+     * Считает количество дневных отчётов зарегистрированных в системе в диапазоне дат
+     * @param start начало диапазона дат
+     * @param end конец диапазона дат
+     * @return количество дневных отчётов
+     */
+    Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    /**
+     * Пересчитывает общие показатели для DailyReport
+     * @param dailyReport дневной отчёт
+     */
+    void recalculateDailyReportTotals(DailyReport dailyReport);
 }

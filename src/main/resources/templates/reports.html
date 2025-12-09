@@ -125,106 +125,53 @@
     <div class="reports-list-section">
         <div class="section-header">
             <h2 class="section-title">Список отчётов</h2>
-            <button type="button" class="btn btn-secondary btn-small" onclick="refreshReportsList()">
-                Обновить
-            </button>
+            <div class="section-header-actions">
+                <select id="pageSizeSelect" class="page-size-select" onchange="changePageSize(this.value)">
+                    <option value="8">8</option>
+                    <option value="16">16</option>
+                    <option value="32">32</option>
+                    <option value="48">48</option>
+                </select>
+                <button type="button" class="btn btn-secondary btn-small" onclick="refreshReports()" id="refreshBtn">
+                    <span id="refreshIcon">🔄</span>
+                    Обновить
+                </button>
+            </div>
         </div>
 
-        <div class="table-container">
+        <div id="loadingContainer" class="loading-container">
+            <div class="loading-spinner"></div>
+            <div>Загрузка отчётов...</div>
+        </div>
+
+        <div id="tableContainer" class="table-container" style="display: none;">
             <table class="reports-table">
                 <thead>
-                    <tr>
-                        <th data-sort="period" class="sortable sort-desc">
-                            <span class="th-content">Период</span>
-                        </th>
-                        <th>
-                            <span class="th-content">Статус</span>
-                        </th>
-                        <th data-sort="created" class="sortable sort-desc">
-                            <span class="th-content">Создан</span>
-                        </th>
-                        <th>
-                            <span class="th-content">Время выполнения</span>
-                        </th>
-                        <th class="actions-header">
-                            <span class="th-content">Действия</span>
-                        </th>
-                    </tr>
+                <tr>
+                    <th data-sort="period" class="sortable">
+                        <span class="th-content">Период</span>
+                    </th>
+                    <th>
+                        <span class="th-content">Статус</span>
+                    </th>
+                    <th data-sort="created" class="sortable sort-desc">
+                        <span class="th-content">Создан</span>
+                    </th>
+                    <th>
+                        <span class="th-content">Время выполнения</span>
+                    </th>
+                    <th class="actions-header">
+                        <span class="th-content">Действия</span>
+                    </th>
+                </tr>
                 </thead>
                 <tbody id="reportsTableBody">
-                <tr th:each="report : ${reports}" class="report-row"
-                    th:data-report-id="${report.id}"
-                    th:data-report-status="${report.status}">
 
-                    <td class="period-cell">
-                        <div class="period-dates" th:text="${#strings.concat(report.periodStart, ' - ', report.periodEnd)}">
-                            01.01.2024 - 31.01.2024
-                        </div>
-                    </td>
-
-                    <td>
-                        <div class="status-badge"
-                                th:classappend="${report.status == 'COMPLETED'} ? 'status-completed' :
-                                  (${report.status == 'PROCESSING'} ? 'status-processing' :
-                                   (${report.status == 'ERROR'} ? 'status-error' : 'status-created'))">
-                            <span th:switch="${report.status}">
-                                <span th:case="COMPLETED">Завершён</span>
-                                <span th:case="PROCESSING">Формируется</span>
-                                <span th:case="ERROR">Ошибка</span>
-                                <span th:case="CREATED">Создан</span>
-                            </span>
-                        </div>
-                    </td>
-
-                    <td>
-                        <div class="date-time">
-                            <div th:text="${#strings.substring(report.createdAt, 0, 10)}">2024.01.01</div>
-                            <div th:text="${#strings.substring(report.createdAt, 11, 19)}"
-                                 class="time-text">14:30:22</div>
-                        </div>
-                    </td>
-
-                    <td>
-                        <div th:if="${report.totalExecutionTime != null}" class="execution-time">
-                            <div th:text="${report.totalExecutionTime} + ' мс'">1250 мс</div>
-                            <div class="time-text" th:text="${#numbers.formatDecimal(report.totalExecutionTime / 1000.0, 1, 2)} + ' с'">1.25 с</div>
-                        </div>
-                        <div th:unless="${report.totalExecutionTime != null}" class="execution-time">
-                            -
-                        </div>
-                    </td>
-
-                    <td class="actions-cell">
-                        <div class="action-buttons">
-                            <button class="btn-icon" th:onclick="'viewReport(' + ${report.id} + ')'"
-                                    title="Просмотреть отчёт">
-                                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xIDEyczQtNyAxMS03IDExIDcgMTEgN20tMTEtN2ExIDEgMCAxIDAtMiAwIDEgMSAwIDAgMCAyIDB6Ij48L3BhdGg+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMyI+PC9jaXJjbGU+PC9zdmc+"
-                                     alt="Просмотреть" width="16" height="16">
-                            </button>
-                            <button class="btn-icon" th:if="${report.status == 'COMPLETED'}"
-                                    th:onclick="'downloadReport(' + ${report.id} + ')'"
-                                    title="Скачать отчёт">
-                                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMSAxNXY0YTIgMiAwIDAgMS0yIDJINWEyIDIgMCAwIDEtMi0ydi00Ij48L3BhdGg+PHBvbHlsaW5lIHBvaW50cz0iNyAxMCAxMiAxNSAxNyAxMCI+PC9wb2x5bGluZT48bGluZSB4MT0iMTIiIHkxPSIxNSIgeDI9IjEyIiB5Mj0iMyI+PC9saW5lPjwvc3ZnPg=="
-                                     alt="Скачать" width="16" height="16">
-                            </button>
-                            <button class="btn-icon" th:if="${report.status == 'ERROR' || report.status == 'CREATED'}"
-                                    th:onclick="'retryReport(' + ${report.id} + ')'"
-                                    title="Повторить формирование">
-                                <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
-                                     stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="23 4 23 10 17 10"></polyline>
-                                    <polyline points="1 20 1 14 7 14"></polyline>
-                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
                 </tbody>
             </table>
         </div>
 
-        <div th:if="${reports.isEmpty()}" class="empty-state">
+        <div id="emptyState" class="empty-state" style="display: none;">
             <div class="empty-state-icon">📊</div>
             <h3 class="empty-state-title">Отчёты не найдены</h3>
             <p class="empty-state-description">В системе пока нет созданных отчётов.</p>
@@ -233,10 +180,10 @@
             </button>
         </div>
 
-        <div class="reports-stats">
+        <div class="reports-stats" id="reportsStats">
             <div class="stats-item">
                 <span class="stats-label">Всего отчётов:</span>
-                <span class="stats-value" th:text="${totalElements}">0</span>
+                <span class="stats-value" id="totalCount">0</span>
             </div>
             <div class="stats-item">
                 <span class="stats-label">Завершено:</span>
@@ -248,53 +195,39 @@
             </div>
             <div class="stats-item">
                 <span class="stats-label">Страница:</span>
-                <span class="stats-value" th:text="${currentPage + 1} + '/' + ${totalPages}">1/1</span>
+                <span class="stats-value" id="pageInfo">1/1</span>
             </div>
             <div class="stats-item">
-                <span class="stats-label"><label for="pageSizeSelect">Отчётов на странице:</label></span>
-                <span class="stats-value"> <select id="pageSizeSelect" class="page-size-select" onchange="changePageSize(this.value)">
-                    <option value="8" th:selected="${pageSize == 8}">8</option>
-                    <option value="16" th:selected="${pageSize == 16}">16</option>
-                    <option value="32" th:selected="${pageSize == 32}">32</option>
-                    <option value="48" th:selected="${pageSize == 48}">48</option>
-                </select></span>
+                <span class="stats-label">Отчётов на странице:</span>
+                <span class="stats-value" id="pageSizeInfo">8</span>
             </div>
         </div>
     </div>
+
     <!-- Пагинация -->
-    <div class="pagination-section" th:if="${totalPages > 1}">
+    <div class="pagination-section" id="paginationSection" style="display: none;">
         <div class="pagination-controls">
 
             <!-- Навигация по страницам -->
             <div class="pagination-nav">
-                <button class="pagination-btn" th:disabled="${!(currentPage > 0)}"
-                        onclick="goToPreviousPage()" title="Предыдущая страница">
+                <button class="pagination-btn" id="prevPageBtn" onclick="goToPreviousPage()"
+                        title="Предыдущая страница" disabled>
                     ←
                 </button>
 
-                <div class="pagination-pages">
-                    <!-- Первая страница -->
-                    <button class="pagination-page" th:classappend="${currentPage == 0} ? 'active' : ''"
-                            onclick="goToPage(0)" th:text="1">1</button>
-
-                    <span th:if="${!((currentPage == 0) || (currentPage == (totalPages - 1)))}" class="pagination-page active" th:text="${currentPage + 1}"> 1 </span>
-
-                    <!-- Последняя страница -->
-                    <button class="pagination-page" th:classappend="${currentPage == (totalPages - 1)} ? 'active' : ''"
-                            th:text="${totalPages}"
-                            th:onclick="'goToPage(' + (${totalPages} - 1) + ')'"></button>
+                <div class="pagination-pages" id="paginationPages">
                 </div>
 
-                <button class="pagination-btn" th:disabled="${!(currentPage < (totalPages - 1))}"
-                        onclick="goToNextPage()" title="Следующая страница">
+                <button class="pagination-btn" id="nextPageBtn" onclick="goToNextPage()"
+                        title="Следующая страница" disabled>
                     →
                 </button>
             </div>
 
             <div class="pagination-info">
-                Страница <span th:text="${currentPage + 1}">1</span> из
-                <span th:text="${totalPages}">1</span>
-                (всего отчётов: <span th:text="${totalElements}">0</span>)
+                Страница <span id="currentPageSpan">1</span> из
+                <span id="totalPagesSpan">1</span>
+                (всего отчётов: <span id="totalElementsSpan">0</span>)
             </div>
         </div>
     </div>

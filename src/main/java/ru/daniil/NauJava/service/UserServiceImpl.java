@@ -1,10 +1,8 @@
 package ru.daniil.NauJava.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.openqa.selenium.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +16,7 @@ import ru.daniil.NauJava.repository.UserRepository;
 import ru.daniil.NauJava.request.create.RegistrationRequest;
 import ru.daniil.NauJava.request.update.UpdateAccountRequest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -41,6 +40,8 @@ public class UserServiceImpl implements UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
+    @Override
     public User registerUser(RegistrationRequest request) {
         validateUserData(request.getEmail(), request.getPassword(), request.getLogin());
 
@@ -57,6 +58,8 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
+    @Override
     public void updateUserAccount(UpdateAccountRequest request) {
         User currentUser = getAuthUser().orElseThrow(() ->
                 new RuntimeException("Пользователь не авторизован"));
@@ -98,6 +101,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
     public Optional<User> getAuthUser(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -115,20 +119,22 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByLogin(login);
     }
 
-    /**
-     * Получение всех пользователей
-     */
+    @Override
     public List<User> findAllUsers() {
         return userRepository.findAllByOrderByIdAsc();
     }
 
-    /**
-     * Подсчет общего количества пользователей
-     */
+    @Override
     public long countAllUsers() {
         return userRepository.count();
     }
 
+    @Override
+    public long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end) {
+        return userRepository.countByCreatedAtBetween(start, end);
+    }
+
+    @Override
     public boolean userExists(String email) {
         return userRepository.findByEmail(email).isPresent();
     }

@@ -352,6 +352,7 @@ body {
 /* Список отчётов */
 .reports-list-section {
     margin-bottom: 32px;
+    min-height: 500px;
 }
 
 .section-header {
@@ -834,7 +835,6 @@ body {
 .pagination-controls {
     display: flex;
     flex-direction: column;
-    gap: 20px;
     align-items: center;
 }
 
@@ -958,6 +958,54 @@ body {
     color: #24292f;
 }
 
+/* Стили для загрузки */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e1e4e8;
+    text-align: center;
+}
+
+.loading-container .loading-spinner {
+    margin-bottom: 16px;
+}
+
+.loading-container div {
+    color: #656d76;
+    font-size: 14px;
+}
+
+.section-header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.pagination-ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    color: #656d76;
+    user-select: none;
+    font-size: 14px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn-icon.loading {
+    animation: spin 1s linear infinite;
+}
+
 @keyframes slideIn {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
@@ -1060,6 +1108,26 @@ body {
     .page-size-control {
         flex-direction: column;
         gap: 8px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .section-header-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .section-header-actions .page-size-select {
+        width: 100%;
+    }
+
+    .reports-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
     }
 }
 

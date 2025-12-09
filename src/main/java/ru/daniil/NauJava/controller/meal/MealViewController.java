@@ -21,14 +21,11 @@ import java.util.*;
 @RequestMapping("/view/meals")
 public class MealViewController {
 
-    private final DailyReportService dailyReportService;
     private final MealService mealService;
     private final MealEntryService mealEntryService;
 
-    public MealViewController(DailyReportService dailyReportService,
-                              MealService mealService,
+    public MealViewController(MealService mealService,
                               MealEntryService mealEntryService) {
-        this.dailyReportService = dailyReportService;
         this.mealService = mealService;
         this.mealEntryService = mealEntryService;
     }
@@ -40,7 +37,9 @@ public class MealViewController {
 
         Map<Long, List<MealEntry>> mealEntries = new HashMap<>();
         Map<Long, NutritionSumResponse> nutritionSums = new HashMap<>();
-
+        if (date == null){
+            date = LocalDate.now();
+        }
         for (Meal meal : meals) {
             Long mealId = meal.getId();
 

@@ -2,6 +2,8 @@ package ru.daniil.NauJava.service.admin;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.User;
@@ -27,6 +29,8 @@ public class AdminServiceImpl implements AdminService {
     private final UserProfileService userProfileService;
     private final MealService mealService;
 
+    private static final Logger methodLogger = LoggerFactory.getLogger("METHOD-LOGGER");
+
     public AdminServiceImpl(UserService userService,
                             UserProfileService userProfileService,
                             MealService mealService) {
@@ -39,7 +43,8 @@ public class AdminServiceImpl implements AdminService {
             key = "'users'")
     @Override
     public List<UsersListResponse> getUsersWithLastActivity() {
-        System.out.println("Данные в кеше отсутствуют. Происходит обращение к БД.");
+        methodLogger.info("{AdminServiceImpl.getUsersWithLastActivity} |" +
+                " Данные в кеше отсутствуют. Происходит обращение к БД.");
         List<User> allUsers = userService.findAllUsers();
         System.out.println("В БД найдено " + allUsers.size() + " пользователей.");
         return allUsers.stream()
@@ -50,8 +55,12 @@ public class AdminServiceImpl implements AdminService {
                     response.setEmail(user.getEmail());
 
                     try {
+                        methodLogger.info("{AdminServiceImpl.getUsersWithLastActivity} |" +
+                                " Происходит обращение к userProfileService.getUserProfileByUser");
                         UserProfile profile = userProfileService.getUserProfileByUser(user);
 
+                        methodLogger.info("{AdminServiceImpl.getUsersWithLastActivity} |" +
+                                " Происходит обращение к userProfileService.formatFIO");
                         String fio = userProfileService.formatFIO(profile);
                         response.setFio(fio);
                         response.setStreak(profile.getCurrentStreak());
@@ -59,7 +68,6 @@ public class AdminServiceImpl implements AdminService {
                         response.setFio("-");
                         response.setStreak(0);
                     }
-                    System.out.println("Происходит обращение к проблемному месту с ID=" + user.getId());
                     LocalDateTime lastActivity = getLastUserActivity(user.getId());
                     response.setLastActivity(lastActivity != null ?
                             lastActivity.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) :
@@ -81,8 +89,8 @@ public class AdminServiceImpl implements AdminService {
 
     /**
      * Определение последней активности пользователя
-     * @param userId
-     * @return
+     * @param userId идентификатор пользователя
+     * @return дату и время последней активности
      */
     private LocalDateTime getLastUserActivity(Long userId) {
         LocalDateTime lastMealActivity = mealService.getLastMealActivityByUserId(userId);

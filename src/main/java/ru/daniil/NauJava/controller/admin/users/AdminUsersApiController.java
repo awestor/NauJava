@@ -1,6 +1,8 @@
 package ru.daniil.NauJava.controller.admin.users;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +13,6 @@ import ru.daniil.NauJava.response.UserDetailsResponse;
 import ru.daniil.NauJava.response.UsersListResponse;
 import ru.daniil.NauJava.response.UsersStatisticsResponse;
 import ru.daniil.NauJava.service.admin.AdminService;
-import ru.daniil.NauJava.service.admin.AdminServiceImpl;
 
 import java.util.List;
 
@@ -20,6 +21,9 @@ import java.util.List;
 public class AdminUsersApiController {
 
     private final AdminService adminService;
+
+    private static final Logger logger = LoggerFactory.getLogger(AdminUsersApiController.class);
+    private static final Logger appLogger = LoggerFactory.getLogger("APP-LOGGER");
 
     public AdminUsersApiController(AdminService adminService) {
         this.adminService = adminService;
@@ -33,10 +37,12 @@ public class AdminUsersApiController {
     @GetMapping
     public ResponseEntity<List<UsersListResponse>> getUsersList() {
         try {
+            appLogger.info("GET /admin/api/users/ | Получение данных о пользователях");
             List<UsersListResponse> users = adminService.getUsersWithLastActivity();
-            System.out.println("Данные получены. Происходит возврат.");
+            appLogger.debug("Данные о пользователях получены");
             return ResponseEntity.ok(users);
         } catch (Exception e) {
+            logger.warn("Получение данных о пользователях прошло неудачно с ошибкой:{}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -49,9 +55,12 @@ public class AdminUsersApiController {
     @GetMapping("/stats")
     public ResponseEntity<UsersStatisticsResponse> getUsersStats() {
         try {
+            appLogger.info("GET /admin/api/users/stats | Получение общих данных о пользователях");
+
             UsersStatisticsResponse stats = adminService.getUsersStatistics();
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
+            logger.warn("Получение общих данных о пользователях прошло неудачно с ошибкой:{}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -59,11 +68,15 @@ public class AdminUsersApiController {
     @GetMapping("/{login}")
     public ResponseEntity<UserDetailsResponse> getUserDetails(@PathVariable String login) {
         try {
+            appLogger.info("GET /admin/api/users/{login} | Получение данных о конкретном пользователе");
+
             UserDetailsResponse userDetails = adminService.getUserDetailsByLogin(login);
             return ResponseEntity.ok(userDetails);
         } catch (EntityNotFoundException e) {
+            logger.error("Пользователь указанный в запросе не найден:{}", e.getMessage());
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
+            logger.error("Получение о конкретном пользователе вызвало ошибку:{}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

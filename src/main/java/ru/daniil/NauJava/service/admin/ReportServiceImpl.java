@@ -1,6 +1,9 @@
 package ru.daniil.NauJava.service.admin;
 
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,6 +14,10 @@ import ru.daniil.NauJava.entity.Report;
 import ru.daniil.NauJava.enums.ReportStatus;
 import ru.daniil.NauJava.repository.*;
 import ru.daniil.NauJava.response.ReportResponse;
+import ru.daniil.NauJava.service.DailyReportService;
+import ru.daniil.NauJava.service.MealService;
+import ru.daniil.NauJava.service.ProductService;
+import ru.daniil.NauJava.service.UserService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,21 +32,23 @@ import java.util.concurrent.TimeoutException;
 public class ReportServiceImpl implements ReportService {
 
     private final ReportRepository reportRepository;
-    private final UserRepository userRepository;
-    private final ProductRepository productRepository;
-    private final MealRepository mealRepository;
-    private final DailyReportRepository dailyReportRepository;
+    private final UserService userService;
+    private final ProductService productService;
+    private final MealService mealService;
+    private final DailyReportService dailyReportService;
+
+    private static final Logger methodLogger = LoggerFactory.getLogger("METHOD-LOGGER");
 
     public ReportServiceImpl(ReportRepository reportRepository,
-                             UserRepository userRepository,
-                             ProductRepository productRepository,
-                             MealRepository mealRepository,
-                             DailyReportRepository dailyReportRepository) {
+                             UserService userService,
+                             ProductService productService,
+                             MealService mealService,
+                             DailyReportService dailyReportService) {
         this.reportRepository = reportRepository;
-        this.userRepository = userRepository;
-        this.productRepository = productRepository;
-        this.mealRepository = mealRepository;
-        this.dailyReportRepository = dailyReportRepository;
+        this.userService = userService;
+        this.productService = productService;
+        this.mealService = mealService;
+        this.dailyReportService = dailyReportService;
     }
 
     /**
@@ -56,11 +65,8 @@ public class ReportServiceImpl implements ReportService {
         return reportRepository.findByReportPeriodStartAndReportPeriodEnd(startDate, endDate);
     }
 
-    /**
-     * Создает новый отчет за указанный промежуток времени
-     * @return ID созданного отчета
-     */
     @Transactional
+    @CacheEvict(value = "admin-reports-page", allEntries = true)
     public Long createReport(LocalDate startDate, LocalDate endDate) {
         LocalDate today = LocalDate.now();
 
@@ -85,23 +91,12 @@ public class ReportServiceImpl implements ReportService {
         return savedReport.getId();
     }
 
-
-    /**
-     * Получает содержимое отчета по ID
-     * @param reportId ID отчета
-     * @return содержимое отчета или null если отчет не найден
-     */
     public String getReportContent(Long reportId) {
         return reportRepository.findById(reportId)
                 .map(Report::getContent)
                 .orElse(null);
     }
 
-    /**
-     * Получает статус отчета по ID
-     * @param reportId ID отчета
-     * @return статус отчета или null если отчет не найден
-     */
     public ReportStatus getReportStatus(Long reportId) {
         return reportRepository.findById(reportId)
                 .map(Report::getStatus)
@@ -132,10 +127,6 @@ public class ReportServiceImpl implements ReportService {
                 .toList();
     }
 
-    /**
-     * Получает последний созданный отчет
-     * @return
-     */
     public Optional<Report> getLatestReport() {
         return reportRepository.findTopByOrderByCreatedAtDesc();
     }
@@ -150,10 +141,7 @@ public class ReportServiceImpl implements ReportService {
         return reportRepository.count();
     }
 
-    /**
-     * Асинхронно формирует отчет с использованием нескольких потоков
-     * @param reportId
-     */
+    @Override
     public void generateReportAsync(Long reportId) {
         CompletableFuture.runAsync(() -> {
             try {
@@ -207,48 +195,48 @@ public class ReportServiceImpl implements ReportService {
 
     /**
      * Подсчет зарегистрированных пользователей за период
-     * @param start
-     * @param end
-     * @return
+     * @param start начало периода
+     * @param end конец периода
+     * @return число пользователей
      */
     private Long countUsersRegistered(LocalDateTime start, LocalDateTime end) {
-        return userRepository.countByCreatedAtBetween(start, end);
+        return userService.countByCreatedAtBetween(start, end);
     }
 
     /**
      * Подсчет созданных продуктов за период
-     * @param start
-     * @param end
-     * @return
+     * @param start начало периода
+     * @param end конец периода
+     * @return число продуктов
      */
     private Long countProductsCreated(LocalDateTime start, LocalDateTime end) {
-        return productRepository.countByCreatedAtBetween(start, end);
+        return productService.countByCreatedAtBetween(start, end);
     }
 
     /**
      * Подсчет созданных daily reports за период
-     * @param start
-     * @param end
-     * @return
+     * @param start начало периода
+     * @param end конец периода
+     * @return число дневных отчётов
      */
     private Long countDailyReportsCreated(LocalDateTime start, LocalDateTime end) {
-        return dailyReportRepository.countByCreatedAtBetween(start, end);
+        return dailyReportService.countByCreatedAtBetween(start, end);
     }
 
     /**
-     * Расчет статистики по приемам пищи
-     * @param start
-     * @param end
-     * @return
+     * Расчет статистики по приемам пищи в диапазоне дат
+     * @param start начало диапазона дат
+     * @param end конец диапазона дат
+     * @return статистика по потреблению пользователя
      */
     private MealStats calculateMealStats(LocalDateTime start, LocalDateTime end) {
-        List<Long> activeUserIds = mealRepository.findDistinctUserIdsWithMealsBetween(start, end);
+        List<Long> activeUserIds = mealService.findDistinctUserIdsWithMealsBetween(start, end);
 
         if (activeUserIds.isEmpty()) {
             return new MealStats(0L, 0.0, 0L);
         }
 
-        Long totalMeals = mealRepository.countMealsForUsersBetweenDates(activeUserIds, start, end);
+        Long totalMeals = mealService.countMealsForUsersBetweenDates(activeUserIds, start, end);
 
         Double averageMeals = totalMeals.doubleValue() / activeUserIds.size();
 

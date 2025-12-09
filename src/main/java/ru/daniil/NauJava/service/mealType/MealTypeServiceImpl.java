@@ -1,5 +1,6 @@
 package ru.daniil.NauJava.service.mealType;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.MealType;
 import ru.daniil.NauJava.repository.MealTypeRepository;
@@ -14,6 +15,7 @@ public class MealTypeServiceImpl implements MealTypeService {
         this.mealTypeRepository = mealTypeRepository;
     }
 
+    @Cacheable(value = "meal-type", key = "'meal-types'")
     @Override
     public List<MealType> getMealTypes() {
         return (List<MealType>)mealTypeRepository.findAll();

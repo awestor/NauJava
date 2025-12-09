@@ -1,7 +1,6 @@
 package ru.daniil.NauJava.config.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +49,7 @@ public class RedisConfig {
 
     @Bean
     public RedisStandaloneConfiguration redisStandaloneConfiguration() {
-        logger.info("Configuring Redis connection to {}:{} (database: {})",
+        logger.info("Конфигурация Redis Подключение к {}:{} (database: {})",
                 redisHost, redisPort, redisDatabase);
 
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
@@ -60,7 +59,7 @@ public class RedisConfig {
 
         if (StringUtils.hasText(redisPassword)) {
             config.setPassword(RedisPassword.of(redisPassword));
-            logger.info("Redis password configured");
+            logger.info("Redis password сконфигурирован");
         }
 
         return config;
@@ -68,7 +67,7 @@ public class RedisConfig {
 
     @Bean
     public LettuceClientConfiguration lettuceClientConfiguration() {
-        logger.info("Configuring Redis client timeout: {} ms", redisTimeout);
+        logger.info("Конфигурация Redis клиента на timeout: {} мс", redisTimeout);
 
         return LettuceClientConfiguration.builder()
                 .commandTimeout(Duration.ofMillis(redisTimeout))
@@ -87,14 +86,14 @@ public class RedisConfig {
         );
 
         factory.afterPropertiesSet();
-        logger.info("Redis connection factory created");
+        logger.info("Фабрика подключений Redis создана");
 
         return factory;
     }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        logger.info("Creating RedisTemplate");
+        logger.info("Создание RedisTemplate");
 
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
@@ -111,13 +110,13 @@ public class RedisConfig {
         template.setEnableTransactionSupport(true);
         template.afterPropertiesSet();
 
-        logger.info("RedisTemplate configured with JSON serialization");
+        logger.info("RedisTemplate сконфигурирован с JSON сериализацией");
         return template;
     }
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
-        logger.info("Configuring Redis CacheManager");
+        logger.info("Конфигурация Redis CacheManager");
 
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(10))
@@ -134,8 +133,9 @@ public class RedisConfig {
         cacheConfigurations.put("calendar-month", defaultConfig.entryTtl(Duration.ofMinutes(10)));
         cacheConfigurations.put("daily-reports", defaultConfig.entryTtl(Duration.ofMinutes(15)));
         cacheConfigurations.put("user-products", defaultConfig.entryTtl(Duration.ofMinutes(20)));
+        cacheConfigurations.put("meal-type", defaultConfig.entryTtl(Duration.ofHours(1)));
 
-        logger.info("Cache configurations: {}", cacheConfigurations.keySet());
+        logger.info("Кэш конфигурация: {}", cacheConfigurations.keySet());
 
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultConfig)

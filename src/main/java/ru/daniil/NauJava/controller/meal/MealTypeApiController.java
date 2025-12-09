@@ -19,6 +19,10 @@ public class MealTypeApiController {
         this.mealTypeService = mealTypeService;
     }
 
+    /**
+     * Получает все названия типов приёмов пищи
+     * @return список названий типов приёмов пищи
+     */
     @GetMapping
     public List<MealTypeResponse> getMealTypes() {
         return mealTypeService.getMealTypes().stream()

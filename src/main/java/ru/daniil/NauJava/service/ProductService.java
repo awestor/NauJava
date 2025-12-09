@@ -5,6 +5,7 @@ import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.request.create.CreateProductRequest;
 import ru.daniil.NauJava.request.update.UpdateProductRequest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,12 +45,6 @@ public interface ProductService {
     List<Product> findProductByUserId(Long userId);
 
     /**
-     * Возвращает продукты потерявших ссылку на пользователя создавшего их
-     * @return список продуктов
-     */
-    List<Product> findByCreatedByUserIsNull();
-
-    /**
      * Возвращает все продукты, в названии которых есть указанная часть
      * @param name часть названия продукта
      * @return список продуктов
@@ -70,6 +65,13 @@ public interface ProductService {
      */
     boolean productExists(String productName);
 
+    /**
+     * Считает количество продуктов зарегистрированных в системе в диапазоне дат
+     * @param start начало диапазона дат
+     * @param end конец диапазона дат
+     * @return количество продуктов
+     */
+    Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     /**
      * Обновляет данные о продукте

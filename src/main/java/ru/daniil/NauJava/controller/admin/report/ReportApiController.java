@@ -2,6 +2,8 @@ package ru.daniil.NauJava.controller.admin.report;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -32,6 +34,9 @@ public class ReportApiController {
 
     private final ReportService reportService;
 
+    private static final Logger logger = LoggerFactory.getLogger(ReportApiController.class);
+    private static final Logger appLogger = LoggerFactory.getLogger("APP-LOGGER");
+
     public ReportApiController(ReportServiceImpl reportService) {
         this.reportService = reportService;
     }
@@ -42,6 +47,7 @@ public class ReportApiController {
             @RequestParam(defaultValue = "8") int size)
     {
         try {
+            appLogger.info("GET /admin/api/reports/page | Получение страницы отчётов");
             if (page < 0) {
                 page = 0;
             }
@@ -54,10 +60,31 @@ public class ReportApiController {
 
             return ResponseEntity.ok(reports);
         } catch (Exception e) {
+            logger.error("Ошибка при получении страницы отчётов");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
+    /**
+     * Возвращает суммарное количество отчётов в БД
+     * @return количество отчётов
+     */
+    @GetMapping("/count")
+    @ResponseBody
+    public ResponseEntity<Long> getTotalReportsCount() {
+        try {
+            long count = reportService.countReports();
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            logger.error("Ошибка при получении количества отчётов: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Возвращает последний созданный отчёт
+     * @return данные последнего отчёта
+     */
     @GetMapping("/latest")
     public ResponseEntity<Report> getLatestReport() {
         try {
@@ -65,6 +92,7 @@ public class ReportApiController {
 
             return reports.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
+            logger.error("При получении последнего отчёта возникла ошибка: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -74,11 +102,12 @@ public class ReportApiController {
      * @return ID созданного отчета
      */
     @PostMapping("/generate")
-    public ResponseEntity<ru.daniil.NauJava.response.ReportCreationResponse> generateReport(
+    public ResponseEntity<ReportCreationResponse> generateReport(
             @Valid @RequestBody CreateReportRequest request) {
         try {
+            appLogger.info("GET /admin/api/reports/generate | генерация нового отчёта");
             if (request.getStartDate().isAfter(request.getEndDate())) {
-                ru.daniil.NauJava.response.ReportCreationResponse response = new ru.daniil.NauJava.response.ReportCreationResponse(
+                ReportCreationResponse response = new ReportCreationResponse(
                         null, "error",
                         "Дата начала не может быть позже даты окончания",
                         request.getStartDate().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
@@ -90,7 +119,7 @@ public class ReportApiController {
             LocalDate today = LocalDate.now();
             if (!request.getEndDate().isEqual(today) &&
                     reportService.reportExistsForPeriod(request.getStartDate(), request.getEndDate())) {
-                ru.daniil.NauJava.response.ReportCreationResponse response = new ru.daniil.NauJava.response.ReportCreationResponse(
+                ReportCreationResponse response = new ReportCreationResponse(
                         null, "error",
                         "Отчет за указанный период уже существует",
                         request.getStartDate().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")),
@@ -114,6 +143,7 @@ public class ReportApiController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            logger.error("Ошибка при формировании нового отчёта: {}", e.getMessage());
             ReportCreationResponse response = new ReportCreationResponse(
                     null,
                     "error",
@@ -133,11 +163,16 @@ public class ReportApiController {
     @GetMapping("/{reportId}/status")
     @ResponseBody
     public ResponseEntity<String> getReportStatus(@PathVariable Long reportId) {
-        ReportStatus status = reportService.getReportStatus(reportId);
-        if (status == null) {
-            return ResponseEntity.notFound().build();
+        try {
+            ReportStatus status = reportService.getReportStatus(reportId);
+            if (status == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(status.name());
+        } catch (Exception e) {
+            logger.error("Ошибка при получении статуса отчёта {}: {}", reportId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        return ResponseEntity.ok(status.name());
     }
 
     /**
@@ -148,27 +183,44 @@ public class ReportApiController {
     @GetMapping("/{reportId}/content")
     @ResponseBody
     public ResponseEntity<String> getReportContent(@PathVariable Long reportId) {
-        String content = reportService.getReportContent(reportId);
-        if (content == null) {
-            return ResponseEntity.notFound().build();
+        try {
+            appLogger.info("GET /admin/api/reports/{reportId}/content | Получение содержимого отчёта");
+            String content = reportService.getReportContent(reportId);
+            if (content == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(content);
+        } catch (Exception e) {
+            logger.error("Ошибка при получении содержимого отчёта {}: {}", reportId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        return ResponseEntity.ok(content);
     }
 
+    /**
+     * Возвращает информацию по определённому отчёту
+     * @param reportId id отчёта
+     * @return данные отчёта
+     */
     @GetMapping("/{reportId}/data")
     @ResponseBody
     public ResponseEntity<ReportDataResponse> getReportData(@PathVariable Long reportId) {
-        Report report = reportService.getReportById(reportId).orElse(null);
-        if (report == null) {
-            return ResponseEntity.notFound().build();
+        try {
+            appLogger.info("GET /admin/api/reports/{reportId}/data | Получение даты за которые формировался отчёт");
+            Report report = reportService.getReportById(reportId).orElse(null);
+            if (report == null) {
+                return ResponseEntity.notFound().build();
+            }
+            ReportDataResponse response = new ReportDataResponse(
+                    report.getStatus().toString(),
+                    report.getReportPeriodStart().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")),
+                    report.getReportPeriodEnd().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")),
+                    report.getTotalExecutionTime()
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Ошибка при получении данных отчёта {}: {}", reportId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        ReportDataResponse response = new ReportDataResponse(
-                report.getStatus().toString(),
-                report.getReportPeriodStart().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")),
-                report.getReportPeriodEnd().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")),
-                report.getTotalExecutionTime()
-        );
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/check")
@@ -196,6 +248,8 @@ public class ReportApiController {
 
     /**
      * Скачивание отчёта в формате CSV
+     * @param reportId id отчёта для скачивания
+     * @return файл в формате .csv
      */
     @GetMapping("/{reportId}/download")
     public ResponseEntity<Resource> downloadReportCsv(@PathVariable Long reportId) {
@@ -233,7 +287,29 @@ public class ReportApiController {
     }
 
     /**
+     * Повторно рассчитывает данные для отчёта
+     * @param reportId id отчёта
+     * @return код ответа 200 или 500
+     */
+    @PostMapping("/{reportId}/retry")
+    @ResponseBody
+    public ResponseEntity<Void> retryReport(@PathVariable Long reportId) {
+        try {
+            reportService.generateReportAsync(reportId);
+
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            logger.error("Ошибка при повторном формировании отчёта {}: {}", reportId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
      * Генерирует CSV содержимое отчёта
+     * @param report содержимое отчёта
+     * @return содержимое файла
      */
     private String generateCsvContent(Report report) {
         StringBuilder csv = new StringBuilder();

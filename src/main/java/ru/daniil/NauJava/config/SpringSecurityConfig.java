@@ -48,6 +48,7 @@ public class SpringSecurityConfig {
                                 "/mainPage/**",
                                 "/register",
                                 "/login",
+                                "/logout",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",

@@ -46,10 +46,23 @@ public interface UserProfileService {
      */
     boolean hasCompleteProfile(UserProfile userProfile);
 
-    UserProfile getProfileByUserLogin(String login);
-
+    /**
+     * Форматирование ФИО: Фамилия И.О.
+     * @param profile профиль пользователя
+     * @return Форматированное ФИО пользователя или пустая строка
+     */
     String formatFIO(UserProfile profile);
+
+    /**
+     * Получение времени последнего обновления профиля
+     * @param userId id пользователя
+     * @return время последнего обновления профиля пользователя
+     */
     LocalDateTime getLastProfileUpdate(Long userId);
+
+    /**
+     * Получение среднего значения currentStreak
+     * @return double число со средним значением поля currentStreak из профиля пользователя
+     */
     Double getAverageCurrentStreak();
-    List<UserProfile> getAllUserProfiles();
 }

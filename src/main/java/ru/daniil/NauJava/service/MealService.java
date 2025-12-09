@@ -10,8 +10,26 @@ import java.util.Optional;
 
 public interface MealService {
     /**
+     * Считает пользователей, что потребляли пищу после указанной даты
+     * @param after дата, после которой будет идти подсчёт
+     * @return число пользователей
+     */
+    Long countUsersWithActivityAfter(LocalDateTime after);
+
+    /**
+     * Получает дату последнего потребления пищи по id пользователя
+     * @param userId id пользователя
+     * @return дата последнего приёма пищи
+     */
+    LocalDateTime getLastMealActivityByUserId(Long userId);
+
+    /**
      * Создает новый прием пищи с указанными продуктами для пользователя.
      * Выполняется в рамках единой транзакции.
+     * @param mealTypeName название типа приёма пищи
+     * @param productNames список названий продуктов
+     * @param quantities список весов потреблённой продукции
+     * @return созданный приём пищи
      */
     Meal createMealWithProducts(String mealTypeName,
                                 List<String> productNames,
@@ -51,6 +69,16 @@ public interface MealService {
     List<Meal> getByDailyReportId(Long dailyReportId);
 
     /**
+     * Получает все приёмы пищи по дате
+     * @param date дата приёма пищи
+     * @return список приёмов пищи
+     */
+    List<Meal> getMealsForDate(LocalDate date);
+
+    List<Long> findDistinctUserIdsWithMealsBetween(LocalDateTime start, LocalDateTime end);
+    Long countMealsForUsersBetweenDates(List<Long> activeUserIds, LocalDateTime start, LocalDateTime end);
+
+    /**
      * Удаляет из БД приём пищи
      * @param mealId id приёма пищи
      */
@@ -62,9 +90,4 @@ public interface MealService {
      * @param dailyReportId id дневного отчёта
      */
     void updateNutritionSum(Long dailyReportId);
-
-    LocalDateTime getLastMealActivityByUserId(Long userId);
-    Long countUsersWithActivityAfter(LocalDateTime after);
-    List<Meal> getMealsByDailyReportId(Long dailyReportId);
-    List<Meal> getMealsForDate(LocalDate date);
 }
