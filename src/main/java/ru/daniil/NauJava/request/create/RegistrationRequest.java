@@ -25,28 +25,12 @@ public class RegistrationRequest {
     @Schema(description = "Пароль", example = "Password123!", requiredMode = Schema.RequiredMode.REQUIRED)
     private String password;
 
-    /*@NotBlank(message = "Имя обязательно")
-    @Size(min = 6, message = "Имя пользователя должно содержать минимум 6 символов")
-    @Schema(description = "Имя пользователя", example = "Иван", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String name;
-
-    @NotBlank(message = "Фамилия обязательна")
-    @Schema(description = "Фамилия пользователя", example = "Иванов", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String surname;
-
-    @Schema(description = "Отчество пользователя", example = "Иванович")
-    private String patronymic;*/
-
     public RegistrationRequest() {}
 
-    public RegistrationRequest(String email, String password, String login
-                               /*String name, String surname, String patronymic*/) {
+    public RegistrationRequest(String email, String password, String login) {
         this.email = email;
         this.login = login;
         this.password = password;
-        /*this.name = name;
-        this.surname = surname;
-        this.patronymic = patronymic;*/
     }
 
     public String getEmail() { return email; }
@@ -54,15 +38,6 @@ public class RegistrationRequest {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
-
-    /*public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getSurname() { return surname; }
-    public void setSurname(String surname) { this.surname = surname; }
-
-    public String getPatronymic() { return patronymic; }
-    public void setPatronymic(String patronymic) { this.patronymic = patronymic; }*/
 
     public String getLogin() { return login; }
 

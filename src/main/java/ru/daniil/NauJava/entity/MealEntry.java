@@ -22,7 +22,7 @@ public class MealEntry {
     private Integer quantityGrams;
 
     @Column(name = "calculated_calories")
-    private Integer calculatedCalories;
+    private Double calculatedCalories;
 
     @Column(name = "calculated_proteins")
     private Double calculatedProteins;
@@ -69,7 +69,7 @@ public class MealEntry {
         this.meal = meal;
     }
 
-    public Integer getCalculatedCalories() {
+    public Double getCalculatedCalories() {
         return calculatedCalories;
     }
 
@@ -100,10 +100,10 @@ public class MealEntry {
     public void calculateNutrition() {
         if (product != null && quantityGrams != null) {
             double ratio = quantityGrams / 100.0;
-            this.calculatedCalories = (int) Math.round(product.getCaloriesPer100g() * ratio);
-            this.calculatedProteins = product.getProteinsPer100g() * ratio;
-            this.calculatedFats = product.getFatsPer100g() * ratio;
-            this.calculatedCarbs = product.getCarbsPer100g() * ratio;
+            this.calculatedCalories = Math.round(product.getCaloriesPer100g() * ratio * 100) / 100.0;
+            this.calculatedProteins = Math.round(product.getProteinsPer100g() * ratio * 100) / 100.0;
+            this.calculatedFats = Math.round(product.getFatsPer100g() * ratio * 100) / 100.0;
+            this.calculatedCarbs = Math.round(product.getCarbsPer100g() * ratio * 100) / 100.0;
         }
     }
 

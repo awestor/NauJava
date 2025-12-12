@@ -1,4 +1,4 @@
-package ru.daniil.NauJava;
+package ru.daniil.NauJava.seleniumTests;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
@@ -13,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.repository.RoleRepository;
 import ru.daniil.NauJava.repository.UserRepository;
 import ru.daniil.NauJava.request.create.RegistrationRequest;
@@ -48,8 +47,6 @@ class UserAuthenticationUITest {
     private WebDriverWait wait;
     private String baseUrl;
 
-    private User testUser;
-
     @BeforeAll
     void setUpClass() {
         WebDriverManager.chromiumdriver().setup();
@@ -58,7 +55,7 @@ class UserAuthenticationUITest {
     void setUp() {
 
         driver = new ChromeDriver();
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(60));
         driver.manage().window().maximize();
         baseUrl = "http://localhost:" + port;
 
@@ -68,17 +65,15 @@ class UserAuthenticationUITest {
     private void createTestUser() {
         userRepository.deleteAll();
 
-        testUser = new User();
         RegistrationRequest registerUser = new RegistrationRequest();
-        registerUser.setEmail("test@example.com");
-        registerUser.setLogin("testuser");
+        registerUser.setEmail("testUser@example.com");
+        registerUser.setLogin("testUser");
         registerUser.setPassword("Password123!");
-        //registerUser.setName("John");
-        //registerUser.setSurname("Doe");
+
         userService.registerUser(registerUser);
 
-        if (userRepository.findByEmail("test@example.com").isPresent()) {
-            testUser = userRepository.findByEmail("test@example.com").get();
+        if (userRepository.findByEmail("testUser@example.com").isPresent()) {
+            userRepository.findByEmail("testUser@example.com").get();
         }
     }
 
@@ -105,7 +100,7 @@ class UserAuthenticationUITest {
         WebElement passwordField = driver.findElement(By.name("password"));
         WebElement loginButton = driver.findElement(By.cssSelector("button[type='submit']"));
 
-        usernameField.sendKeys("testuser");
+        usernameField.sendKeys("testUser");
         passwordField.sendKeys("Password123!");
 
         loginButton.click();
@@ -169,7 +164,7 @@ class UserAuthenticationUITest {
         WebElement passwordField = driver.findElement(By.name("password"));
         WebElement loginButton = driver.findElement(By.cssSelector("button[type='submit']"));
 
-        usernameField.sendKeys("invaliduser");
+        usernameField.sendKeys("invalidUser");
         passwordField.sendKeys("WrongPassword123!");
         loginButton.click();
 

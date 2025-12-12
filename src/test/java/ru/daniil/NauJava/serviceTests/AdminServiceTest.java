@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.mockTests;
+package ru.daniil.NauJava.serviceTests;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;

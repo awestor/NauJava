@@ -18,16 +18,7 @@ import java.util.List;
 public interface MealRepository extends CrudRepository<Meal, Long> {
     List<Meal> findByDailyReportId(Long dailyReportId);
 
-    List<Meal> findByDailyReportUserIdAndMealType(Long userId, MealType mealType);
-
     List<Meal> findByDailyReportUserIdAndDailyReportReportDate(Long userId, LocalDate reportDate);
-
-    @Query("SELECT me.product.id FROM MealEntry me WHERE me.id = :mealEntryId")
-    List<Long> findProductIdByMealEntryId(@Param("mealEntryId") Long mealEntryId);
-
-    boolean existsByDailyReportIdAndMealType(Long dailyReportId, MealType mealType);
-
-    long countByDailyReportIdAndMealType(Long dailyReportId, MealType mealType);
 
     @Query("SELECT MAX(m.eatenAt) FROM Meal m WHERE m.dailyReport.user.id = :userId")
     LocalDateTime findLastMealActivityByUserId(@Param("userId") Long userId);

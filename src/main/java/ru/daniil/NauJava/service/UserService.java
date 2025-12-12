@@ -24,6 +24,14 @@ public interface UserService {
     User registerUser(RegistrationRequest request);
 
     /**
+     * Регистрирует нового пользователя в системе и назначает ему права роли переданные в roleName
+     * если такая существует
+     * @param request RegistrationRequest что содержит регистрационные данные
+     * @return сущность пользователя User
+     */
+    User registerUserWithRole(RegistrationRequest request, String roleName);
+
+    /**
      * Получает пользователя из если он авторизован
      * @return объект сущности пользователя или null
      */
@@ -60,6 +68,5 @@ public interface UserService {
      * @param end конец диапазона дат
      * @return число пользователей
      */
-
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

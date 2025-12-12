@@ -16,10 +16,6 @@ import java.util.Map;
 public interface MealEntryRepository extends CrudRepository<MealEntry, Long> {
     List<MealEntry> findByMealId(Long mealId);
 
-    List<MealEntry> findByProductId(Long productId);
-
-    long countByMealId(Long mealId);
-
     /**
      * Метод получения суммы полей калорийности, белков, жиров, углеводов по mealId
      * @return список объектов, где:
@@ -40,6 +36,7 @@ public interface MealEntryRepository extends CrudRepository<MealEntry, Long> {
 
     /**
      * Метод получения суммы полей калорийности, белков, жиров, углеводов по dailyReportId
+     * В случае если ничего не найдено вернёт null
      * @return список объектов, где:
      * [0] - totalCalories (Double)
      * [1] - totalProteins (Double)

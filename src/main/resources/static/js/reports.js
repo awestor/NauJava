@@ -123,7 +123,7 @@ class ReportsManager {
     }
 
     renderReports(reports) {
-        const tbody = document.getElementById('reportsTableBody');
+        const tBody = document.getElementById('reportsTableBody');
         
         if (!reports || reports.length === 0) {
             this.showEmptyState();
@@ -134,13 +134,13 @@ class ReportsManager {
         document.getElementById('tableContainer').style.display = 'block';
         document.getElementById('paginationSection').style.display = 'block';
 
-        tbody.innerHTML = '';
+        tBody.innerHTML = '';
 
         this.hasProcessingReports = false;
 
         reports.forEach(report => {
             const row = this.createReportRow(report);
-            tbody.appendChild(row);
+            tBody.appendChild(row);
             
             if (report.status === 'PROCESSING') {
                 this.hasProcessingReports = true;

@@ -24,12 +24,6 @@ public interface DailyReportRepository extends CrudRepository<DailyReport, Long>
             @Param("minCalories") Double minCalories,
             @Param("maxCalories") Double maxCalories);
 
-    boolean existsByUserIdAndReportDate(Long userId, LocalDate reportDate);
-
-    long countByUserIdAndIsGoalAchievedTrue(Long userId);
-
-    long countByUserIdAndIsGoalAchievedFalse(Long userId);
-
     /**
      * Находит все DailyReport для пользователя за указанный период
      * @param userId ID пользователя

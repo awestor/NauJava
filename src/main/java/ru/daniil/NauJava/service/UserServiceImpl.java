@@ -138,4 +138,22 @@ public class UserServiceImpl implements UserService {
     public boolean userExists(String email) {
         return userRepository.findByEmail(email).isPresent();
     }
+
+    @Transactional
+    @Override
+    public User registerUserWithRole(RegistrationRequest request, String roleName) {
+        validateUserData(request.getEmail(), request.getPassword(), request.getLogin());
+
+        User user = new User(
+                request.getEmail(),
+                request.getLogin(),
+                passwordEncoder.encode(request.getPassword())
+        );
+
+        Role userRole = roleRepository.findByName(roleName)
+                .orElseThrow(() -> new NotFoundException("Роль " + roleName + " не найдена в системе"));
+        user.addRole(userRole);
+
+        return userRepository.save(user);
+    }
 }

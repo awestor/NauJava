@@ -86,9 +86,9 @@ public class Meal {
         this.eatenAt = eatenAt;
     }
 
-    public Integer getTotalCalories() {
+    public Double getTotalCalories() {
         return mealEntries.stream()
-                .mapToInt(MealEntry::getCalculatedCalories)
+                .mapToDouble(MealEntry::getCalculatedCalories)
                 .sum();
     }
 

@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.mockTests;
+package ru.daniil.NauJava.serviceTests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,10 +81,10 @@ class MealServiceTest {
         List<Integer> quantities = Arrays.asList(100, 150);
 
         MealEntry mealEntry1 = new MealEntry(testMeal, new Product
-                ("Яблоко", "Описание", 10.0,
+                ("Яблоко", 10.0,
                         10.0, 10.0, 10.0), 100);
         MealEntry mealEntry2 = new MealEntry(testMeal, new Product
-                ("Банан", "Описание", 10.0,
+                ("Банан",  10.0,
                         10.0, 10.0, 10.0), 150);
         List<MealEntry> mealEntries = Arrays.asList(mealEntry1, mealEntry2);
 

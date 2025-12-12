@@ -14,14 +14,14 @@ import java.util.Date;
 
 @Controller
 @RequestMapping("/view")
-public class AccountController {
+public class AccountViewController {
 
     private final UserService userService;
     private final UserProfileService userProfileService;
     private final ActivityLevelService activityLevelService;
 
-    public AccountController(UserService userService, UserProfileService userProfileService,
-                             ActivityLevelService activityLevelService) {
+    public AccountViewController(UserService userService, UserProfileService userProfileService,
+                                 ActivityLevelService activityLevelService) {
         this.userService = userService;
         this.userProfileService = userProfileService;
         this.activityLevelService = activityLevelService;

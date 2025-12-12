@@ -84,19 +84,16 @@ public class DailyReportServiceImpl implements DailyReportService {
     }
 
     @Cacheable(value = "calendar-month",
-            key = "'reports:' + #targetDate")
+            key = "'reports:' + #targetDate + '.' + #userId")
     @Override
-    public List<CalendarDayResponse> getCalendarDataForMonth(LocalDate targetDate) {
-        User user = userService.getAuthUser()
-                .orElseThrow(() -> new RuntimeException("Пользователь не авторизован"));
-
+    public List<CalendarDayResponse> getCalendarDataForMonth(LocalDate targetDate, Long userId) {
         LocalDate startDate = targetDate.withDayOfMonth(1);
         LocalDate endDate = targetDate.withDayOfMonth(targetDate.lengthOfMonth());
 
         methodLogger.info("{DailyReportServiceImpl.getCalendarDataForMonth} |" +
-                " Происходит вызов метода dailyReportRepository.findByUserIdAndDateRange с id:{}", user.getId());
+                " Происходит вызов метода dailyReportRepository.findByUserIdAndDateRange с id:{}", userId);
         List<DailyReport> reports = dailyReportRepository.findByUserIdAndDateRange(
-                user.getId(), startDate, endDate);
+                userId, startDate, endDate);
 
         Map<LocalDate, Boolean> goalAchievedMap = reports.stream()
                 .collect(Collectors.toMap(
@@ -120,19 +117,17 @@ public class DailyReportServiceImpl implements DailyReportService {
     }
 
     @Cacheable(value = "daily-reports",
-            key = "'reports:' + #year + '-' + #month")
+            key = "'reports:' + #year + '-' + #month + '.' + #userId")
     @Override
-    public List<DailyReportResponse> getDailyReportsForMonth(int year, int month) {
-        User user = userService.getAuthUser()
-                .orElseThrow(() -> new RuntimeException("Пользователь не авторизован"));
+    public List<DailyReportResponse> getDailyReportsForMonth(int year, int month, Long userId) {
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
         methodLogger.info("{DailyReportServiceImpl.getDailyReportsForMonth} |" +
                 " Происходит вызов метода dailyReportRepository.findByUserIdAndReportDateBetween" +
-                " с id:{}", user.getId());
+                " с id:{}", userId);
         List<DailyReport> dailyReport = dailyReportRepository.findByUserIdAndReportDateBetween(
-                user.getId(), startDate, endDate);
+                userId, startDate, endDate);
 
         return dailyReport.stream()
                 .map(this::convertToResponse)

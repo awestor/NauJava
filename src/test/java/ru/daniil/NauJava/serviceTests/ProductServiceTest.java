@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.mockTests;
+package ru.daniil.NauJava.serviceTests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +45,7 @@ class ProductServiceTest {
         testUser.setId(1L);
 
         testProduct = new Product(
-                "Яблоко", "Свежие яблоки",
+                "Яблоко",
                 52.0, 0.3,
                 0.2, 14.0);
         testProduct.setId(1L);
@@ -106,7 +106,7 @@ class ProductServiceTest {
         request.setCarbsPer100g(22.8);
 
         Product newProduct = new Product(
-                "Банан", "description",
+                "Банан",
                 89.0, 1.1,
                 0.3, 22.8);
         newProduct.setCreatedByUser(testUser);
@@ -210,7 +210,7 @@ class ProductServiceTest {
     void findProductsByNames_WhenNamesListProvided_ShouldReturnProducts() {
         List<String> names = Arrays.asList("Яблоко", "Банан");
         Product banana = new Product(
-                "Банан", "Свежий банан",
+                "Банан",
                 89.0, 1.1,
                 0.3, 22.8);
 

@@ -14,14 +14,6 @@ import java.util.Optional;
 @Repository
 @RepositoryRestResource(path = "users")
 public interface UserRepository extends CrudRepository<User, Long> {
-
-    /**
-     * Находит всех пользователей с указанным именем
-     * @param login логин пользователя
-     */
-    @Query("FROM User WHERE login = :login")
-    List<User> findByLoginIgnoreCase(String login);
-
     Optional<User> findByEmail(String email);
 
     Optional<User> findByLogin(String login);

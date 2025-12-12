@@ -59,23 +59,22 @@ public class SpringSecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
                                 "/api/reports/**",
-                                "/view/reports/**"
+                                "/view/reports/**",
+                                "/api/auth/token",
+                                "/api/auth/validate",
+                                "/admin/**"
                         ).hasRole("ADMIN")
                         .requestMatchers(
                                 "/view/products/**",
                                 "/api/products/**",
                                 "/view/meals/**",
                                 "/api/meals/**",
-                                "/view/daily-reports/**"
-                        ).hasRole("USER")
-                        .requestMatchers(
+                                "/view/daily-reports/**",
                                 "/api/account/**",
                                 "/view/account",
                                 "/api/profile/**",
-                                "/api/daily-reports/**",
-                                "/api/auth/token",
-                                "/api/auth/validate"
-                        ).hasAnyRole("USER", "ADMIN")
+                                "/api/daily-reports/**"
+                        ).hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

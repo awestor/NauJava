@@ -2,6 +2,7 @@ package ru.daniil.NauJava.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.Product;
@@ -31,6 +32,7 @@ public class ProductServiceImpl implements ProductService {
         this.mealEntryRepository = mealEntryRepository;
     }
 
+
     @Cacheable(value = "user-products",
             key = "'products:' + #userId")
     @Override
@@ -58,8 +60,6 @@ public class ProductServiceImpl implements ProductService {
         Product newProduct = Optional.of(productInfo)
                 .map(request -> new Product(
                         request.getName(),
-                        // я не успел реализовать работу с описанием продуктов, так что это по хорошему бы удалить
-                        "description",
                         request.getCaloriesPer100g(),
                         request.getProteinsPer100g(),
                         request.getFatsPer100g(),

@@ -46,7 +46,7 @@ public interface DailyReportService {
      * @param targetDate год и месяц
      * @return список CalendarDayResponse состоящего из даты и флага достижения цели по питанию
      */
-    List<CalendarDayResponse> getCalendarDataForMonth(LocalDate targetDate);
+    List<CalendarDayResponse> getCalendarDataForMonth(LocalDate targetDate, Long userId);
 
     /**
      * Получает данные по дневным отчётам за месяц в году
@@ -54,7 +54,7 @@ public interface DailyReportService {
      * @param month месяц
      * @return список DailyReport
      */
-    List<DailyReportResponse> getDailyReportsForMonth(int year, int month);
+    List<DailyReportResponse> getDailyReportsForMonth(int year, int month, Long userId);
 
     /**
      * Считает количество дневных отчётов зарегистрированных в системе в диапазоне дат

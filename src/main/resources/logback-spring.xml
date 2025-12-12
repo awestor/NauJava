@@ -81,6 +81,7 @@
     <logger name="APP-LOGGER" level="INFO" additivity="false">
         <appender-ref ref="INFO_FILE" />
         <appender-ref ref="CONSOLE" />
+        <appender-ref ref="JSON_FILE" />
     </logger>
 
     <logger name="METHOD-LOGGER" level="INFO" additivity="false">

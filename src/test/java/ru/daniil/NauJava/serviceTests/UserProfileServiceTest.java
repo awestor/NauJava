@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.mockTests;
+package ru.daniil.NauJava.serviceTests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

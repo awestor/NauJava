@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.mockTests;
+package ru.daniil.NauJava.serviceTests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,10 +45,10 @@ class MealEntryServiceTest {
         testMeal = new Meal();
         testMeal.setId(1L);
 
-        testProduct1 = new Product("Яблоко", "Свежие яблоки", 52.0, 0.3, 0.2, 14.0);
+        testProduct1 = new Product("Яблоко",  52.0, 0.3, 0.2, 14.0);
         testProduct1.setId(1L);
 
-        testProduct2 = new Product("Банан", "Свежий банан", 89.0, 1.1, 0.3, 22.8);
+        testProduct2 = new Product("Банан",  89.0, 1.1, 0.3, 22.8);
         testProduct2.setId(2L);
 
         testMealEntry1 = new MealEntry(testMeal, testProduct1, 100);

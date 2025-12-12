@@ -21,6 +21,8 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.util.StringUtils;
+import ru.daniil.NauJava.config.redis.listSerializators.MealTypesSerializer;
+import ru.daniil.NauJava.config.redis.listSerializators.ProductListSerializer;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -125,6 +127,24 @@ public class RedisConfig {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapper())))
                 .prefixCacheNameWith("cache:");
 
+        RedisCacheConfiguration userProductsConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(20))
+                .disableCachingNullValues()
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                        new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                        new ProductListSerializer()))
+                .prefixCacheNameWith("cache:");
+
+        RedisCacheConfiguration mealTypesConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofHours(1))
+                .disableCachingNullValues()
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                        new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                        new MealTypesSerializer()))
+                .prefixCacheNameWith("cache:");
+
         // Настройки для разных кэшей
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
         cacheConfigurations.put("admin-reports-page", defaultConfig.entryTtl(Duration.ofMinutes(5)));
@@ -132,8 +152,8 @@ public class RedisConfig {
         cacheConfigurations.put("admin-users-stats", defaultConfig.entryTtl(Duration.ofMinutes(5)));
         cacheConfigurations.put("calendar-month", defaultConfig.entryTtl(Duration.ofMinutes(10)));
         cacheConfigurations.put("daily-reports", defaultConfig.entryTtl(Duration.ofMinutes(15)));
-        cacheConfigurations.put("user-products", defaultConfig.entryTtl(Duration.ofMinutes(20)));
-        cacheConfigurations.put("meal-type", defaultConfig.entryTtl(Duration.ofHours(1)));
+        cacheConfigurations.put("user-products", userProductsConfig);
+        cacheConfigurations.put("meal-type", mealTypesConfig);
 
         logger.info("Кэш конфигурация: {}", cacheConfigurations.keySet());
 

@@ -1,4 +1,4 @@
-package ru.daniil.NauJava.mockTests;
+package ru.daniil.NauJava.serviceTests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -207,11 +207,10 @@ class DailyReportServiceTest {
         DailyReport report2 = new DailyReport(testUser, LocalDate.of(2024, 12, 10));
         report2.setGoalAchieved(false);
 
-        when(userService.getAuthUser()).thenReturn(Optional.of(testUser));
         when(dailyReportRepository.findByUserIdAndDateRange(1L, startDate, endDate))
                 .thenReturn(Arrays.asList(report1, report2));
 
-        List<CalendarDayResponse> calendarData = dailyReportService.getCalendarDataForMonth(targetDate);
+        List<CalendarDayResponse> calendarData = dailyReportService.getCalendarDataForMonth(targetDate, testUser.getId());
 
         assertNotNull(calendarData);
         assertEquals(31, calendarData.size()); // 31 день в декабре
@@ -232,15 +231,6 @@ class DailyReportServiceTest {
     }
 
     @Test
-    void getCalendarDataForMonth_WhenUserNotAuthenticated_ShouldThrowException() {
-        when(userService.getAuthUser()).thenReturn(Optional.empty());
-
-        assertThrows(RuntimeException.class, () -> {
-            dailyReportService.getCalendarDataForMonth(LocalDate.now());
-        }, "Пользователь не авторизован");
-    }
-
-    @Test
     void getDailyReportsForMonth_ShouldReturnReports() {
         int year = 2024;
         int month = 12;
@@ -252,11 +242,10 @@ class DailyReportServiceTest {
         report1.setTotalCaloriesConsumed(2000.0);
         report1.setGoalAchieved(true);
 
-        when(userService.getAuthUser()).thenReturn(Optional.of(testUser));
         when(dailyReportRepository.findByUserIdAndReportDateBetween(1L, startDate, endDate))
                 .thenReturn(List.of(report1));
 
-        List<DailyReportResponse> reports = dailyReportService.getDailyReportsForMonth(year, month);
+        List<DailyReportResponse> reports = dailyReportService.getDailyReportsForMonth(year, month, testUser.getId());
 
         assertNotNull(reports);
         assertEquals(1, reports.size());
@@ -275,23 +264,13 @@ class DailyReportServiceTest {
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = LocalDate.of(year, month, 31);
 
-        when(userService.getAuthUser()).thenReturn(Optional.of(testUser));
         when(dailyReportRepository.findByUserIdAndReportDateBetween(1L, startDate, endDate))
                 .thenReturn(Collections.emptyList());
 
-        List<DailyReportResponse> reports = dailyReportService.getDailyReportsForMonth(year, month);
+        List<DailyReportResponse> reports = dailyReportService.getDailyReportsForMonth(year, month, testUser.getId());
 
         assertNotNull(reports);
         assertTrue(reports.isEmpty());
-    }
-
-    @Test
-    void getDailyReportsForMonth_WhenUserNotAuthenticated_ShouldThrowException() {
-        when(userService.getAuthUser()).thenReturn(Optional.empty());
-
-        assertThrows(RuntimeException.class, () -> {
-            dailyReportService.getDailyReportsForMonth(2024, 12);
-        }, "Пользователь не авторизован");
     }
 
     @Test

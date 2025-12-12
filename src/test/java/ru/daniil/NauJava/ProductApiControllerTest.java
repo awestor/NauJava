@@ -65,7 +65,6 @@ class ProductApiControllerTest {
 
         systemProduct1 = new Product();
         systemProduct1.setName("Apple");
-        systemProduct1.setDescription("Fresh red apple");
         systemProduct1.setCaloriesPer100g(52.0);
         systemProduct1.setProteinsPer100g(0.3);
         systemProduct1.setFatsPer100g(0.2);
@@ -75,7 +74,6 @@ class ProductApiControllerTest {
 
         Product systemProduct2 = new Product();
         systemProduct2.setName("Banana");
-        systemProduct2.setDescription("Yellow banana");
         systemProduct2.setCaloriesPer100g(89.0);
         systemProduct2.setProteinsPer100g(1.1);
         systemProduct2.setFatsPer100g(0.3);
@@ -85,7 +83,6 @@ class ProductApiControllerTest {
 
         Product userProduct1 = new Product();
         userProduct1.setName("Chicken Breast");
-        userProduct1.setDescription("Grilled chicken breast");
         userProduct1.setCaloriesPer100g(165.0);
         userProduct1.setProteinsPer100g(31.0);
         userProduct1.setFatsPer100g(3.6);
@@ -95,7 +92,6 @@ class ProductApiControllerTest {
 
         Product userProduct2 = new Product();
         userProduct2.setName("Oatmeal");
-        userProduct2.setDescription("Healthy oatmeal");
         userProduct2.setCaloriesPer100g(68.0);
         userProduct2.setProteinsPer100g(2.4);
         userProduct2.setFatsPer100g(1.4);
