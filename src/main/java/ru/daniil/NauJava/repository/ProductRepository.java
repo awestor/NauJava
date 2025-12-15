@@ -7,6 +7,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 import ru.daniil.NauJava.entity.Product;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +38,8 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
     Optional<Product> findByNameIgnoreCaseAndCreatedByUserIsNull(String name);
 
     Optional<Product> findByNameIgnoreCaseAndCreatedByUserId(String name, Long userId);
+
+    Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     boolean existsByNameIgnoreCase(String name);
 }

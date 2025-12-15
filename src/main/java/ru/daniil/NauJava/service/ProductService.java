@@ -1,7 +1,11 @@
 package ru.daniil.NauJava.service;
 
 import ru.daniil.NauJava.entity.Product;
+import ru.daniil.NauJava.entity.User;
+import ru.daniil.NauJava.request.create.CreateProductRequest;
+import ru.daniil.NauJava.request.update.UpdateProductRequest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,7 +14,7 @@ public interface ProductService {
      * Находит все продукты пользователя и системы
      * @return список продуктов с этим названием
      */
-    List<Product> getAll();
+    List<Product> getAll(Long userId);
 
     /**
      * Находит несколько продуктов по именам
@@ -27,11 +31,12 @@ public interface ProductService {
     Product findProductByName(String productName);
 
     /**
-     * Метод, что проверяет существование продукта по его имени
-     * @param productName имя продукта
-     * @return true если продукт найден, иначе - false
+     * Добавляет в БД продукт по его информации
+     * @param productInfo информация о продукте
+     * @return сохранённый продукт
      */
-    boolean productExists(String productName);
+    Product saveProduct(CreateProductRequest productInfo);
+
     /**
      * Метод, что проверяет существование продукта по его имени
      * @param userId id пользователя
@@ -39,52 +44,44 @@ public interface ProductService {
      */
     List<Product> findProductByUserId(Long userId);
 
-    List<Product> findByCreatedByUserIsNull();
-
+    /**
+     * Возвращает все продукты, в названии которых есть указанная часть
+     * @param name часть названия продукта
+     * @return список продуктов
+     */
     List<Product> findByNameContainingIgnoreCase(String name);
 
+    /**
+     * Находит продукт по его id
+     * @param identifier id продукта
+     * @return продукт или null
+     */
     Optional<Product> findById(Long identifier);
 
-    List<Product> findProductsWithMinCaloriesAndUser(Double calories, Long userId);
-
-    boolean existsByNameIgnoreCase(String productName);
+    /**
+     * Метод, что проверяет существование продукта по его имени
+     * @param productName имя продукта
+     * @return true если продукт найден, иначе - false
+     */
+    boolean productExists(String productName);
 
     /**
-     * Метод вызова действий по созданию новой
-     * записи продукта в списке.
-     * @param id идентификатор сущности в БД
-     * @param name название продукта
-     * @param description описание продукта
-     * @param calories количество калорий продукта
+     * Считает количество продуктов зарегистрированных в системе в диапазоне дат
+     * @param start начало диапазона дат
+     * @param end конец диапазона дат
+     * @return количество продуктов
      */
-    //void createProduct(Long id, String name, String description, double calories);
+    Long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     /**
-     * Метод вызова действий по поиску записи
-     * в списке по его id.
-     * @param id идентификатор сущности в БД
-     * @return найденный продукт
+     * Обновляет данные о продукте
+     * @param request UpdateProductRequest, что содержит данные для обновления
      */
-    //Product findById(Long id);
+    void updateProduct(UpdateProductRequest request);
 
     /**
-     * Метод вызова действий по удалению записи
-     * продукта из списка по его id.
-     * @param id идентификатор сущности в БД
+     * Удаляет продукт из БД
+     * @param id id продукта для удаления
      */
-    //void deleteById(Long id);
-
-    /**
-     * Метод вызова действий по изменению описания продукта
-     * @param id идентификатор сущности в БД
-     * @param newDescription новое описание продукта
-     */
-    //void updateDescription(Long id, String newDescription);
-
-    /**
-     * Метод вызова действий по изменению калорийности продукта
-     * @param id идентификатор сущности в БД
-     * @param newCalories новое значение калорий у продукта
-     */
-    //void updateCalories(Long id, double newCalories);
+    void deleteProduct(Long id);
 }

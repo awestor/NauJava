@@ -1,26 +1,35 @@
 package ru.daniil.NauJava.service;
 
-import jakarta.transaction.Transactional;
-import org.springframework.security.core.userdetails.UserDetails;
 import ru.daniil.NauJava.entity.User;
-import ru.daniil.NauJava.request.RegistrationRequest;
+import ru.daniil.NauJava.request.create.RegistrationRequest;
+import ru.daniil.NauJava.request.update.UpdateAccountRequest;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
     /**
-     * Находит пользователя по id и возвращает его объект
-     * @param userId идентификатор пользователя
-     * @return объект сущности пользователя или null
+     * Возвращает пользователя по его логину
+     * @param login логин пользователя
+     * @return Пользователь или null
      */
-    Optional<User> findUserById(Long userId);
+    Optional<User> findByLogin(String login);
 
     /**
-     * Находит пользователя по email и возвращает его объект
-     * @param email электронная почта пользователя
-     * @return объект сущности пользователя или null
+     * Регистрирует нового пользователя в системе и назначает ему права роли "USER"
+     * @param request RegistrationRequest что содержит регистрационные данные
+     * @return сущность пользователя User
      */
-    Optional<User> findUserByEmail(String email);
+    User registerUser(RegistrationRequest request);
+
+    /**
+     * Регистрирует нового пользователя в системе и назначает ему права роли переданные в roleName
+     * если такая существует
+     * @param request RegistrationRequest что содержит регистрационные данные
+     * @return сущность пользователя User
+     */
+    User registerUserWithRole(RegistrationRequest request, String roleName);
 
     /**
      * Получает пользователя из если он авторизован
@@ -29,9 +38,35 @@ public interface UserService {
     Optional<User> getAuthUser();
 
     /**
+     * Возвращает всех пользователей зарегистрированных в БД
+     * @return список пользователей
+     */
+    List<User> findAllUsers();
+
+    /**
+     * Изменяет указанные в request данные о пользователе в БД
+     * @param request UpdateAccountRequest, что содержит данные для обновления
+     */
+    void updateUserAccount(UpdateAccountRequest request);
+
+    /**
      * Проверяет существование пользователя по email
      * @param email электронная почта пользователя
      * @return true - пользователя найден, иначе false
      */
     boolean userExists(String email);
+
+    /**
+     * Считает количество пользователей зарегистрированных в системе
+     * @return число пользователей
+     */
+    long countAllUsers();
+
+    /**
+     * Считает количество пользователей зарегистрированных в системе в диапазоне дат
+     * @param start начало диапазона дат
+     * @param end конец диапазона дат
+     * @return число пользователей
+     */
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

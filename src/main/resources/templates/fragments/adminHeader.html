@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+  <header th:fragment="adminHeader" class="header">
+    <div class="nav-container">
+      <div class="logo-section">
+        <span class="logo-text">Calorie<span class="logo-accent">Tracker</span></span>
+      </div>
+
+      <nav class="nav-menu">
+        <a class="nav-link" th:href="@{/}">Главная</a>
+        <a class="nav-link" th:href="@{/swagger-ui.html}" target="_blank">Swagger UI</a>
+        <a class="nav-link" th:href="@{/admin/view/users}">Пользователи</a>
+        <a class="nav-link" th:href="@{/admin/view/reports/list}">Отчёты</a>
+      </nav>
+
+      <div class="user-info">
+        <div>
+          <span class="user-welcome">Welcome, </span>
+          <span class="user-login" th:text="${#authentication.principal.username}">user</span>
+        </div>
+        <form class="logout-form" th:action="@{/logout}" method="post">
+          <button type="submit" class="btn btn-logout">Logout</button>
+        </form>
+      </div>
+    </div>
+  </header>
+</body>
+</html>

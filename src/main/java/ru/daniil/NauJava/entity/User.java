@@ -25,17 +25,6 @@ public class User implements UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private String name;
-
-    @Column(nullable = false)
-    private String surname;
-
-    private String patronymic;
-
-    @Column(name = "current_streak")
-    private Integer currentStreak = 0;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -66,7 +55,6 @@ public class User implements UserDetails {
      */
     public User(){
         this.createdAt = LocalDateTime.now();
-        this.currentStreak = 0;
     }
 
     /**
@@ -74,19 +62,14 @@ public class User implements UserDetails {
      * Заполняет все основные поля информации у пользователя.
      * @param email указанная электронная почта
      * @param password значение для пароля, что будет занесено в БД
-     * @param name имя пользователя
-     * @param surname фамилия пользователя
      */
-    public User(String email, String password, String login,
-                String name, String surname, String patronymic) {
+    public User(String email, String login, String password) {
         this();
         this.email = email;
         this.login = login;
         this.password = password;
-        this.name = name;
-        this.surname = surname;
-        this.patronymic = patronymic;
     }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
@@ -128,30 +111,12 @@ public class User implements UserDetails {
         return roles.stream().anyMatch(role -> role.getName().equals(roleName));
     }
 
-    public void addRole(Role role) {
-        roles.add(role);
-        role.getUsers().add(this);
-    }
-
-    public void removeRole(Role role) {
-        roles.remove(role);
-        role.getUsers().remove(this);
-    }
-
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getLogin() {
@@ -174,28 +139,34 @@ public class User implements UserDetails {
         this.email = email;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public String getPatronymic() {
-        return patronymic;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public void setPatronymic(String patronymic) {
-        this.patronymic = patronymic;
+    public UserProfile getUserProfile() {
+        return userProfile;
+    }
+
+    public void setUserProfile(UserProfile userProfile) {
+        this.userProfile = userProfile;
+    }
+
+    public void addRole(Role role) {
+        roles.add(role);
+        role.getUsers().add(this);
+    }
+
+    public void removeRole(Role role) {
+        roles.remove(role);
+        role.getUsers().remove(this);
     }
 
     public Set<Role> getRoles() {
         return roles;
-    }
-
-    public String getSurname() {
-        return surname;
-    }
-
-    public Integer getCurrentStreak() {
-        return currentStreak;
     }
 
     @Override
@@ -203,10 +174,6 @@ public class User implements UserDetails {
         return "User{" +
                 "email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", patronymic='" + patronymic + '\'' +
-                ", currentStreak=" + currentStreak +
                 ", createdAt=" + createdAt +
                 '}';
     }

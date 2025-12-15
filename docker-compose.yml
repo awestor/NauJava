@@ -1,0 +1,96 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: app-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-appdb}
+      POSTGRES_USER: ${DB_USER:-appuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-apppass}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-appuser}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - app-network
+
+  redis:
+    image: redis:8.0-alpine
+    container_name: app-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - app-network
+
+  # Spring Application
+  app:
+    build:
+      context: .
+      dockerfile: app.dockerfile
+    container_name: spring-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-appdb}
+      DB_USER: ${DB_USER:-appuser}
+      DB_PASSWORD: ${DB_PASSWORD:-apppass}
+
+      JWT_SECRET: ${JWT_SECRET}
+
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+
+      LOG_PATH: /app/logs
+      APP_NAME: ${APP_NAME:-calorie-tracker}
+      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+
+      SPRING_REDIS_TIMEOUT: 2000ms
+      SPRING_REDIS_CONNECT_TIMEOUT: 1000ms
+
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-docker}
+      SERVER_PORT: 8080
+
+      JAVA_TOOL_OPTIONS: >
+        -Dlogback.configurationFile=logback-spring.xml
+        -Dlogging.level.root=${LOG_LEVEL:-INFO}
+
+      APP_ENV: ${APP_ENV:-production}
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

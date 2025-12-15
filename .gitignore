@@ -52,6 +52,9 @@ build/
 folderStart/
 folderEnd/
 .mvn
+.env
 dependency-reduced-pom.xml
 org/
 db.cache
+docker_conf
+logs

@@ -19,30 +19,6 @@
     <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
 
     <form th:action="@{/register}" method="post" th:object="${user}" class="auth-form">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="name">Имя *</label>
-          <input type="text" id="name" th:field="*{name}" required
-                 placeholder="Введите ваше имя">
-          <div class="error-message" th:if="${#fields.hasErrors('name')}"
-               th:errors="*{name}"></div>
-        </div>
-
-        <div class="form-group">
-          <label for="surname">Фамилия *</label>
-          <input type="text" id="surname" th:field="*{surname}" required
-                 placeholder="Введите вашу фамилию">
-          <div class="error-message" th:if="${#fields.hasErrors('surname')}"
-               th:errors="*{surname}"></div>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="patronymic">Отчество</label>
-        <input type="text" id="patronymic" th:field="*{patronymic}"
-               placeholder="Введите ваше отчество (необязательно)">
-      </div>
-
       <div class="form-group">
         <label for="email">Email *</label>
         <input type="email" id="email" th:field="*{email}" required
@@ -72,19 +48,6 @@
         <div class="error-message" th:if="${#fields.hasErrors('password')}"
              th:errors="*{password}"></div>
       </div>
-
-      <div class="password-requirements">
-        <h4>Требования к паролю:</h4>
-        <ul>
-          <li>Минимум 8 символов</li>
-          <li>Хотя бы одна заглавная буква (A-Z)</li>
-          <li>Хотя бы одна строчная буква (a-z)</li>
-          <li>Хотя бы одна цифра (0-9)</li>
-          <li>Хотя бы один специальный символ (!"$%'()+,-.:;&lt;=&gt;[]^_{}~)</li>
-          <li>Запрещены символы: @ / | \ * # & ?</li>
-        </ul>
-      </div>
-
       <button type="submit" class="btn btn-primary btn-full">Создать аккаунт</button>
     </form>
 
@@ -93,22 +56,5 @@
     </div>
   </div>
 </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-      const passwordInput = document.getElementById('password');
-      const requirements = document.querySelector('.password-requirements');
-
-      passwordInput.addEventListener('focus', function() {
-          requirements.style.display = 'block';
-      });
-
-      passwordInput.addEventListener('blur', function() {
-          setTimeout(() => {
-              requirements.style.display = 'none';
-          }, 200);
-      });
-  });
-</script>
 </body>
 </html>

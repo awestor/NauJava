@@ -1,161 +1,291 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports - Calorie Tracker</title>
-    <link th:href="@{/css/reports.css}" rel="stylesheet">
+    <title>Отчёты системы</title>
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/reports.css}">
     <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
 <body>
-<div class="header">
-    <div class="nav-container">
-        <div class="logo">
-            <a href="/view/products/" style="color: white; text-decoration: none;">
-                <span class="logo-text">Calorie<span class="logo-accent">Tracker</span></span>
-            </a>
-        </div>
+<div th:replace="~{fragments/adminHeader :: header}"></div>
 
-        <div class="user-info">
-                <span class="user-welcome">
-                    Welcome, <span sec:authentication="name"></span>
-                </span>
-            <form th:action="@{/logout}" method="post" class="logout-form">
-                <button type="submit" class="btn btn-logout">
-                    Logout
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="container">
+<main class="main-container">
     <div class="page-header">
-        <h1>System Reports</h1>
-        <p>Generate and view system statistics reports</p>
-        <button id="generateReportBtn" class="btn btn-primary">
-            Generate New Report
-        </button>
+        <h1 class="page-title">Отчёты системы</h1>
+        <span class="admin-badge">ADMIN</span>
     </div>
 
-    <div id="newReportArea" class="report-area" style="display: none;">
-        <h3>Generating Report...</h3>
-        <div class="loading-spinner"></div>
-        <p>Report ID: <span id="currentReportId"></span></p>
-        <p>Please wait while we generate your report...</p>
-        <div id="reportResult" style="display: none;">
-            <p id="reportMessage"></p>
-            <a id="viewReportLink" href="#" class="btn btn-success" style="display: none;">
-                📋 View Report
-            </a>
+    <!-- Блок создания нового отчёта -->
+    <div class="report-creation-section">
+        <div class="creation-card">
+            <h2 class="section-title">Создание нового отчёта</h2>
+
+            <div class="date-inputs">
+                <div class="date-input-group">
+                    <label for="startDate" class="date-label">Дата начала периода</label>
+                    <div class="date-input-wrapper">
+                        <input type="date" id="startDate" class="date-input"
+                               th:value="${periodStart}">
+                        <button type="button" class="date-btn" onclick="openCalendar('start')">📅</button>
+                    </div>
+                </div>
+
+                <div class="date-separator">→</div>
+
+                <div class="date-input-group">
+                    <label for="endDate" class="date-label">Дата окончания периода</label>
+                    <div class="date-input-wrapper">
+                        <input type="date" id="endDate" class="date-input"
+                               th:value="${periodEnd}">
+                        <button type="button" class="date-btn" onclick="openCalendar('end')">📅</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Календарь -->
+            <div id="calendarModal" class="calendar-modal">
+                <div class="calendar-header">
+                    <h3 id="calendarTitle">Выберите дату</h3>
+                    <button type="button" class="btn-close" onclick="closeCalendar()">&times;</button>
+                </div>
+                <div class="calendar-body">
+                    <div class="calendar-controls">
+                        <button class="calendar-nav-btn" onclick="changeCalendarMonth(-1)">
+                            ←
+                        </button>
+                        <span id="calendarMonth" class="calendar-month"></span>
+                        <button class="calendar-nav-btn" onclick="changeCalendarMonth(1)">
+                            →
+                        </button>
+                    </div>
+                    <div id="calendarContainer" class="calendar-grid"></div>
+                </div>
+            </div>
+
+            <div class="creation-info">
+                <div class="info-item">
+                    <span class="info-icon">ℹ️</span>
+                    <span class="info-text">
+                        Отчёт будет содержать статистику за указанный период включительно
+                    </span>
+                </div>
+                <div class="info-item" id="existingReportWarning" style="display: none;">
+                    <span class="info-icon">⚠️</span>
+                    <span class="info-text">
+                        Отчёт за этот период уже существует и будет обновлён
+                    </span>
+                </div>
+            </div>
+
+            <div class="creation-actions">
+                <button type="button" class="btn btn-secondary" onclick="checkExistingReport()">
+                    Проверить наличие отчёта
+                </button>
+                <button type="button" class="btn btn-primary" onclick="createReport()" id="createReportBtn">
+                    <span class="btn-icon">📊</span>
+                    Создать отчёт
+                </button>
+            </div>
         </div>
     </div>
 
+    <!-- Быстрые действия -->
+    <div class="quick-actions-section">
+        <h2 class="section-title">Быстрые действия</h2>
+        <div class="actions-grid">
+            <button type="button" class="action-card" onclick="showLatestReport()"><!-- Переделать метод -->
+                <div class="action-icon">📋</div>
+                <div class="action-title">Последний отчёт</div>
+                <div class="action-description">Показать последний созданный отчёт</div>
+            </button>
 
+            <button type="button" class="action-card" onclick="showAllReports()">
+                <div class="action-icon">📚</div>
+                <div class="action-title">Все отчёты</div>
+                <div class="action-description">Просмотреть все созданные отчёты</div>
+            </button>
+
+            <button type="button" class="action-card" onclick="showWeekReport()">
+                <div class="action-icon">📈</div>
+                <div class="action-title">Отчёт за неделю</div>
+                <div class="action-description">Создать отчёт за последние 7 дней</div>
+            </button>
+
+            <button type="button" class="action-card" onclick="showMonthReport()">
+                <div class="action-icon">📅</div>
+                <div class="action-title">Отчёт за месяц</div>
+                <div class="action-description">Создать отчёт за текущий месяц</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Список отчётов -->
+    <div class="reports-list-section">
+        <div class="section-header">
+            <h2 class="section-title">Список отчётов</h2>
+            <div class="section-header-actions">
+                <select id="pageSizeSelect" class="page-size-select" onchange="changePageSize(this.value)">
+                    <option value="8">8</option>
+                    <option value="16">16</option>
+                    <option value="32">32</option>
+                    <option value="48">48</option>
+                </select>
+                <button type="button" class="btn btn-secondary btn-small" onclick="refreshReports()" id="refreshBtn">
+                    <span id="refreshIcon">🔄</span>
+                    Обновить
+                </button>
+            </div>
+        </div>
+
+        <div id="loadingContainer" class="loading-container">
+            <div class="loading-spinner"></div>
+            <div>Загрузка отчётов...</div>
+        </div>
+
+        <div id="tableContainer" class="table-container" style="display: none;">
+            <table class="reports-table">
+                <thead>
+                <tr>
+                    <th data-sort="period" class="sortable">
+                        <span class="th-content">Период</span>
+                    </th>
+                    <th>
+                        <span class="th-content">Статус</span>
+                    </th>
+                    <th data-sort="created" class="sortable sort-desc">
+                        <span class="th-content">Создан</span>
+                    </th>
+                    <th>
+                        <span class="th-content">Время выполнения</span>
+                    </th>
+                    <th class="actions-header">
+                        <span class="th-content">Действия</span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody id="reportsTableBody">
+
+                </tbody>
+            </table>
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📊</div>
+            <h3 class="empty-state-title">Отчёты не найдены</h3>
+            <p class="empty-state-description">В системе пока нет созданных отчётов.</p>
+            <button type="button" class="btn btn-primary" onclick="createReport()">
+                Создать первый отчёт
+            </button>
+        </div>
+
+        <div class="reports-stats" id="reportsStats">
+            <div class="stats-item">
+                <span class="stats-label">Всего отчётов:</span>
+                <span class="stats-value" id="totalCount">0</span>
+            </div>
+            <div class="stats-item">
+                <span class="stats-label">Завершено:</span>
+                <span class="stats-value" id="completedCount">0</span>
+            </div>
+            <div class="stats-item">
+                <span class="stats-label">Формируется:</span>
+                <span class="stats-value" id="processingCount">0</span>
+            </div>
+            <div class="stats-item">
+                <span class="stats-label">Страница:</span>
+                <span class="stats-value" id="pageInfo">1/1</span>
+            </div>
+            <div class="stats-item">
+                <span class="stats-label">Отчётов на странице:</span>
+                <span class="stats-value" id="pageSizeInfo">8</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Пагинация -->
+    <div class="pagination-section" id="paginationSection" style="display: none;">
+        <div class="pagination-controls">
+
+            <!-- Навигация по страницам -->
+            <div class="pagination-nav">
+                <button class="pagination-btn" id="prevPageBtn" onclick="goToPreviousPage()"
+                        title="Предыдущая страница" disabled>
+                    ←
+                </button>
+
+                <div class="pagination-pages" id="paginationPages">
+                </div>
+
+                <button class="pagination-btn" id="nextPageBtn" onclick="goToNextPage()"
+                        title="Следующая страница" disabled>
+                    →
+                </button>
+            </div>
+
+            <div class="pagination-info">
+                Страница <span id="currentPageSpan">1</span> из
+                <span id="totalPagesSpan">1</span>
+                (всего отчётов: <span id="totalElementsSpan">0</span>)
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Модальное окно для просмотра отчёта -->
+<div id="reportViewModal" class="modal-overlay">
+    <div class="modal-content modal-wide">
+        <div class="modal-header">
+            <h3 class="modal-title">Просмотр отчёта</h3>
+            <div class="modal-header-actions">
+                <button type="button" class="btn btn-secondary btn-small" onclick="refreshReportContent()" title="Обновить отчёт">
+                    <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                </button>
+                <button type="button" class="btn-close" onclick="closeReportModal()">&times;</button>
+            </div>
+        </div>
+        <div class="modal-body">
+            <div class="report-header" id="reportHeader">
+                <div class="report-period">
+                    <span class="period-label">Период:</span>
+                    <span class="period-value" id="reportPeriod">-</span>
+                </div>
+                <div class="report-status">
+                    <span class="status-label">Статус:</span>
+                    <div class="status-badge" id="reportStatusBadge">-</div>
+                </div>
+                <div class="report-time">
+                    <span class="time-label">Время выполнения:</span>
+                    <span class="time-value" id="reportExecutionTime">-</span>
+                </div>
+            </div>
+
+            <div class="report-content-container">
+                <div class="loading-overlay" id="reportLoading">
+                    <div class="loading-spinner"></div>
+                    <div>Загрузка отчёта...</div>
+                </div>
+                <div id="reportContent" class="report-content"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeReportModal()">Закрыть</button>
+            <button type="button" class="btn btn-primary" onclick="downloadCurrentReport()" id="downloadReportBtn">
+                Скачать отчёт
+            </button>
+        </div>
+    </div>
 </div>
 
-<script>
-    function getCsrfToken() {
-        return document.querySelector('meta[name="_csrf"]')?.getAttribute('content') ||
-               document.querySelector('input[name="_csrf"]')?.value;
-    }
+<!-- Уведомления -->
+<div id="notificationsContainer"></div>
 
-    document.getElementById('generateReportBtn').addEventListener('click', function() {
-        const btn = this;
-        const reportArea = document.getElementById('newReportArea');
-        const currentReportId = document.getElementById('currentReportId');
-        const reportResult = document.getElementById('reportResult');
-        const reportMessage = document.getElementById('reportMessage');
-        const viewReportLink = document.getElementById('viewReportLink');
-
-        btn.disabled = true;
-        btn.textContent = 'Generating...';
-        reportArea.style.display = 'block';
-        reportResult.style.display = 'none';
-
-        const csrfToken = getCsrfToken();
-
-        fetch('/api/reports/generate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            credentials: 'include'
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                currentReportId.textContent = data.reportId;
-                checkReportStatus(data.reportId);
-            } else {
-                showError(data.message);
-            }
-        })
-        .catch(error => {
-            showError('Failed to generate report: ' + error.message);
-        });
-    });
-
-    function checkReportStatus(reportId) {
-        fetch(`/api/reports/${reportId}/status`, {
-            credentials: 'include'
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.text();
-            })
-            .then(status => {
-                if (status === 'COMPLETED') {
-                    showSuccess(reportId);
-                } else if (status === 'ERROR') {
-                    showError('Report generation failed');
-                } else {
-                    setTimeout(() => checkReportStatus(reportId), 2000);
-                }
-            })
-            .catch(error => {
-                showError('Failed to check report status: ' + error.message);
-            });
-    }
-
-    function showSuccess(reportId) {
-        const reportArea = document.getElementById('newReportArea');
-        const reportResult = document.getElementById('reportResult');
-        const reportMessage = document.getElementById('reportMessage');
-        const viewReportLink = document.getElementById('viewReportLink');
-        const generateBtn = document.getElementById('generateReportBtn');
-
-        reportMessage.textContent = 'Report generated successfully!';
-        reportMessage.style.color = '#1a7f37';
-        viewReportLink.href = `/view/reports/${reportId}`;
-        viewReportLink.style.display = 'inline-block';
-        reportResult.style.display = 'block';
-
-        generateBtn.disabled = false;
-        generateBtn.textContent = 'Generate New Report';
-    }
-
-    function showError(message) {
-        const reportResult = document.getElementById('reportResult');
-        const reportMessage = document.getElementById('reportMessage');
-        const generateBtn = document.getElementById('generateReportBtn');
-
-        reportMessage.textContent = 'Error: ' + message;
-        reportMessage.style.color = '#cf222e';
-        reportResult.style.display = 'block';
-
-        generateBtn.disabled = false;
-        generateBtn.textContent = 'Generate New Report';
-    }
-</script>
+<script th:src="@{/js/reports.js}"></script>
 </body>
 </html>

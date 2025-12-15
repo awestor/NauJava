@@ -2,23 +2,19 @@ package ru.daniil.NauJava.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.Role;
 import ru.daniil.NauJava.entity.User;
 import ru.daniil.NauJava.exception.ValidationException;
 import ru.daniil.NauJava.repository.RoleRepository;
 import ru.daniil.NauJava.repository.UserRepository;
-import ru.daniil.NauJava.request.RegistrationRequest;
 
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 @Service
 @Transactional
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsServiceCustom {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 
@@ -26,6 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
     }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if (username.contains("@")) {
@@ -48,24 +45,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public Optional<User> findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
+    public void removeRoleToUser(Long id, String roleName) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ValidationException("Пользователь не найден: " + id));
 
-    public Optional<User> findUserById(Long id) {
-        return userRepository.findById(id);
-    }
+        Role role = roleRepository.findByName(roleName)
+                .orElseThrow(() -> new ValidationException("Роль не найдена: " + roleName));
 
-    public boolean userExists(String email) {
-        return userRepository.findByEmail(email).isPresent();
-    }
-
-    public void deleteUserByEmail(String email) {
-        userRepository.findByEmail(email).ifPresent(userRepository::delete);
-    }
-
-    public void deleteUserById(Long id) {
-        userRepository.deleteById(id);
+        user.addRole(role);
+        userRepository.save(user);
     }
 
     public Role createRole(String name, String description) {

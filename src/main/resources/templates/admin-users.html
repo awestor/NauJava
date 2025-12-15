@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление пользователями</title>
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-users.css}">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+</head>
+<body>
+<div th:replace="~{fragments/adminHeader :: header}"></div>
+
+<main class="main-container">
+    <div class="page-header">
+        <h1 class="page-title">Активность пользователей</h1>
+        <span class="admin-badge">ADMIN</span>
+    </div>
+
+    <!-- Статистика -->
+    <div class="stats-section">
+        <div class="stats-card">
+            <h3 class="stats-title">Статистика пользователей</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Всего пользователей</span>
+                    <span class="stat-value" id="totalUsersCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Активных сегодня</span>
+                    <span class="stat-value" id="activeTodayCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Средний currentStreak</span>
+                    <span class="stat-value" id="avgStreakCount">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Управление отображением -->
+    <div class="controls-section">
+        <div class="page-size-selector">
+            <label for="pageSizeSelect">Показывать по:</label>
+            <select id="pageSizeSelect" class="page-size-select">
+                <option value="8">8</option>
+                <option value="16" selected>16</option>
+                <option value="32">32</option>
+                <option value="48">48</option>
+            </select>
+        </div>
+
+        <div class="last-update">
+            Последнее обновление: <span id="lastUpdateTime">--:--:--</span>
+        </div>
+    </div>
+
+    <!-- Таблица пользователей -->
+    <div class="table-container">
+        <table class="users-table">
+            <thead>
+            <tr>
+                <th data-sort="login" class="sortable sort-desc">
+                    <span class="th-content">Логин</span>
+                </th>
+                <th data-sort="fio" class="sortable">
+                    <span class="th-content">ФИО</span>
+                </th>
+                <th data-sort="lastActivity" class="sortable">
+                    <span class="th-content">Последняя активность</span>
+                </th>
+                <th data-sort="streak" class="sortable">
+                    <span class="th-content">Серия (дней)</span>
+                </th>
+            </tr>
+            </thead>
+            <tbody id="usersTableBody">
+            <!-- Данные будут загружаться динамически -->
+            <tr class="loading-row">
+                <td colspan="4">
+                    <div class="loading-spinner"></div>
+                    <div>Загрузка пользователей...</div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Пагинация -->
+    <div class="pagination-container" id="paginationContainer" style="display: none;">
+        <div class="pagination">
+            <button class="pagination-btn" id="prevPage" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+            </button>
+
+            <div class="pagination-pages" id="paginationPages">
+                <!-- Страницы будут генерироваться динамически -->
+            </div>
+
+            <button class="pagination-btn" id="nextPage">
+                <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="pagination-info">
+            Показано <span id="shownCount">0</span> из <span id="totalCount">0</span> пользователей
+        </div>
+    </div>
+
+    <!-- Сообщение об отсутствии данных -->
+    <div id="noDataMessage" class="empty-state" style="display: none;">
+        <div class="empty-state-icon">👥</div>
+        <h3 class="empty-state-title">Пользователи не найдены</h3>
+        <p class="empty-state-description">В системе пока нет зарегистрированных пользователей.</p>
+    </div>
+</main>
+
+<!-- Модальное окно с детальной информацией о пользователе -->
+<div id="userDetailsModal" class="modal-overlay">
+    <div class="modal-content modal-wide">
+        <div class="modal-header">
+            <h3 class="modal-title">Детальная информация о пользователе</h3>
+            <button type="button" class="btn-close" onclick="closeUserDetailsModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="loading-overlay" id="userDetailsLoading">
+                <div class="loading-spinner large"></div>
+                <div>Загрузка данных пользователя...</div>
+            </div>
+
+            <div id="userDetailsContent" style="display: none;">
+                <div class="user-details-grid">
+                    <div class="detail-section">
+                        <h4 class="detail-title">Основная информация</h4>
+                        <div class="detail-item">
+                            <span class="detail-label">Логин:</span>
+                            <span class="detail-value" id="detailLogin"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Email:</span>
+                            <span class="detail-value" id="detailEmail"></span>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4 class="detail-title">ФИО пользователя</h4>
+                        <div class="detail-item">
+                            <span class="detail-label">Фамилия:</span>
+                            <span class="detail-value" id="detailSurname"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Имя:</span>
+                            <span class="detail-value" id="detailName"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Отчество:</span>
+                            <span class="detail-value" id="detailPatronymic"></span>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4 class="detail-title">Активность</h4>
+                        <div class="detail-item highlight">
+                            <span class="detail-label">Серия (currentStreak):</span>
+                            <span class="detail-value" id="detailStreak"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Последняя активность:</span>
+                            <span class="detail-value" id="detailLastActivity"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Дата регистрации:</span>
+                            <span class="detail-value" id="detailCreatedAt"></span>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4 class="detail-title">Цели питания</h4>
+                        <div class="detail-item">
+                            <span class="detail-label">Цель по калориям:</span>
+                            <span class="detail-value" id="detailCalorieGoal"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Уровень активности:</span>
+                            <span class="detail-value" id="detailActivityLevel"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeUserDetailsModal()">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/admin-users.js}"></script>
+</body>
+</html>
