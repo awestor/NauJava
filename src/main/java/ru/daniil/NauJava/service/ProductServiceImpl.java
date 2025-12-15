@@ -2,8 +2,10 @@ package ru.daniil.NauJava.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.daniil.NauJava.entity.Product;
 import ru.daniil.NauJava.entity.User;
@@ -23,6 +25,9 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final MealEntryRepository mealEntryRepository;
     private final UserService userService;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     @Autowired
     public ProductServiceImpl(ProductRepository productRepository, UserService userService,
@@ -53,6 +58,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public Product saveProduct(CreateProductRequest productInfo) {
         if (productInfo == null){
             throw new NullPointerException();
@@ -66,10 +72,16 @@ public class ProductServiceImpl implements ProductService {
                         request.getCarbsPer100g()
                 ))
                 .orElseThrow(() -> new IllegalArgumentException("CreateProductRequest cannot be null"));
-        newProduct.setCreatedByUser(userService.getAuthUser().orElse(null));
-        if (productRepository.existsByNameIgnoreCase(productInfo.getName())){
+        User currentUser = userService.getAuthUser().orElseThrow(
+                () -> new AuthenticationCredentialsNotFoundException(
+                        "Пользователь должен быть авторизован для создания продукта"
+                ));
+        newProduct.setCreatedByUser(currentUser);
+        if (productRepository.findByNameIgnoreCaseAndCreatedByUserId(
+                productInfo.getName(),currentUser.getId()).orElse(null) != null){
             return null;
         }
+        evictUserProductsCache(currentUser.getId());
         return productRepository.save(newProduct);
     }
 
@@ -104,7 +116,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> findProductsByNames(List<String> productNames) {
         if(productNames == null){
-            return new ArrayList<Product>();
+            return new ArrayList<>();
         }
         return productNames.stream()
                 .map(this::findProductByName)
@@ -131,6 +143,7 @@ public class ProductServiceImpl implements ProductService {
         product.setCarbsPer100g(request.getCarbsPer100g());
 
         productRepository.save(product);
+        evictUserProductsCache(currentUser.getId());
     }
 
     @Transactional
@@ -148,5 +161,13 @@ public class ProductServiceImpl implements ProductService {
 
         mealEntryRepository.disconnectFromProduct(id);
         productRepository.delete(product);
+        evictUserProductsCache(currentUser.getId());
+    }
+
+    public void evictUserProductsCache(Long userId) {
+        Cache cache = cacheManager.getCache("user-products");
+        if (cache != null) {
+            cache.evict("products:" + userId);
+        }
     }
 }

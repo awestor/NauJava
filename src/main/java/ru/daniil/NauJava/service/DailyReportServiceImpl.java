@@ -116,8 +116,6 @@ public class DailyReportServiceImpl implements DailyReportService {
         return calendarData;
     }
 
-    @Cacheable(value = "daily-reports",
-            key = "'reports:' + #year + '-' + #month + '.' + #userId")
     @Override
     public List<DailyReportResponse> getDailyReportsForMonth(int year, int month, Long userId) {
         LocalDate startDate = LocalDate.of(year, month, 1);

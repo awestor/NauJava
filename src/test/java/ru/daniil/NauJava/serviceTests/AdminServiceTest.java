@@ -169,6 +169,7 @@ class AdminServiceTest {
         when(userProfileService.getUserProfileByUser(user1)).thenReturn(profile1);
 
         LocalDateTime lastActivity = LocalDateTime.now().minusHours(3);
+        String lastActivityToWalid = lastActivity.toString();
         when(mealService.getLastMealActivityByUserId(1L)).thenReturn(lastActivity);
         when(userProfileService.getLastProfileUpdate(1L)).thenReturn(lastActivity.minusDays(1));
 
@@ -183,7 +184,7 @@ class AdminServiceTest {
         assertEquals(5, result.getCurrentStreak());
         assertEquals("Умеренный", result.getActivityLevel());
         assertEquals(2000, result.getDailyCalorieGoal());
-        assertEquals(lastActivity, result.getLastActivity());
+        assertEquals(lastActivityToWalid, result.getLastActivity());
 
         verify(userService, times(1)).findByLogin(login);
         verify(userProfileService, times(1)).getUserProfileByUser(user1);

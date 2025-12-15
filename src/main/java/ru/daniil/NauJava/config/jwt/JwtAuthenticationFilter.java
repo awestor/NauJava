@@ -25,8 +25,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
 
-    private static final String CSRF_SKIP_ATTRIBUTE = "SHOULD_NOT_FILTER" + CsrfFilter.class.getName();
-
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
     }
@@ -57,9 +55,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } else {
                 logger.warn("Невалидный JWT токен для запроса {}", requestURI);
             }
-        } else {
-            logger.debug("JWT токен не найден, CSRF проверка будет выполнена");
         }
+        // пропуск к обычной обработке
 
         filterChain.doFilter(request, response);
     }

@@ -1,7 +1,5 @@
 package ru.daniil.NauJava.response;
 
-import java.time.LocalDateTime;
-
 public class UserDetailsResponse {
     private String login;
     private String email;
@@ -11,8 +9,8 @@ public class UserDetailsResponse {
     private Integer currentStreak;
     private String activityLevel;
     private Integer dailyCalorieGoal;
-    private LocalDateTime lastActivity;
-    private LocalDateTime createdAt;
+    private String lastActivity;
+    private String createdAt;
 
     public String getLogin() {
         return login;
@@ -70,17 +68,17 @@ public class UserDetailsResponse {
         this.dailyCalorieGoal = dailyCalorieGoal;
     }
 
-    public LocalDateTime getLastActivity() {
+    public String getLastActivity() {
         return lastActivity;
     }
-    public void setLastActivity(LocalDateTime lastActivity) {
+    public void setLastActivity(String lastActivity) {
         this.lastActivity = lastActivity;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 }

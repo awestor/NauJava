@@ -1,7 +1,7 @@
 package ru.daniil.NauJava.service;
 
+import com.github.dockerjava.api.exception.NotFoundException;
 import jakarta.transaction.Transactional;
-import org.openqa.selenium.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

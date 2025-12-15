@@ -1,5 +1,6 @@
 package ru.daniil.NauJava.controller.product;
 
+import com.github.dockerjava.api.exception.NotFoundException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,13 +10,12 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.NauJava.entity.Product;
 import ru.daniil.NauJava.entity.User;
-import ru.daniil.NauJava.response.ProductInfoResponse;
 import ru.daniil.NauJava.request.update.UpdateProductRequest;
+import ru.daniil.NauJava.response.ProductInfoResponse;
 import ru.daniil.NauJava.service.ProductService;
 import ru.daniil.NauJava.service.UserService;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -70,8 +70,10 @@ public class ProductApiController {
      * @return продукт из БД или null
      */
     @GetMapping("/{identifier}")
-    public Optional<Product> getProductById(@PathVariable Long identifier) {
-        return productService.findById(identifier);
+    public Product getProductById(@PathVariable Long identifier) {
+        return productService.findById(identifier).orElseThrow(
+                () -> new NotFoundException("Произошла непредвиденная ошибка")
+        );
     }
 
     /**

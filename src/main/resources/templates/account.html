@@ -224,15 +224,6 @@
                  th:value="${userProfile.dateOfBirth}">
           <div class="error-message" id="dateOfBirthError"></div>
         </div>
-        <div class="form-group">
-          <label for="gender" class="form-label">Пол</label>
-          <select id="gender" name="gender" class="form-select">
-            <option value="">Выберите пол</option>
-            <option value="M" th:selected="${userProfile.gender == 'M'}">Мужской</option>
-            <option value="F" th:selected="${userProfile.gender == 'F'}">Женский</option>
-          </select>
-          <div class="error-message" id="genderError"></div>
-        </div>
         <div class="form-row">
           <div class="form-group">
             <label for="height" class="form-label">Рост (см)</label>
@@ -247,11 +238,22 @@
             <div class="error-message" id="weightError"></div>
           </div>
         </div>
-        <div class="form-group">
-          <label for="targetWeight" class="form-label">Целевой вес (кг)</label>
-          <input type="number" id="targetWeight" name="targetWeight" class="form-input"
-                 th:value="${userProfile.targetWeight}" min="30" max="300" step="0.1">
-          <div class="error-message" id="targetWeightError"></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="gender" class="form-label">Пол</label>
+            <select id="gender" name="gender" class="form-select">
+              <option value="">Выберите пол</option>
+              <option value="M" th:selected="${userProfile.gender == 'M'}">Мужской</option>
+              <option value="F" th:selected="${userProfile.gender == 'F'}">Женский</option>
+            </select>
+            <div class="error-message" id="genderError"></div>
+          </div>
+          <div class="form-group">
+            <label for="targetWeight" class="form-label">Целевой вес (кг)</label>
+            <input type="number" id="targetWeight" name="targetWeight" class="form-input"
+                   th:value="${userProfile.targetWeight}" min="30" max="300" step="0.1">
+            <div class="error-message" id="targetWeightError"></div>
+          </div>
         </div>
         <div class="form-group">
           <label for="activityLevel" class="form-label">Уровень активности</label>

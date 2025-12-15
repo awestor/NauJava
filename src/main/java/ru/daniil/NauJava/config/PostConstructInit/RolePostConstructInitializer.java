@@ -1,6 +1,7 @@
 package ru.daniil.NauJava.config.PostConstructInit;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import ru.daniil.NauJava.entity.Role;
 import ru.daniil.NauJava.repository.RoleRepository;
@@ -15,6 +16,7 @@ public class RolePostConstructInitializer {
     }
 
     @PostConstruct
+    @Order(1)
     public void initializeRoles() {
         createRoleIfNotExists("USER", "Обычный пользователь системы");
         createRoleIfNotExists("ADMIN", "Администратор системы");

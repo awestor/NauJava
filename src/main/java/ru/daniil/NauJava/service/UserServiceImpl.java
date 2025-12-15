@@ -1,7 +1,7 @@
 package ru.daniil.NauJava.service;
 
+import com.github.dockerjava.api.exception.NotFoundException;
 import jakarta.transaction.Transactional;
-import org.openqa.selenium.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

@@ -120,7 +120,7 @@ public class AdminServiceImpl implements AdminService {
         UserDetailsResponse response = new UserDetailsResponse();
         response.setLogin(user.getLogin());
         response.setEmail(user.getEmail());
-        response.setCreatedAt(user.getCreatedAt());
+        response.setCreatedAt(user.getCreatedAt().toString());
 
         response.setName(profile.getName());
         response.setSurname(profile.getSurname());
@@ -136,7 +136,7 @@ public class AdminServiceImpl implements AdminService {
         }
 
         LocalDateTime lastActivity = getLastUserActivity(user.getId());
-        response.setLastActivity(lastActivity);
+        response.setLastActivity(lastActivity == null ? null : lastActivity.toString());
 
         return response;
     }

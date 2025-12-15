@@ -34,7 +34,7 @@ public class RedisConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisConfig.class);
 
-    @Value("${spring.data.redis.host:localhost}")
+    @Value("${SPRING_REDIS_HOST:localhost}")
     private String redisHost;
 
     @Value("${spring.data.redis.port:6379}")
@@ -151,7 +151,6 @@ public class RedisConfig {
         cacheConfigurations.put("admin-users-list", defaultConfig.entryTtl(Duration.ofMinutes(5)));
         cacheConfigurations.put("admin-users-stats", defaultConfig.entryTtl(Duration.ofMinutes(5)));
         cacheConfigurations.put("calendar-month", defaultConfig.entryTtl(Duration.ofMinutes(10)));
-        cacheConfigurations.put("daily-reports", defaultConfig.entryTtl(Duration.ofMinutes(15)));
         cacheConfigurations.put("user-products", userProductsConfig);
         cacheConfigurations.put("meal-type", mealTypesConfig);
 

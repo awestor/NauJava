@@ -9,7 +9,7 @@
   <link rel="stylesheet" th:href="@{/css/index.css}">
 </head>
 <body>
-<div th:replace="${#authorization.expression('hasRole(''USER'')')} ?
+<div sec:authorize="isAuthenticated()" th:replace="${#authorization.expression('hasRole(''USER'')')} ?
                 ~{fragments/header :: header} :
                 ~{fragments/adminHeader :: header}"></div>
 <main class="main-container">
@@ -162,37 +162,5 @@
       </div>
     </div>
   </main>
-
-  <script>
-    // Загрузка сегодняшней статистики для авторизованных пользователей
-    document.addEventListener('DOMContentLoaded', function() {
-        const authSection = document.querySelector('[sec\\:authorize="isAuthenticated()"]');
-        if (authSection && !authSection.hasAttribute('hidden')) {
-            loadTodayStats();
-        }
-    });
-
-    async function loadTodayStats() {
-        try {
-            const response = await fetch('/api/daily-reports/today/stats');
-            if (response.ok) {
-                const stats = await response.json();
-                updateStatsDisplay(stats);
-            }
-        } catch (error) {
-            console.log('Не удалось загрузить статистику за сегодня');
-        }
-    }
-
-    function updateStatsDisplay(stats) {
-        const caloriesElem = document.getElementById('todayCalories');
-        const mealsElem = document.getElementById('todayMeals');
-        const goalElem = document.getElementById('todayGoal');
-
-        if (caloriesElem) caloriesElem.textContent = stats.calories || '0';
-        if (mealsElem) mealsElem.textContent = stats.meals || '0';
-        if (goalElem) goalElem.textContent = stats.goalPercentage || '0%';
-    }
-  </script>
 </body>
 </html>
